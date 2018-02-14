@@ -24,7 +24,6 @@ import java.util.Map;
 import java.util.stream.Collectors;
 
 import org.junit.After;
-import org.junit.Before;
 import org.junit.Test;
 import org.keycloak.admin.client.resource.RealmResource;
 import org.keycloak.client.registration.Auth;
@@ -41,7 +40,7 @@ import org.keycloak.protocol.saml.mappers.UserPropertyAttributeStatementMapper;
 import org.keycloak.representations.idm.ClientInitialAccessCreatePresentation;
 import org.keycloak.representations.idm.ClientInitialAccessPresentation;
 import org.keycloak.representations.idm.ClientRepresentation;
-import org.keycloak.representations.idm.ClientTemplateRepresentation;
+import org.keycloak.representations.idm.ClientScopeRepresentation;
 import org.keycloak.representations.idm.ComponentRepresentation;
 import org.keycloak.representations.idm.ComponentTypeRepresentation;
 import org.keycloak.representations.idm.ConfigPropertyRepresentation;
@@ -53,7 +52,7 @@ import org.keycloak.services.clientregistration.policy.ClientRegistrationPolicy;
 import org.keycloak.services.clientregistration.policy.ClientRegistrationPolicyManager;
 import org.keycloak.services.clientregistration.policy.RegistrationAuth;
 import org.keycloak.services.clientregistration.policy.impl.ClientDisabledClientRegistrationPolicyFactory;
-import org.keycloak.services.clientregistration.policy.impl.ClientTemplatesClientRegistrationPolicyFactory;
+import org.keycloak.services.clientregistration.policy.impl.ClientScopesClientRegistrationPolicyFactory;
 import org.keycloak.services.clientregistration.policy.impl.MaxClientsClientRegistrationPolicyFactory;
 import org.keycloak.services.clientregistration.policy.impl.ProtocolMappersClientRegistrationPolicyFactory;
 import org.keycloak.services.clientregistration.policy.impl.TrustedHostClientRegistrationPolicyFactory;
@@ -361,38 +360,38 @@ public class ClientRegistrationPoliciesTest extends AbstractClientRegistrationTe
                 UserPropertyMapper.PROVIDER_ID, HardcodedRole.PROVIDER_ID);
         availableMappers.containsAll(someExpectedMappers);
 
-        // test that clientTemplate provider doesn't contain any client templates yet
-        ComponentTypeRepresentation clientTemplateRep = providersMap.get(ClientTemplatesClientRegistrationPolicyFactory.PROVIDER_ID);
-        List<String> clientTemplates = getProviderConfigProperty(clientTemplateRep, ClientTemplatesClientRegistrationPolicyFactory.ALLOWED_CLIENT_TEMPLATES);
+        // test that clientScope provider doesn't contain any client templates yet
+        ComponentTypeRepresentation clientTemplateRep = providersMap.get(ClientScopesClientRegistrationPolicyFactory.PROVIDER_ID);
+        List<String> clientTemplates = getProviderConfigProperty(clientTemplateRep, ClientScopesClientRegistrationPolicyFactory.ALLOWED_CLIENT_TEMPLATES);
         Assert.assertTrue(clientTemplates.isEmpty());
 
-        // Add some clientTemplates
-        ClientTemplateRepresentation clientTemplate = new ClientTemplateRepresentation();
+        // Add some clientScopes
+        ClientScopeRepresentation clientTemplate = new ClientScopeRepresentation();
         clientTemplate.setName("foo");
-        Response response = realmResource().clientTemplates().create(clientTemplate);
+        Response response = realmResource().clientScopes().create(clientTemplate);
         String fooTemplateId = ApiUtil.getCreatedId(response);
         response.close();
 
-        clientTemplate = new ClientTemplateRepresentation();
+        clientTemplate = new ClientScopeRepresentation();
         clientTemplate.setName("bar");
-        response = realmResource().clientTemplates().create(clientTemplate);
+        response = realmResource().clientScopes().create(clientTemplate);
         String barTemplateId = ApiUtil.getCreatedId(response);
         response.close();
 
-        // send request again and test that clientTemplate provider contains added client templates
+        // send request again and test that clientScope provider contains added client templates
         reps = realmResource().clientRegistrationPolicy().getProviders();
         clientTemplateRep = reps.stream().filter((ComponentTypeRepresentation rep1) -> {
 
-            return rep1.getId().equals(ClientTemplatesClientRegistrationPolicyFactory.PROVIDER_ID);
+            return rep1.getId().equals(ClientScopesClientRegistrationPolicyFactory.PROVIDER_ID);
 
         }).findFirst().get();
 
-        clientTemplates = getProviderConfigProperty(clientTemplateRep, ClientTemplatesClientRegistrationPolicyFactory.ALLOWED_CLIENT_TEMPLATES);
+        clientTemplates = getProviderConfigProperty(clientTemplateRep, ClientScopesClientRegistrationPolicyFactory.ALLOWED_CLIENT_TEMPLATES);
         Assert.assertNames(clientTemplates, "foo", "bar");
 
         // Revert client templates
-        realmResource().clientTemplates().get(fooTemplateId).remove();
-        realmResource().clientTemplates().get(barTemplateId).remove();
+        realmResource().clientScopes().get(fooTemplateId).remove();
+        realmResource().clientScopes().get(barTemplateId).remove();
     }
 
     private List<String> getProviderConfigProperty(ComponentTypeRepresentation provider, String expectedConfigPropName) {
@@ -418,17 +417,17 @@ public class ClientRegistrationPoliciesTest extends AbstractClientRegistrationTe
     public void testClientTemplatesPolicy() throws Exception {
         setTrustedHost("localhost");
 
-        // Add some clientTemplate through Admin REST
-        ClientTemplateRepresentation clientTemplate = new ClientTemplateRepresentation();
+        // Add some clientScope through Admin REST
+        ClientScopeRepresentation clientTemplate = new ClientScopeRepresentation();
         clientTemplate.setName("foo");
-        Response response = realmResource().clientTemplates().create(clientTemplate);
+        Response response = realmResource().clientScopes().create(clientTemplate);
         String clientTemplateId = ApiUtil.getCreatedId(response);
         response.close();
 
         // I can't register new client with this template
         ClientRepresentation clientRep = createRep("test-app");
         clientRep.setClientTemplate("foo");
-        assertFail(ClientRegOp.CREATE, clientRep, 403, "Not permitted to use specified clientTemplate");
+        assertFail(ClientRegOp.CREATE, clientRep, 403, "Not permitted to use specified clientScope");
 
         // Register client without template - should success
         clientRep.setClientTemplate(null);
@@ -437,9 +436,9 @@ public class ClientRegistrationPoliciesTest extends AbstractClientRegistrationTe
 
         // Try to update client with template - should fail
         registeredClient.setClientTemplate("foo");
-        assertFail(ClientRegOp.UPDATE, registeredClient, 403, "Not permitted to use specified clientTemplate");
+        assertFail(ClientRegOp.UPDATE, registeredClient, 403, "Not permitted to use specified clientScope");
 
-        // Update client with the clientTemplate via Admin REST
+        // Update client with the clientScope via Admin REST
         ClientRepresentation client = ApiUtil.findClientByClientId(realmResource(), "test-app").toRepresentation();
         client.setClientTemplate("foo");
         realmResource().clients().get(client.getId()).update(client);
@@ -449,7 +448,7 @@ public class ClientRegistrationPoliciesTest extends AbstractClientRegistrationTe
 
         // Revert client template
         realmResource().clients().get(client.getId()).remove();
-        realmResource().clientTemplates().get(clientTemplateId).remove();
+        realmResource().clientScopes().get(clientTemplateId).remove();
     }
 
 
@@ -457,21 +456,21 @@ public class ClientRegistrationPoliciesTest extends AbstractClientRegistrationTe
     public void testClientTemplatesPolicyWithPermittedTemplate() throws Exception {
         setTrustedHost("localhost");
 
-        // Add some clientTemplate through Admin REST
-        ClientTemplateRepresentation clientTemplate = new ClientTemplateRepresentation();
+        // Add some clientScope through Admin REST
+        ClientScopeRepresentation clientTemplate = new ClientScopeRepresentation();
         clientTemplate.setName("foo");
-        Response response = realmResource().clientTemplates().create(clientTemplate);
+        Response response = realmResource().clientScopes().create(clientTemplate);
         String clientTemplateId = ApiUtil.getCreatedId(response);
         response.close();
 
         // I can't register new client with this template
         ClientRepresentation clientRep = createRep("test-app");
         clientRep.setClientTemplate("foo");
-        assertFail(ClientRegOp.CREATE, clientRep, 403, "Not permitted to use specified clientTemplate");
+        assertFail(ClientRegOp.CREATE, clientRep, 403, "Not permitted to use specified clientScope");
 
         // Update the policy to allow the "foo" template
-        ComponentRepresentation clientTemplatesPolicyRep = findPolicyByProviderAndAuth(ClientTemplatesClientRegistrationPolicyFactory.PROVIDER_ID, getPolicyAnon());
-        clientTemplatesPolicyRep.getConfig().putSingle(ClientTemplatesClientRegistrationPolicyFactory.ALLOWED_CLIENT_TEMPLATES, "foo");
+        ComponentRepresentation clientTemplatesPolicyRep = findPolicyByProviderAndAuth(ClientScopesClientRegistrationPolicyFactory.PROVIDER_ID, getPolicyAnon());
+        clientTemplatesPolicyRep.getConfig().putSingle(ClientScopesClientRegistrationPolicyFactory.ALLOWED_CLIENT_TEMPLATES, "foo");
         realmResource().components().component(clientTemplatesPolicyRep.getId()).update(clientTemplatesPolicyRep);
 
         // Check that I can register client now
@@ -480,7 +479,7 @@ public class ClientRegistrationPoliciesTest extends AbstractClientRegistrationTe
 
         // Revert client template
         ApiUtil.findClientResourceByClientId(realmResource(), "test-app").remove();
-        realmResource().clientTemplates().get(clientTemplateId).remove();
+        realmResource().clientScopes().get(clientTemplateId).remove();
     }
 
 

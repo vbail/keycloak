@@ -18,54 +18,62 @@
 package org.keycloak.models;
 
 /**
+ * TODO:mposolda remove this class entirely?
+ *
  * @author <a href="mailto:bill@burkecentral.com">Bill Burke</a>
  * @version $Revision: 1 $
  */
 public class ClientConfigResolver {
     protected ClientModel client;
-    protected ClientTemplateModel clientTemplate;
+    //protected ClientScopeModel clientTemplate;
 
     public ClientConfigResolver(ClientModel client) {
         this.client = client;
-        this.clientTemplate = client.getClientTemplate();
+        //this.clientTemplate = client.getClientTemplate();
     }
 
     public String resolveAttribute(String name) {
-        if (clientTemplate != null && client.useTemplateConfig()) {
-            return clientTemplate.getAttribute(name);
-        } else {
-            return client.getAttribute(name);
-        }
+        // TODO:mposolda remove commented part?
+//        if (clientTemplate != null && client.useTemplateConfig()) {
+//            return clientTemplate.getAttribute(name);
+//        } else {
+//            return client.getAttribute(name);
+//        }
+        return client.getAttribute(name);
     }
 
     public boolean isFrontchannelLogout() {
-        if (clientTemplate != null && client.useTemplateConfig()) {
-            return clientTemplate.isFrontchannelLogout();
-        }
+        // TODO:mposolda remove commented part?
+//        if (clientTemplate != null && client.useTemplateConfig()) {
+//            return clientTemplate.isFrontchannelLogout();
+//        }
 
         return client.isFrontchannelLogout();
     }
 
     boolean isConsentRequired() {
-        if (clientTemplate != null && client.useTemplateConfig()) {
-            return clientTemplate.isConsentRequired();
-        }
+        // TODO:mposolda remove commented part?
+//        if (clientTemplate != null && client.useTemplateConfig()) {
+//            return clientTemplate.isConsentRequired();
+//        }
 
         return client.isConsentRequired();
     }
 
     boolean isStandardFlowEnabled() {
-        if (clientTemplate != null && client.useTemplateConfig()) {
-            return clientTemplate.isStandardFlowEnabled();
-        }
+        // TODO:mposolda remove commented part?
+//        if (clientTemplate != null && client.useTemplateConfig()) {
+//            return clientTemplate.isStandardFlowEnabled();
+//        }
 
         return client.isStandardFlowEnabled();
     }
 
     boolean isServiceAccountsEnabled() {
-        if (clientTemplate != null && client.useTemplateConfig()) {
-            return clientTemplate.isServiceAccountsEnabled();
-        }
+        // TODO:mposolda remove entirely?
+//        if (clientTemplate != null && client.useTemplateConfig()) {
+//            return clientTemplate.isServiceAccountsEnabled();
+//        }
 
         return client.isServiceAccountsEnabled();
     }

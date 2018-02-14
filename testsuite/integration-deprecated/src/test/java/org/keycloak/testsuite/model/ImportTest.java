@@ -25,7 +25,7 @@ import org.keycloak.common.constants.KerberosConstants;
 import org.keycloak.component.ComponentModel;
 import org.keycloak.models.AuthenticationFlowModel;
 import org.keycloak.models.ClientModel;
-import org.keycloak.models.ClientTemplateModel;
+import org.keycloak.models.ClientScopeModel;
 import org.keycloak.models.Constants;
 import org.keycloak.models.FederatedIdentityModel;
 import org.keycloak.models.IdentityProviderModel;
@@ -323,10 +323,10 @@ public class ImportTest extends AbstractModelTest {
         ProtocolMapperModel gssCredentialMapper = otherApp.getProtocolMapperByName(OIDCLoginProtocol.LOGIN_PROTOCOL, KerberosConstants.GSS_DELEGATION_CREDENTIAL_DISPLAY_NAME);
         assertGssProtocolMapper(gssCredentialMapper);
 
-        // Test clientTemplates
-        List<ClientTemplateModel> clientTemplates = realm.getClientTemplates();
+        // Test clientScopes
+        List<ClientScopeModel> clientTemplates = realm.getClientScopes();
         Assert.assertEquals(1, clientTemplates.size());
-        ClientTemplateModel clientTemplate = clientTemplates.get(0);
+        ClientScopeModel clientTemplate = clientTemplates.get(0);
         Assert.assertEquals("foo-template", clientTemplate.getName());
         Assert.assertEquals("foo-template-desc", clientTemplate.getDescription());
         Assert.assertEquals(OIDCLoginProtocol.LOGIN_PROTOCOL, clientTemplate.getProtocol());

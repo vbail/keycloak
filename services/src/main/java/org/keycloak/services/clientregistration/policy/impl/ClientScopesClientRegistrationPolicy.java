@@ -19,12 +19,10 @@ package org.keycloak.services.clientregistration.policy.impl;
 
 import java.util.List;
 
-import org.jboss.logging.Logger;
 import org.keycloak.component.ComponentModel;
 import org.keycloak.models.ClientModel;
-import org.keycloak.models.ClientTemplateModel;
+import org.keycloak.models.ClientScopeModel;
 import org.keycloak.models.KeycloakSession;
-import org.keycloak.representations.idm.ClientRepresentation;
 import org.keycloak.services.clientregistration.ClientRegistrationContext;
 import org.keycloak.services.clientregistration.ClientRegistrationProvider;
 import org.keycloak.services.clientregistration.policy.ClientRegistrationPolicy;
@@ -33,12 +31,12 @@ import org.keycloak.services.clientregistration.policy.ClientRegistrationPolicyE
 /**
  * @author <a href="mailto:mposolda@redhat.com">Marek Posolda</a>
  */
-public class ClientTemplatesClientRegistrationPolicy implements ClientRegistrationPolicy {
+public class ClientScopesClientRegistrationPolicy implements ClientRegistrationPolicy {
 
     private final KeycloakSession session;
     private final ComponentModel componentModel;
 
-    public ClientTemplatesClientRegistrationPolicy(KeycloakSession session, ComponentModel componentModel) {
+    public ClientScopesClientRegistrationPolicy(KeycloakSession session, ComponentModel componentModel) {
         this.session = session;
         this.componentModel = componentModel;
     }
@@ -46,8 +44,8 @@ public class ClientTemplatesClientRegistrationPolicy implements ClientRegistrati
     @Override
     public void beforeRegister(ClientRegistrationContext context) throws ClientRegistrationPolicyException {
         String clientTemplate = context.getClient().getClientTemplate();
-        if (!isTemplateAllowed(clientTemplate)) {
-            throw new ClientRegistrationPolicyException("Not permitted to use specified clientTemplate");
+        if (!isClientScopeAllowed(clientTemplate)) {
+            throw new ClientRegistrationPolicyException("Not permitted to use specified clientScope");
         }
     }
 
@@ -58,15 +56,16 @@ public class ClientTemplatesClientRegistrationPolicy implements ClientRegistrati
 
     @Override
     public void beforeUpdate(ClientRegistrationContext context, ClientModel clientModel) throws ClientRegistrationPolicyException {
-        String newTemplate = context.getClient().getClientTemplate();
+        String newScope = context.getClient().getClientTemplate();
 
         // Check if template was already set before. Then we allow update
-        ClientTemplateModel currentTemplate = clientModel.getClientTemplate();
-        if (currentTemplate == null || !currentTemplate.getName().equals(newTemplate)) {
-            if (!isTemplateAllowed(newTemplate)) {
-                throw new ClientRegistrationPolicyException("Not permitted to use specified clientTemplate");
-            }
-        }
+        // TODO:mposolda re-evaluate this implementation. Should check all clientScopes probably. Also should have a flag on policy if defaultClientScopes should be count or not
+//        ClientScopeModel currentClientScope = clientModel.getClientTemplate();
+//        if (currentClientScope == null || !currentClientScope.getName().equals(newScope)) {
+//            if (!isClientScopeAllowed(newScope)) {
+//                throw new ClientRegistrationPolicyException("Not permitted to use specified clientScope");
+//            }
+//        }
     }
 
     @Override
@@ -84,12 +83,12 @@ public class ClientTemplatesClientRegistrationPolicy implements ClientRegistrati
 
     }
 
-    private boolean isTemplateAllowed(String template) {
-        if (template == null) {
+    private boolean isClientScopeAllowed(String clientScope) {
+        if (clientScope == null) {
             return true;
         } else {
-            List<String> allowedTemplates = componentModel.getConfig().getList(ClientTemplatesClientRegistrationPolicyFactory.ALLOWED_CLIENT_TEMPLATES);
-            return allowedTemplates.contains(template);
+            List<String> allowedTemplates = componentModel.getConfig().getList(ClientScopesClientRegistrationPolicyFactory.ALLOWED_CLIENT_TEMPLATES);
+            return allowedTemplates.contains(clientScope);
         }
     }
 }

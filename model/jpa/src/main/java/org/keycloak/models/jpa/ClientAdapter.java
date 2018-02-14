@@ -18,7 +18,7 @@
 package org.keycloak.models.jpa;
 
 import org.keycloak.models.ClientModel;
-import org.keycloak.models.ClientTemplateModel;
+import org.keycloak.models.ClientScopeModel;
 import org.keycloak.models.KeycloakSession;
 import org.keycloak.models.ModelDuplicateException;
 import org.keycloak.models.ProtocolMapperModel;
@@ -26,12 +26,16 @@ import org.keycloak.models.RealmModel;
 import org.keycloak.models.RoleContainerModel;
 import org.keycloak.models.RoleModel;
 import org.keycloak.models.jpa.entities.ClientEntity;
-import org.keycloak.models.jpa.entities.ClientTemplateEntity;
+import org.keycloak.models.jpa.entities.ClientScopeClientMappingEntity;
+import org.keycloak.models.jpa.entities.ClientScopeEntity;
+import org.keycloak.models.jpa.entities.ClientScopeRoleMappingEntity;
 import org.keycloak.models.jpa.entities.ProtocolMapperEntity;
 import org.keycloak.models.jpa.entities.RoleEntity;
 import org.keycloak.models.utils.KeycloakModelUtils;
 
 import javax.persistence.EntityManager;
+import javax.persistence.TypedQuery;
+
 import java.security.MessageDigest;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -317,56 +321,43 @@ public class ClientAdapter implements ClientModel, JpaModel<ClientEntity> {
     }
 
     @Override
-    public ClientTemplateModel getClientTemplate() {
-        ClientTemplateEntity templateEntity = entity.getClientTemplate();
-        if (templateEntity == null) return null;
-        return session.realms().getClientTemplateById(templateEntity.getId(), realm);
+    public void addClientScope(ClientScopeModel clientScope, boolean defaultScope) {
+        if (getClientScopes(defaultScope).containsKey(clientScope.getName())) return;
+
+        ClientScopeClientMappingEntity entity = new ClientScopeClientMappingEntity();
+        entity.setClientScope(ClientScopeAdapter.toClientScopeEntity(clientScope, em));
+        entity.setClient(getEntity());
+        entity.setDefaultScope(defaultScope);
+        em.persist(entity);
+        em.flush();
+        em.detach(entity);
     }
 
     @Override
-    public void setClientTemplate(ClientTemplateModel template) {
-        if (template == null) {
-            entity.setClientTemplate(null);
+    public void removeClientScope(ClientScopeModel clientScope) {
+        int numRemoved = em.createNamedQuery("deleteClientScopeClientMapping")
+                .setParameter("clientScope", ClientScopeAdapter.toClientScopeEntity(clientScope, em))
+                .setParameter("client", getEntity())
+                .executeUpdate();
+        em.flush();
+    }
 
-        } else {
-            ClientTemplateEntity templateEntity = em.getReference(ClientTemplateEntity.class, template.getId());
-            entity.setClientTemplate(templateEntity);
+    @Override
+    public Map<String, ClientScopeModel> getClientScopes(boolean defaultScope) {
+        TypedQuery<String> query = em.createNamedQuery("clientScopeClientMappingIdsByClient", String.class);
+        query.setParameter("client", getEntity());
+        query.setParameter("defaultScope", defaultScope);
+        List<String> ids = query.getResultList();
+
+        Map<String, ClientScopeModel> clientScopes = new HashMap<>();
+        for (String clientScopeId : ids) {
+            ClientScopeModel clientScope = realm.getClientScopeById(clientScopeId);
+            if (clientScope == null) continue;
+            clientScopes.put(clientScope.getName(), clientScope);
         }
-
+        return clientScopes;
     }
 
-    @Override
-    public boolean useTemplateScope() {
-        return entity.isUseTemplateScope();
-    }
-
-    @Override
-    public void setUseTemplateScope(boolean flag) {
-        entity.setUseTemplateScope(flag);
-
-    }
-
-    @Override
-    public boolean useTemplateMappers() {
-        return entity.isUseTemplateMappers();
-    }
-
-    @Override
-    public void setUseTemplateMappers(boolean flag) {
-        entity.setUseTemplateMappers(flag);
-
-    }
-
-    @Override
-    public boolean useTemplateConfig() {
-        return entity.isUseTemplateConfig();
-    }
-
-    @Override
-    public void setUseTemplateConfig(boolean flag) {
-        entity.setUseTemplateConfig(flag);
-
-    }
 
     public static boolean contains(String str, String[] array) {
         for (String s : array) {

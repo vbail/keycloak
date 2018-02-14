@@ -133,6 +133,9 @@ public interface ClientModel extends RoleContainerModel,  ProtocolMapperContaine
     boolean isFrontchannelLogout();
     void setFrontchannelLogout(boolean flag);
 
+    boolean isFullScopeAllowed();
+    void setFullScopeAllowed(boolean value);
+
 
     boolean isPublicClient();
     void setPublicClient(boolean flag);
@@ -154,14 +157,23 @@ public interface ClientModel extends RoleContainerModel,  ProtocolMapperContaine
 
     RealmModel getRealm();
 
-    ClientTemplateModel getClientTemplate();
-    void setClientTemplate(ClientTemplateModel template);
-    boolean useTemplateScope();
-    void setUseTemplateScope(boolean flag);
-    boolean useTemplateMappers();
-    void setUseTemplateMappers(boolean flag);
-    boolean useTemplateConfig();
-    void setUseTemplateConfig(boolean flag);
+    /**
+     * Add clientScope with this client. Add it as default scope (if parameter 'defaultScope' is true) or optional scope (if parameter 'defaultScope' is false)
+     * @param clientScope
+     * @param defaultScope
+     */
+    void addClientScope(ClientScopeModel clientScope, boolean defaultScope);
+
+    void removeClientScope(ClientScopeModel clientScope);
+
+    /**
+     * Return all default scopes (if 'defaultScope' is true) or all optional scopes (if 'defaultScope' is false) linked with this client
+     *
+     * @param defaultScope
+     * @return map where key is the name of the clientScope, value is particular clientScope. Returns empty map if no scopes linked (never returns null).
+     */
+    Map<String, ClientScopeModel> getClientScopes(boolean defaultScope);
+
 
     /**
      * Time in seconds since epoc

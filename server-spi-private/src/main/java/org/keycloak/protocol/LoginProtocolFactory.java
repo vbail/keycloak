@@ -19,14 +19,15 @@ package org.keycloak.protocol;
 
 import org.keycloak.events.EventBuilder;
 import org.keycloak.models.ClientModel;
-import org.keycloak.models.ClientTemplateModel;
+import org.keycloak.models.ClientScopeModel;
 import org.keycloak.models.ProtocolMapperModel;
 import org.keycloak.models.RealmModel;
 import org.keycloak.provider.ProviderFactory;
 import org.keycloak.representations.idm.ClientRepresentation;
-import org.keycloak.representations.idm.ClientTemplateRepresentation;
+import org.keycloak.representations.idm.ClientScopeRepresentation;
 
 import java.util.List;
+import java.util.Map;
 
 /**
  * @author <a href="mailto:bill@burkecentral.com">Bill Burke</a>
@@ -38,7 +39,7 @@ public interface LoginProtocolFactory extends ProviderFactory<LoginProtocol> {
      *
      * @return
      */
-    List<ProtocolMapperModel> getBuiltinMappers();
+    Map<String, ProtocolMapperModel> getBuiltinMappers();
 
     /**
      * List of mappers, which are added to new clients by default
@@ -56,11 +57,4 @@ public interface LoginProtocolFactory extends ProviderFactory<LoginProtocol> {
      */
     void setupClientDefaults(ClientRepresentation rep, ClientModel newClient);
 
-    /**
-     * Setup default values for new templates.  This expects that the representation has already set up the template
-     *
-     * @param clientRep
-     * @param newClient
-     */
-    void setupTemplateDefaults(ClientTemplateRepresentation clientRep, ClientTemplateModel newClient);
 }

@@ -939,29 +939,29 @@ public class AuthenticationManager {
         ClientModel client = authSession.getClient();
         UserModel user = authSession.getAuthenticatedUser();
 
-        Set<String> requestedRoles = new HashSet<String>();
         // todo scope param protocol independent
         String scopeParam = authSession.getClientNote(OAuth2Constants.SCOPE);
+
+        Set<String> requestedRoles = new HashSet<String>();
         for (RoleModel r : TokenManager.getAccess(scopeParam, true, client, user)) {
             requestedRoles.add(r.getId());
         }
         authSession.setRoles(requestedRoles);
 
         Set<String> requestedProtocolMappers = new HashSet<String>();
-        ClientTemplateModel clientTemplate = client.getClientTemplate();
-        if (clientTemplate != null && client.useTemplateMappers()) {
-            for (ProtocolMapperModel protocolMapper : clientTemplate.getProtocolMappers()) {
+
+        // Get protocolMappers of client and all attached client scopes
+        Set<ProtocolMapperContainerModel> protocolMapperContainers = new HashSet<>(TokenManager.getRequestedClientScopes(scopeParam, client));
+        protocolMapperContainers.add(client);
+
+        for (ProtocolMapperContainerModel protocolMapperContainer : protocolMapperContainers) {
+            for (ProtocolMapperModel protocolMapper : protocolMapperContainer.getProtocolMappers()) {
                 if (protocolMapper.getProtocol().equals(authSession.getProtocol())) {
                     requestedProtocolMappers.add(protocolMapper.getId());
                 }
             }
+        }
 
-        }
-        for (ProtocolMapperModel protocolMapper : client.getProtocolMappers()) {
-            if (protocolMapper.getProtocol().equals(authSession.getProtocol())) {
-                requestedProtocolMappers.add(protocolMapper.getId());
-            }
-        }
         authSession.setProtocolMappers(requestedProtocolMappers);
     }
 

@@ -45,13 +45,7 @@ public class MigrateTo1_6_0 implements Migration {
     public void migrate(KeycloakSession session) {
         MigrationProvider provider = session.getProvider(MigrationProvider.class);
 
-        List<ProtocolMapperModel> builtinMappers = provider.getBuiltinMappers("openid-connect");
-        ProtocolMapperModel localeMapper = null;
-        for (ProtocolMapperModel m : builtinMappers) {
-            if (m.getName().equals("locale")) {
-                localeMapper = m;
-            }
-        }
+        ProtocolMapperModel localeMapper = provider.getBuiltinMappers("openid-connect").get("locale");
 
         if (localeMapper == null) {
             throw new RuntimeException("Can't find default locale mapper");
@@ -66,13 +60,8 @@ public class MigrateTo1_6_0 implements Migration {
     @Override
     public void migrateImport(KeycloakSession session, RealmModel realm, RealmRepresentation rep, boolean skipUserDependent) {
         MigrationProvider provider = session.getProvider(MigrationProvider.class);
-        List<ProtocolMapperModel> builtinMappers = provider.getBuiltinMappers("openid-connect");
-        ProtocolMapperModel localeMapper = null;
-        for (ProtocolMapperModel m : builtinMappers) {
-            if (m.getName().equals("locale")) {
-                localeMapper = m;
-            }
-        }
+        ProtocolMapperModel localeMapper = provider.getBuiltinMappers("openid-connect").get("locale");
+
         if (localeMapper == null) {
             throw new RuntimeException("Can't find default locale mapper");
         }

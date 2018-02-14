@@ -33,7 +33,7 @@ import org.keycloak.jose.jws.crypto.HashProvider;
 import org.keycloak.jose.jws.crypto.RSAProvider;
 import org.keycloak.models.AuthenticatedClientSessionModel;
 import org.keycloak.models.ClientModel;
-import org.keycloak.models.ClientTemplateModel;
+import org.keycloak.models.ClientScopeModel;
 import org.keycloak.models.GroupModel;
 import org.keycloak.models.KeyManager;
 import org.keycloak.models.KeycloakSession;
@@ -74,6 +74,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
@@ -461,23 +462,28 @@ public class TokenManager {
             addGroupRoles(group, roleMappings);
         }
 
-
-        ClientTemplateModel template = client.getClientTemplate();
-
-        boolean useTemplateScope = template != null && client.useTemplateScope();
-
-        if ( (useTemplateScope && template.isFullScopeAllowed()) || (client.isFullScopeAllowed())) {
-            logger.debug("Using full scope for client");
+        if (client.isFullScopeAllowed()) {
+            // TODO:mposolda trace
+            logger.infof("Using full scope for client %s", client.getClientId());
             requestedRoles = roleMappings;
         } else {
             Set<RoleModel> scopeMappings = new HashSet<>();
-            if (useTemplateScope) {
-                logger.debug("Adding template scope mappings");
-                scopeMappings.addAll(template.getScopeMappings());
-            }
+
+            // 1 - Client roles of this client itself
             scopeMappings.addAll(client.getRoles());
+
+            // 2 - Scope role mappings defined directly on the client
             Set<RoleModel> clientScopeMappings = client.getScopeMappings();
             scopeMappings.addAll(clientScopeMappings);
+
+            // 3 - Role mappings of default client scopes + optional client scopes requested by scope parameter (if applyScopeParam is true)
+            Set<ClientScopeModel> clientScopes = applyScopeParam ? getRequestedClientScopes(scopeParam, client) : getRequestedClientScopes(null, client);
+            for (ClientScopeModel clientScope : clientScopes) {
+                // TODO:mposolda trace
+                logger.infof("Adding client scope role mappings of client scope '%s' to client '%s'", clientScope.getName(), client.getClientId());
+                scopeMappings.addAll(clientScope.getScopeMappings());
+            }
+
             for (RoleModel role : roleMappings) {
                 for (RoleModel desiredRole : scopeMappings) {
                     Set<RoleModel> visited = new HashSet<RoleModel>();
@@ -485,45 +491,32 @@ public class TokenManager {
                 }
             }
         }
-        if (applyScopeParam) {
-            Collection<String> scopeParamRoles;
-            if (scopeParam != null) {
-                String[] scopes = scopeParam.split(" ");
-                scopeParamRoles = Arrays.asList(scopes);
-            } else {
-                scopeParamRoles = Collections.emptyList();
-            }
-
-            Set<RoleModel> roles = new HashSet<>();
-            for (RoleModel role : requestedRoles) {
-                String roleName = getRoleNameForScopeParam(role);
-                if (!role.isScopeParamRequired() || scopeParamRoles.contains(roleName)) {
-                    roles.add(role);
-                } else {
-                    if (logger.isTraceEnabled()) {
-                        logger.tracef("Role '%s' excluded by scope param. Client is '%s', User is '%s', Scope param is '%s' ", role.getName(), client.getClientId(), user.getUsername(), scopeParam);
-                    }
-                }
-            }
-
-            // Add all roles specified in scope parameter directly into requestedRoles, even if they are available just through composite role
-            List<RoleModel> scopeRoles = new LinkedList<>();
-            for (String scopeParamPart : scopeParamRoles) {
-                RoleModel scopeParamRole = getRoleFromScopeParam(client.getRealm(), scopeParamPart);
-                if (scopeParamRole != null) {
-                    for (RoleModel role : roles) {
-                        if (role.hasRole(scopeParamRole)) {
-                            scopeRoles.add(scopeParamRole);
-                        }
-                    }
-                }
-            }
-
-            roles.addAll(scopeRoles);
-            requestedRoles = roles;
-        }
 
         return requestedRoles;
+    }
+
+
+    /** Return all default client scopes of client + optional client scopes requested by scope parameter **/
+    public static Set<ClientScopeModel> getRequestedClientScopes(String scopeParam, ClientModel client) {
+        // Add all default client scopes automatically
+        Set<ClientScopeModel> clientScopes = new HashSet<>(client.getClientScopes(true).values());
+
+        if (scopeParam == null) {
+            return clientScopes;
+        }
+
+        // Add optional client scopes requested by scope parameter
+        String[] scopes = scopeParam.split(" ");
+        Collection<String> scopeParamParts = Arrays.asList(scopes);
+        Map<String, ClientScopeModel> allOptionalScopes = client.getClientScopes(false);
+        for (String scopeParamPart : scopeParamParts) {
+            ClientScopeModel scope = allOptionalScopes.get(scopeParamPart);
+            if (scope != null) {
+                clientScopes.add(scope);
+            }
+        }
+
+        return clientScopes;
     }
 
     // For now, just use "roleName" for realm roles and "clientId/roleName" for client roles
@@ -575,7 +568,7 @@ public class TokenManager {
 
     public AccessToken transformAccessToken(KeycloakSession session, AccessToken token, RealmModel realm, ClientModel client, UserModel user,
                                             UserSessionModel userSession, AuthenticatedClientSessionModel clientSession) {
-        Set<ProtocolMapperModel> mappings = ClientSessionCode.getRequestedProtocolMappers(clientSession.getProtocolMappers(), client);
+        Set<ProtocolMapperModel> mappings = ClientSessionCode.getRequestedProtocolMappers(clientSession);
         KeycloakSessionFactory sessionFactory = session.getKeycloakSessionFactory();
         for (ProtocolMapperModel mapping : mappings) {
 
@@ -590,7 +583,7 @@ public class TokenManager {
 
     public AccessToken transformUserInfoAccessToken(KeycloakSession session, AccessToken token, RealmModel realm, ClientModel client, UserModel user,
                                             UserSessionModel userSession, AuthenticatedClientSessionModel clientSession) {
-        Set<ProtocolMapperModel> mappings = ClientSessionCode.getRequestedProtocolMappers(clientSession.getProtocolMappers(), client);
+        Set<ProtocolMapperModel> mappings = ClientSessionCode.getRequestedProtocolMappers(clientSession);
         KeycloakSessionFactory sessionFactory = session.getKeycloakSessionFactory();
         for (ProtocolMapperModel mapping : mappings) {
 
@@ -605,7 +598,7 @@ public class TokenManager {
 
     public void transformIDToken(KeycloakSession session, IDToken token, RealmModel realm, ClientModel client, UserModel user,
                                       UserSessionModel userSession, AuthenticatedClientSessionModel clientSession) {
-        Set<ProtocolMapperModel> mappings = ClientSessionCode.getRequestedProtocolMappers(clientSession.getProtocolMappers(), client);
+        Set<ProtocolMapperModel> mappings = ClientSessionCode.getRequestedProtocolMappers(clientSession);
         KeycloakSessionFactory sessionFactory = session.getKeycloakSessionFactory();
         for (ProtocolMapperModel mapping : mappings) {
 

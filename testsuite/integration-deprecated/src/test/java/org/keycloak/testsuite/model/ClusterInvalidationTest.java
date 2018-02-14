@@ -32,7 +32,7 @@ import org.junit.Ignore;
 import org.junit.Test;
 import org.keycloak.connections.infinispan.InfinispanConnectionProvider;
 import org.keycloak.models.ClientModel;
-import org.keycloak.models.ClientTemplateModel;
+import org.keycloak.models.ClientScopeModel;
 import org.keycloak.models.GroupModel;
 import org.keycloak.models.KeycloakSession;
 import org.keycloak.models.RealmModel;
@@ -192,7 +192,7 @@ public class ClusterInvalidationTest {
 
         logger.info("CREATE CLIENT TEMPLATE");
         realm = session1.realms().getRealmByName(REALM_NAME);
-        realm.addClientTemplate("foo-template");
+        realm.addClientScope("foo-template");
         session1 = commit(server1, session1, true);
 
         assertInvalidations(listener1realms.getInvalidationsAndClear(), 2, 3, realm.getId());
@@ -232,12 +232,12 @@ public class ClusterInvalidationTest {
         // Cache client template on server2
         KeycloakSession session2 = server2.startSession();
         realm = session2.realms().getRealmByName(REALM_NAME);
-        realm.getClientTemplates().get(0);
+        realm.getClientScopes().get(0);
 
 
         logger.info("UPDATE CLIENT TEMPLATE");
         realm = session1.realms().getRealmByName(REALM_NAME);
-        ClientTemplateModel clientTemplate = realm.getClientTemplates().get(0);
+        ClientScopeModel clientTemplate = realm.getClientScopes().get(0);
         clientTemplate.setDescription("bar");
 
         session1 = commit(server1, session1, true);
@@ -285,7 +285,7 @@ public class ClusterInvalidationTest {
 
         logger.info("REMOVE CLIENT TEMPLATE");
         realm = session1.realms().getRealmByName(REALM_NAME);
-        realm.removeClientTemplate(clientTemplate.getId());
+        realm.removeClientScope(clientTemplate.getId());
         session1 = commit(server1, session1, true);
 
         assertInvalidations(listener1realms.getInvalidationsAndClear(), 2, 5, realm.getId(), clientTemplate.getId());

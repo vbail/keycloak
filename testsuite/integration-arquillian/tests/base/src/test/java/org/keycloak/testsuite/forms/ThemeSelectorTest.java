@@ -3,7 +3,7 @@ package org.keycloak.testsuite.forms;
 import org.jboss.arquillian.graphene.page.Page;
 import org.junit.Test;
 import org.keycloak.representations.idm.ClientRepresentation;
-import org.keycloak.representations.idm.ClientTemplateRepresentation;
+import org.keycloak.representations.idm.ClientScopeRepresentation;
 import org.keycloak.representations.idm.RealmRepresentation;
 import org.keycloak.testsuite.AbstractTestRealmKeycloakTest;
 import org.keycloak.testsuite.admin.ApiUtil;
@@ -40,12 +40,12 @@ public class ThemeSelectorTest extends AbstractTestRealmKeycloakTest {
 
     @Test
     public void clientTemplateOverride() {
-        ClientTemplateRepresentation templateRep = new ClientTemplateRepresentation();
+        ClientScopeRepresentation templateRep = new ClientScopeRepresentation();
         templateRep.setName("loginTheme");
         templateRep.setAttributes(new HashMap<>());
         templateRep.getAttributes().put("login_theme", "base");
 
-        String templateId = ApiUtil.getCreatedId(testRealm().clientTemplates().create(templateRep));
+        String templateId = ApiUtil.getCreatedId(testRealm().clientScopes().create(templateRep));
 
         loginPage.open();
         assertEquals("keycloak", detectTheme());
@@ -60,7 +60,7 @@ public class ThemeSelectorTest extends AbstractTestRealmKeycloakTest {
         rep.setClientTemplate("NONE");
         testRealm().clients().get(rep.getId()).update(rep);
 
-        testRealm().clientTemplates().get(templateId).remove();
+        testRealm().clientScopes().get(templateId).remove();
     }
 
     private String detectTheme() {

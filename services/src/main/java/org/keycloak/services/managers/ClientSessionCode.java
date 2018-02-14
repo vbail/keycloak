@@ -17,14 +17,17 @@
 
 package org.keycloak.services.managers;
 
+import org.keycloak.OAuth2Constants;
 import org.keycloak.common.util.Time;
 import org.keycloak.events.EventBuilder;
 import org.keycloak.models.ClientModel;
-import org.keycloak.models.ClientTemplateModel;
+import org.keycloak.models.ClientScopeModel;
 import org.keycloak.models.KeycloakSession;
+import org.keycloak.models.ProtocolMapperContainerModel;
 import org.keycloak.models.ProtocolMapperModel;
 import org.keycloak.models.RealmModel;
 import org.keycloak.models.RoleModel;
+import org.keycloak.protocol.oidc.TokenManager;
 import org.keycloak.sessions.CommonClientSessionModel;
 
 import java.util.HashSet;
@@ -214,23 +217,33 @@ public class ClientSessionCode<CLIENT_SESSION extends CommonClientSessionModel> 
     }
 
     public Set<ProtocolMapperModel> getRequestedProtocolMappers() {
-        return getRequestedProtocolMappers(commonLoginSession.getProtocolMappers(), commonLoginSession.getClient());
+        return getRequestedProtocolMappers(commonLoginSession);
     }
 
-    public static Set<ProtocolMapperModel> getRequestedProtocolMappers(Set<String> protocolMappers, ClientModel client) {
+    // TODO:mposolda maybe remove this method as long as clientSession.getRoles is removed as well
+    public static <CLIENT_SESSION extends CommonClientSessionModel> Set<ProtocolMapperModel> getRequestedProtocolMappers(CLIENT_SESSION clientSession) {
+        Set<String> protocolMapperIds = clientSession.getProtocolMappers();
+        ClientModel client = clientSession.getClient();
+        CodeGenerateUtil.ClientSessionParser<CLIENT_SESSION> clientSessionParser = (CodeGenerateUtil.ClientSessionParser<CLIENT_SESSION>) CodeGenerateUtil.getParser(clientSession.getClass());
+        String scopeParam = clientSessionParser.getClientNote(clientSession, OAuth2Constants.SCOPE);
+
         Set<ProtocolMapperModel> requestedProtocolMappers = new HashSet<>();
-        ClientTemplateModel template = client.getClientTemplate();
-        if (protocolMappers != null) {
-            for (String protocolMapperId : protocolMappers) {
-                ProtocolMapperModel protocolMapper = client.getProtocolMapperById(protocolMapperId);
-                if (protocolMapper == null && template != null) {
-                    protocolMapper = template.getProtocolMapperById(protocolMapperId);
-                }
-                if (protocolMapper != null) {
-                    requestedProtocolMappers.add(protocolMapper);
+
+        // Add client and all default clientScopes + possibly optional client scopes (if requested by scope parameter)
+        Set<ProtocolMapperContainerModel> protocolMapperContainers  = new HashSet<>(TokenManager.getRequestedClientScopes(scopeParam, client));
+        protocolMapperContainers.add(client);
+
+        if (protocolMapperIds != null) {
+            for (String protocolMapperId : protocolMapperIds) {
+                for (ProtocolMapperContainerModel protocolMapperContainer : protocolMapperContainers) {
+                    ProtocolMapperModel protocolMapper = protocolMapperContainer.getProtocolMapperById(protocolMapperId);
+                    if (protocolMapper != null) {
+                        requestedProtocolMappers.add(protocolMapper);
+                    }
                 }
             }
         }
+
         return requestedProtocolMappers;
     }
 

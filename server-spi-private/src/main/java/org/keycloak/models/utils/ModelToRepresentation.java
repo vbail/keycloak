@@ -465,8 +465,8 @@ public class ModelToRepresentation {
         return rep;
     }
 
-    public static ClientTemplateRepresentation toRepresentation(ClientTemplateModel clientModel) {
-        ClientTemplateRepresentation rep = new ClientTemplateRepresentation();
+    public static ClientScopeRepresentation toRepresentation(ClientScopeModel clientModel) {
+        ClientScopeRepresentation rep = new ClientScopeRepresentation();
         rep.setId(clientModel.getId());
         rep.setName(clientModel.getName());
         rep.setDescription(clientModel.getDescription());
@@ -478,7 +478,6 @@ public class ModelToRepresentation {
             }
             rep.setProtocolMappers(mappings);
         }
-        rep.setFullScopeAllowed(clientModel.isFullScopeAllowed());
 
         return rep;
     }
@@ -512,7 +511,9 @@ public class ModelToRepresentation {
         rep.setNotBefore(clientModel.getNotBefore());
         rep.setNodeReRegistrationTimeout(clientModel.getNodeReRegistrationTimeout());
         rep.setClientAuthenticatorType(clientModel.getClientAuthenticatorType());
-        if (clientModel.getClientTemplate() != null) rep.setClientTemplate(clientModel.getClientTemplate().getName());
+
+        rep.setDefaultClientScopes(new LinkedList<>(clientModel.getClientScopes(true).keySet()));
+        rep.setOptionalClientScopes(new LinkedList<>(clientModel.getClientScopes(false).keySet()));
 
         Set<String> redirectUris = clientModel.getRedirectUris();
         if (redirectUris != null) {
@@ -539,9 +540,6 @@ public class ModelToRepresentation {
             }
             rep.setProtocolMappers(mappings);
         }
-        rep.setUseTemplateMappers(clientModel.useTemplateMappers());
-        rep.setUseTemplateConfig(clientModel.useTemplateConfig());
-        rep.setUseTemplateScope(clientModel.useTemplateScope());
 
         return rep;
     }

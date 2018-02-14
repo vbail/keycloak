@@ -26,7 +26,7 @@ import org.keycloak.component.ComponentModel;
 import org.keycloak.models.AuthenticationExecutionModel;
 import org.keycloak.models.AuthenticationFlowModel;
 import org.keycloak.models.ClientModel;
-import org.keycloak.models.ClientTemplateModel;
+import org.keycloak.models.ClientScopeModel;
 import org.keycloak.models.Constants;
 import org.keycloak.models.GroupModel;
 import org.keycloak.models.IdentityProviderModel;
@@ -500,17 +500,20 @@ public final class KeycloakModelUtils {
 
     }
 
-    public static boolean isClientTemplateUsed(RealmModel realm, ClientTemplateModel template) {
+    public static boolean isClientScopeUsed(RealmModel realm, ClientScopeModel clientScope) {
         for (ClientModel client : realm.getClients()) {
-            if (client.getClientTemplate() != null && client.getClientTemplate().getId().equals(template.getId())) return true;
+            if ((client.getClientScopes(true).containsKey(clientScope.getName())) ||
+                    (client.getClientScopes(false).containsKey(clientScope.getName()))) {
+                return true;
+            }
         }
         return false;
     }
 
-    public static ClientTemplateModel getClientTemplateByName(RealmModel realm, String templateName) {
-        for (ClientTemplateModel clientTemplate : realm.getClientTemplates()) {
-            if (templateName.equals(clientTemplate.getName())) {
-                return clientTemplate;
+    public static ClientScopeModel getClientScopeByName(RealmModel realm, String clientScopeName) {
+        for (ClientScopeModel clientScope : realm.getClientScopes()) {
+            if (clientScopeName.equals(clientScope.getName())) {
+                return clientScope;
             }
         }
 

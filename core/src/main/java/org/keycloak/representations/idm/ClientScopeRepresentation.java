@@ -24,7 +24,7 @@ import java.util.Map;
  * @author <a href="mailto:bill@burkecentral.com">Bill Burke</a>
  * @version $Revision: 1 $
  */
-public class ClientTemplateRepresentation {
+public class ClientScopeRepresentation {
     /**
      * Use this value in ClientRepresentation.setClientTemplate when you want to clear this value
      */
@@ -33,18 +33,28 @@ public class ClientTemplateRepresentation {
     protected String name;
     protected String description;
     protected String protocol;
-    protected Boolean fullScopeAllowed;
-    protected Boolean bearerOnly;
-    protected Boolean consentRequired;
-    protected Boolean standardFlowEnabled;
-    protected Boolean implicitFlowEnabled;
-    protected Boolean directAccessGrantsEnabled;
-    protected Boolean serviceAccountsEnabled;
-    protected Boolean publicClient;
-    protected Boolean frontchannelLogout;
     protected Map<String, String> attributes;
 
     protected List<ProtocolMapperRepresentation> protocolMappers;
+
+    @Deprecated
+    protected Boolean fullScopeAllowed;
+    @Deprecated
+    protected Boolean bearerOnly;
+    @Deprecated
+    protected Boolean consentRequired;
+    @Deprecated
+    protected Boolean standardFlowEnabled;
+    @Deprecated
+    protected Boolean implicitFlowEnabled;
+    @Deprecated
+    protected Boolean directAccessGrantsEnabled;
+    @Deprecated
+    protected Boolean serviceAccountsEnabled;
+    @Deprecated
+    protected Boolean publicClient;
+    @Deprecated
+    protected Boolean frontchannelLogout;
 
     public String getId() {
         return id;
@@ -87,76 +97,49 @@ public class ClientTemplateRepresentation {
         this.protocol = protocol;
     }
 
+    @Deprecated
     public Boolean isFullScopeAllowed() {
         return fullScopeAllowed;
     }
 
-    public void setFullScopeAllowed(Boolean fullScopeAllowed) {
-        this.fullScopeAllowed = fullScopeAllowed;
-    }
-
+    @Deprecated
     public Boolean isBearerOnly() {
         return bearerOnly;
     }
 
-    public void setBearerOnly(Boolean bearerOnly) {
-        this.bearerOnly = bearerOnly;
-    }
-
+    @Deprecated
     public Boolean isConsentRequired() {
         return consentRequired;
     }
 
-    public void setConsentRequired(Boolean consentRequired) {
-        this.consentRequired = consentRequired;
-    }
-
+    @Deprecated
     public Boolean isStandardFlowEnabled() {
         return standardFlowEnabled;
     }
 
-    public void setStandardFlowEnabled(Boolean standardFlowEnabled) {
-        this.standardFlowEnabled = standardFlowEnabled;
-    }
-
+    @Deprecated
     public Boolean isImplicitFlowEnabled() {
         return implicitFlowEnabled;
     }
 
-    public void setImplicitFlowEnabled(Boolean implicitFlowEnabled) {
-        this.implicitFlowEnabled = implicitFlowEnabled;
-    }
-
+    @Deprecated
     public Boolean isDirectAccessGrantsEnabled() {
         return directAccessGrantsEnabled;
     }
 
-    public void setDirectAccessGrantsEnabled(Boolean directAccessGrantsEnabled) {
-        this.directAccessGrantsEnabled = directAccessGrantsEnabled;
-    }
-
+    @Deprecated
     public Boolean isServiceAccountsEnabled() {
         return serviceAccountsEnabled;
     }
 
-    public void setServiceAccountsEnabled(Boolean serviceAccountsEnabled) {
-        this.serviceAccountsEnabled = serviceAccountsEnabled;
-    }
-
+    @Deprecated
     public Boolean isPublicClient() {
         return publicClient;
     }
 
-    public void setPublicClient(Boolean publicClient) {
-        this.publicClient = publicClient;
-    }
-
+    @Deprecated
     public Boolean isFrontchannelLogout() {
         return frontchannelLogout;
-    }
-
-    public void setFrontchannelLogout(Boolean frontchannelLogout) {
-        this.frontchannelLogout = frontchannelLogout;
     }
 
     public Map<String, String> getAttributes() {

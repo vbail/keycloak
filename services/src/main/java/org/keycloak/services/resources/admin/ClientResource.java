@@ -27,7 +27,7 @@ import org.keycloak.events.admin.OperationType;
 import org.keycloak.events.admin.ResourceType;
 import org.keycloak.models.AuthenticatedClientSessionModel;
 import org.keycloak.models.ClientModel;
-import org.keycloak.models.ClientTemplateModel;
+import org.keycloak.models.ClientScopeModel;
 import org.keycloak.models.Constants;
 import org.keycloak.models.KeycloakSession;
 import org.keycloak.models.ModelDuplicateException;
@@ -42,7 +42,7 @@ import org.keycloak.models.utils.RepresentationToModel;
 import org.keycloak.protocol.ClientInstallationProvider;
 import org.keycloak.representations.adapters.action.GlobalRequestResult;
 import org.keycloak.representations.idm.ClientRepresentation;
-import org.keycloak.representations.idm.ClientTemplateRepresentation;
+import org.keycloak.representations.idm.ClientScopeRepresentation;
 import org.keycloak.representations.idm.CredentialRepresentation;
 import org.keycloak.representations.idm.ManagementPermissionReference;
 import org.keycloak.representations.idm.UserRepresentation;
@@ -79,6 +79,7 @@ import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriInfo;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
@@ -292,6 +293,97 @@ public class ClientResource {
     @Path("roles")
     public RoleContainerResource getRoleContainerResource() {
         return new RoleContainerResource(session, uriInfo, realm, auth, client, adminEvent);
+    }
+
+
+    /**
+     * Get default client scopes.  Only name and ids are returned.
+     *
+     * @return
+     */
+    @GET
+    @NoCache
+    @Produces(MediaType.APPLICATION_JSON)
+    @Path("default-client-scopes")
+    public List<ClientScopeRepresentation> getDefaultClientScopes() {
+        return getDefaultClientScopes(true);
+    }
+
+    private List<ClientScopeRepresentation> getDefaultClientScopes(boolean defaultScope) {
+        auth.clients().requireView(client);
+
+        List<ClientScopeRepresentation> defaults = new LinkedList<>();
+        for (ClientScopeModel clientScope : client.getClientScopes(defaultScope).values()) {
+            ClientScopeRepresentation rep = new ClientScopeRepresentation();
+            rep.setId(clientScope.getId());
+            rep.setName(clientScope.getName());
+            defaults.add(rep);
+        }
+        return defaults;
+    }
+
+
+    @PUT
+    @NoCache
+    @Path("default-client-scopes/{clientScopeId}")
+    public void addDefaultClientScope(@PathParam("clientScopeId") String clientScopeId) {
+        addDefaultClientScope(clientScopeId,true);
+    }
+
+    private void addDefaultClientScope(String clientScopeId, boolean defaultScope) {
+        auth.clients().requireManage(client);
+
+        ClientScopeModel clientScope = realm.getClientScopeById(clientScopeId);
+        if (clientScope == null) {
+            throw new org.jboss.resteasy.spi.NotFoundException("Client scope not found");
+        }
+        client.addClientScope(clientScope, defaultScope);
+
+        adminEvent.operation(OperationType.CREATE).resource(ResourceType.CLIENT).resourcePath(uriInfo).success();
+    }
+
+
+    @DELETE
+    @NoCache
+    @Path("default-client-scopes/{clientScopeId}")
+    public void removeDefaultClientScope(@PathParam("clientScopeId") String clientScopeId) {
+        auth.clients().requireManage(client);
+
+        ClientScopeModel clientScope = realm.getClientScopeById(clientScopeId);
+        if (clientScope == null) {
+            throw new org.jboss.resteasy.spi.NotFoundException("Client scope not found");
+        }
+        client.removeClientScope(clientScope);
+
+        adminEvent.operation(OperationType.DELETE).resource(ResourceType.CLIENT).resourcePath(uriInfo).success();
+    }
+
+
+    /**
+     * Get optional client scopes.  Only name and ids are returned.
+     *
+     * @return
+     */
+    @GET
+    @NoCache
+    @Produces(MediaType.APPLICATION_JSON)
+    @Path("optional-client-scopes")
+    public List<ClientScopeRepresentation> getOptionalClientScopes() {
+        return getDefaultClientScopes(false);
+    }
+
+    @PUT
+    @NoCache
+    @Path("optional-client-scopes/{clientScopeId}")
+    public void addDefaultOptionalClientScope(@PathParam("clientScopeId") String clientScopeId) {
+        addDefaultClientScope(clientScopeId, false);
+    }
+
+    @DELETE
+    @NoCache
+    @Path("optional-client-scopes/{clientScopeId}")
+    public void removeDefaultOptionalClientScope(@PathParam("clientScopeId") String clientScopeId) {
+        removeDefaultClientScope(clientScopeId);
     }
 
     /**
@@ -589,29 +681,9 @@ public class ClientResource {
             new ClientManager(new RealmManager(session)).clientIdChanged(client, rep.getClientId());
         }
 
-        if (rep.isFullScopeAllowed() != null && rep.isFullScopeAllowed().booleanValue() != client.isFullScopeAllowed()) {
+        if (rep.isFullScopeAllowed() != null && rep.isFullScopeAllowed() != client.isFullScopeAllowed()) {
             auth.clients().requireManage(client);
         }
-
-        if (rep.getClientTemplate() != null) {
-            ClientTemplateModel currTemplate = client.getClientTemplate();
-            if (currTemplate == null) {
-                if (!rep.getClientTemplate().equals(ClientTemplateRepresentation.NONE)) {
-                    auth.clients().requireManage(client);
-                }
-            }  else if (!rep.getClientTemplate().equals(currTemplate.getName())){
-                auth.clients().requireManage(client);
-            }
-            if ((rep.isUseTemplateConfig() != null && rep.isUseTemplateConfig().booleanValue() != client.useTemplateConfig())
-                    || (rep.isUseTemplateScope() != null && rep.isUseTemplateScope().booleanValue() != client.useTemplateScope())
-                    || (rep.isUseTemplateMappers() != null && rep.isUseTemplateMappers().booleanValue() != client.useTemplateMappers())
-
-                    ) {
-                auth.clients().requireManage(client);
-            }
-        }
-
-
 
         RepresentationToModel.updateClient(rep, client);
     }

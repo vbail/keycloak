@@ -72,7 +72,7 @@ public class DefaultMigrationProvider implements MigrationProvider {
     }
 
     @Override
-    public List<ProtocolMapperModel> getBuiltinMappers(String protocol) {
+    public Map<String, ProtocolMapperModel> getBuiltinMappers(String protocol) {
         LoginProtocolFactory providerFactory = (LoginProtocolFactory) session.getKeycloakSessionFactory().getProviderFactory(LoginProtocol.class, protocol);
         return providerFactory.getBuiltinMappers();
     }
@@ -86,6 +86,7 @@ public class DefaultMigrationProvider implements MigrationProvider {
     public void close() {
     }
 
+    // TODO:mposolda doublecheck migration of this and if it's still needed
     private static Map<String, ProtocolMapperRepresentation> getAllDefaultMappers(KeycloakSession session) {
         Map<String, ProtocolMapperRepresentation> allMappers = new HashMap<String, ProtocolMapperRepresentation>();
 

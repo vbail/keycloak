@@ -17,7 +17,7 @@
 package org.keycloak.testsuite.federation;
 
 import org.keycloak.models.ClientModel;
-import org.keycloak.models.ClientTemplateModel;
+import org.keycloak.models.ClientScopeModel;
 import org.keycloak.models.KeycloakSession;
 import org.keycloak.models.ProtocolMapperModel;
 import org.keycloak.models.RealmModel;
@@ -215,23 +215,8 @@ public class HardcodedClientStorageProvider implements ClientStorageProvider, Cl
         }
 
         @Override
-        public ClientTemplateModel getClientTemplate() {
-            return null;
-        }
-
-        @Override
-        public boolean useTemplateScope() {
-            return false;
-        }
-
-        @Override
-        public boolean useTemplateMappers() {
-            return false;
-        }
-
-        @Override
-        public boolean useTemplateConfig() {
-            return false;
+        public Map<String, ClientScopeModel> getClientScopes(boolean defaultScope) {
+            return Collections.EMPTY_MAP;
         }
 
         @Override

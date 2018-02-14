@@ -34,7 +34,7 @@ import org.keycloak.representations.idm.AuthenticationFlowRepresentation;
 import org.keycloak.representations.idm.AuthenticatorConfigRepresentation;
 import org.keycloak.representations.idm.ClientInitialAccessCreatePresentation;
 import org.keycloak.representations.idm.ClientRepresentation;
-import org.keycloak.representations.idm.ClientTemplateRepresentation;
+import org.keycloak.representations.idm.ClientScopeRepresentation;
 import org.keycloak.representations.idm.ComponentRepresentation;
 import org.keycloak.representations.idm.GroupRepresentation;
 import org.keycloak.representations.idm.IdentityProviderMapperRepresentation;
@@ -715,125 +715,125 @@ public class PermissionsTest extends AbstractKeycloakTest {
     public void clientTemplates() {
         invoke(new Invocation() {
             public void invoke(RealmResource realm) {
-                realm.clientTemplates().findAll();
+                realm.clientScopes().findAll();
             }
         }, Resource.CLIENT, false, true);
         invoke(new InvocationWithResponse() {
             public void invoke(RealmResource realm, AtomicReference<Response> response) {
-                ClientTemplateRepresentation template = new ClientTemplateRepresentation();
+                ClientScopeRepresentation template = new ClientScopeRepresentation();
                 template.setName("template");
-                response.set(realm.clientTemplates().create(template));
+                response.set(realm.clientScopes().create(template));
             }
         }, Resource.CLIENT, true);
 
-        ClientTemplateRepresentation template = adminClient.realms().realm(REALM_NAME).clientTemplates().findAll().get(0);
+        ClientScopeRepresentation template = adminClient.realms().realm(REALM_NAME).clientScopes().findAll().get(0);
         invoke(new Invocation() {
             public void invoke(RealmResource realm) {
-                realm.clientTemplates().get(template.getId()).toRepresentation();
+                realm.clientScopes().get(template.getId()).toRepresentation();
             }
         }, Resource.CLIENT, false);
         invoke(new Invocation() {
             public void invoke(RealmResource realm) {
-                realm.clientTemplates().get(template.getId()).update(template);
+                realm.clientScopes().get(template.getId()).update(template);
             }
         }, Resource.CLIENT, true);
         invoke(new Invocation() {
             public void invoke(RealmResource realm) {
-                realm.clientTemplates().get(template.getId()).remove();
-                realm.clientTemplates().create(template);
+                realm.clientScopes().get(template.getId()).remove();
+                realm.clientScopes().create(template);
             }
         }, Resource.CLIENT, true);
 
         invoke(new Invocation() {
             public void invoke(RealmResource realm) {
-                realm.clientTemplates().get(template.getId()).getProtocolMappers().getMappers();
+                realm.clientScopes().get(template.getId()).getProtocolMappers().getMappers();
             }
         }, Resource.CLIENT, false, true);
         invoke(new Invocation() {
             public void invoke(RealmResource realm) {
-                realm.clientTemplates().get(template.getId()).getProtocolMappers().getMappersPerProtocol("nosuch");
+                realm.clientScopes().get(template.getId()).getProtocolMappers().getMappersPerProtocol("nosuch");
             }
         }, Resource.CLIENT, false, true);
         invoke(new Invocation() {
             public void invoke(RealmResource realm) {
-                realm.clientTemplates().get(template.getId()).getProtocolMappers().getMapperById("nosuch");
+                realm.clientScopes().get(template.getId()).getProtocolMappers().getMapperById("nosuch");
             }
         }, Resource.CLIENT, false, true);
         invoke(new Invocation() {
             public void invoke(RealmResource realm) {
-                realm.clientTemplates().get(template.getId()).getProtocolMappers().update("nosuch", new ProtocolMapperRepresentation());
+                realm.clientScopes().get(template.getId()).getProtocolMappers().update("nosuch", new ProtocolMapperRepresentation());
             }
         }, Resource.CLIENT, true);
         invoke(new InvocationWithResponse() {
             public void invoke(RealmResource realm, AtomicReference<Response> response) {
-                response.set(realm.clientTemplates().get(template.getId()).getProtocolMappers().createMapper(new ProtocolMapperRepresentation()));
+                response.set(realm.clientScopes().get(template.getId()).getProtocolMappers().createMapper(new ProtocolMapperRepresentation()));
             }
         }, Resource.CLIENT, true);
         invoke(new Invocation() {
             public void invoke(RealmResource realm) {
-                realm.clientTemplates().get(template.getId()).getProtocolMappers().createMapper(Collections.<ProtocolMapperRepresentation>emptyList());
+                realm.clientScopes().get(template.getId()).getProtocolMappers().createMapper(Collections.<ProtocolMapperRepresentation>emptyList());
             }
         }, Resource.CLIENT, true);
         invoke(new Invocation() {
             public void invoke(RealmResource realm) {
-                realm.clientTemplates().get(template.getId()).getProtocolMappers().delete("nosuch");
+                realm.clientScopes().get(template.getId()).getProtocolMappers().delete("nosuch");
             }
         }, Resource.CLIENT, true);
 
         invoke(new Invocation() {
             public void invoke(RealmResource realm) {
-                realm.clientTemplates().get(template.getId()).getScopeMappings().getAll();
+                realm.clientScopes().get(template.getId()).getScopeMappings().getAll();
             }
         }, Resource.CLIENT, false);
         invoke(new Invocation() {
             public void invoke(RealmResource realm) {
-                realm.clientTemplates().get(template.getId()).getScopeMappings().realmLevel().listAll();
+                realm.clientScopes().get(template.getId()).getScopeMappings().realmLevel().listAll();
             }
         }, Resource.CLIENT, false);
         invoke(new Invocation() {
             public void invoke(RealmResource realm) {
-                realm.clientTemplates().get(template.getId()).getScopeMappings().realmLevel().listAvailable();
+                realm.clientScopes().get(template.getId()).getScopeMappings().realmLevel().listAvailable();
             }
         }, Resource.CLIENT, false);
         invoke(new Invocation() {
             public void invoke(RealmResource realm) {
-                realm.clientTemplates().get(template.getId()).getScopeMappings().realmLevel().listEffective();
+                realm.clientScopes().get(template.getId()).getScopeMappings().realmLevel().listEffective();
             }
         }, Resource.CLIENT, false);
         invoke(new Invocation() {
             public void invoke(RealmResource realm) {
-                realm.clientTemplates().get(template.getId()).getScopeMappings().realmLevel().add(Collections.<RoleRepresentation>emptyList());
+                realm.clientScopes().get(template.getId()).getScopeMappings().realmLevel().add(Collections.<RoleRepresentation>emptyList());
             }
         }, Resource.CLIENT, true);
         invoke(new Invocation() {
             public void invoke(RealmResource realm) {
-                realm.clientTemplates().get(template.getId()).getScopeMappings().realmLevel().remove(Collections.<RoleRepresentation>emptyList());
+                realm.clientScopes().get(template.getId()).getScopeMappings().realmLevel().remove(Collections.<RoleRepresentation>emptyList());
             }
         }, Resource.CLIENT, true);
         ClientRepresentation realmAccessClient = adminClient.realms().realm(REALM_NAME).clients().findByClientId(Constants.REALM_MANAGEMENT_CLIENT_ID).get(0);
         invoke(new Invocation() {
             public void invoke(RealmResource realm) {
-                realm.clientTemplates().get(template.getId()).getScopeMappings().clientLevel(realmAccessClient.getId()).listAll();
+                realm.clientScopes().get(template.getId()).getScopeMappings().clientLevel(realmAccessClient.getId()).listAll();
             }
         }, Resource.CLIENT, false);
         invoke(new Invocation() {
             public void invoke(RealmResource realm) {
-                realm.clientTemplates().get(template.getId()).getScopeMappings().clientLevel(realmAccessClient.getId()).listAvailable();
+                realm.clientScopes().get(template.getId()).getScopeMappings().clientLevel(realmAccessClient.getId()).listAvailable();
             }
         }, Resource.CLIENT, false);
         invoke(new Invocation() {
             public void invoke(RealmResource realm) {
-                realm.clientTemplates().get(template.getId()).getScopeMappings().clientLevel(realmAccessClient.getId()).listEffective();
+                realm.clientScopes().get(template.getId()).getScopeMappings().clientLevel(realmAccessClient.getId()).listEffective();
             }
         }, Resource.CLIENT, false);
         invoke(new Invocation() {
             public void invoke(RealmResource realm) {
-                realm.clientTemplates().get(template.getId()).getScopeMappings().clientLevel(realmAccessClient.getId()).add(Collections.<RoleRepresentation>emptyList());
+                realm.clientScopes().get(template.getId()).getScopeMappings().clientLevel(realmAccessClient.getId()).add(Collections.<RoleRepresentation>emptyList());
             }
         }, Resource.CLIENT, true);
         invoke(new Invocation() {
             public void invoke(RealmResource realm) {
-                realm.clientTemplates().get(template.getId()).getScopeMappings().clientLevel(realmAccessClient.getId()).remove(Collections.<RoleRepresentation>emptyList());
+                realm.clientScopes().get(template.getId()).getScopeMappings().clientLevel(realmAccessClient.getId()).remove(Collections.<RoleRepresentation>emptyList());
             }
         }, Resource.CLIENT, true);
     }

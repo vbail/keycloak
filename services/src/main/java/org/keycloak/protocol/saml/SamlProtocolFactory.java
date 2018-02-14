@@ -20,7 +20,7 @@ package org.keycloak.protocol.saml;
 import org.keycloak.Config;
 import org.keycloak.events.EventBuilder;
 import org.keycloak.models.ClientModel;
-import org.keycloak.models.ClientTemplateModel;
+import org.keycloak.models.ClientScopeModel;
 import org.keycloak.models.KeycloakSession;
 import org.keycloak.models.ProtocolMapperModel;
 import org.keycloak.models.RealmModel;
@@ -32,7 +32,7 @@ import org.keycloak.protocol.saml.mappers.RoleListMapper;
 import org.keycloak.protocol.saml.mappers.UserPropertyAttributeStatementMapper;
 import org.keycloak.representations.idm.CertificateRepresentation;
 import org.keycloak.representations.idm.ClientRepresentation;
-import org.keycloak.representations.idm.ClientTemplateRepresentation;
+import org.keycloak.representations.idm.ClientScopeRepresentation;
 import org.keycloak.saml.SignatureAlgorithm;
 import org.keycloak.saml.common.constants.JBossSAMLURIConstants;
 import org.keycloak.saml.processing.core.saml.v2.constants.X500SAMLProfileConstants;
@@ -99,7 +99,7 @@ public class SamlProtocolFactory extends AbstractLoginProtocolFactory {
     }
 
     @Override
-    public List<ProtocolMapperModel> getBuiltinMappers() {
+    public Map<String, ProtocolMapperModel> getBuiltinMappers() {
         return builtins;
     }
 
@@ -108,7 +108,7 @@ public class SamlProtocolFactory extends AbstractLoginProtocolFactory {
         return defaultBuiltins;
     }
 
-    static List<ProtocolMapperModel> builtins = new ArrayList<>();
+    static Map<String, ProtocolMapperModel> builtins = new HashMap<>();
     static List<ProtocolMapperModel> defaultBuiltins = new ArrayList<>();
 
     static {
@@ -119,27 +119,32 @@ public class SamlProtocolFactory extends AbstractLoginProtocolFactory {
                 JBossSAMLURIConstants.ATTRIBUTE_FORMAT_URI.get(),
                 X500SAMLProfileConstants.EMAIL.getFriendlyName(),
                 true, "${email}");
-        builtins.add(model);
+        builtins.put("X500 email", model);
         model = UserPropertyAttributeStatementMapper.createAttributeMapper("X500 givenName",
                 "firstName",
                 X500SAMLProfileConstants.GIVEN_NAME.get(),
                 JBossSAMLURIConstants.ATTRIBUTE_FORMAT_URI.get(),
                 X500SAMLProfileConstants.GIVEN_NAME.getFriendlyName(),
                 true, "${givenName}");
-        builtins.add(model);
+        builtins.put("X500 givenName", model);
         model = UserPropertyAttributeStatementMapper.createAttributeMapper("X500 surname",
                 "lastName",
                 X500SAMLProfileConstants.SURNAME.get(),
                 JBossSAMLURIConstants.ATTRIBUTE_FORMAT_URI.get(),
                 X500SAMLProfileConstants.SURNAME.getFriendlyName(),
                 true, "${familyName}");
-        builtins.add(model);
+        builtins.put("X500 surname", model);
         model = RoleListMapper.create("role list", "Role", AttributeStatementHelper.BASIC, null, false);
-        builtins.add(model);
+        builtins.put("role list", model);
         defaultBuiltins.add(model);
 
     }
 
+    // TODO:mposolda doublecheck this
+    @Override
+    protected void createDefaultClientScopes(RealmModel newRealm) {
+
+    }
 
     @Override
     protected void addDefaults(ClientModel client) {
@@ -196,11 +201,11 @@ public class SamlProtocolFactory extends AbstractLoginProtocolFactory {
         }
     }
 
-    @Override
-    public void setupTemplateDefaults(ClientTemplateRepresentation clientRep, ClientTemplateModel newClient) {
+    // TODO:mposolda doublecheck this
+    // @Override
+    public void setupTemplateDefaults(ClientScopeRepresentation clientRep, ClientScopeModel newClient) {
         SamlRepresentationAttributes rep = new SamlRepresentationAttributes(clientRep.getAttributes());
         SamlClientTemplate client = new SamlClientTemplate(newClient);
-        if (clientRep.isStandardFlowEnabled() == null) newClient.setStandardFlowEnabled(true);
         if (rep.getCanonicalizationMethod() == null) {
             client.setCanonicalizationMethod(CanonicalizationMethod.EXCLUSIVE);
         }
@@ -229,10 +234,6 @@ public class SamlProtocolFactory extends AbstractLoginProtocolFactory {
 
         if (rep.getClientSignature() == null) {
             client.setRequiresClientSignature(true);
-        }
-
-        if (clientRep.isFrontchannelLogout() == null) {
-            newClient.setFrontchannelLogout(true);
         }
     }
 }

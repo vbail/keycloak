@@ -18,37 +18,39 @@
 package org.keycloak.protocol.saml;
 
 import java.util.Objects;
-import org.keycloak.models.ClientTemplateModel;
+import org.keycloak.models.ClientScopeModel;
 import org.keycloak.saml.SignatureAlgorithm;
 
 /**
+ * TODO:mposolda Check whether class can't be just removed
+ *
  * @author <a href="mailto:bill@burkecentral.com">Bill Burke</a>
  * @version $Revision: 1 $
  */
 public class SamlClientTemplate {
-    protected ClientTemplateModel clientTemplate;
+    protected ClientScopeModel clientScope;
 
-    public SamlClientTemplate(ClientTemplateModel template) {
-        this.clientTemplate = template;
+    public SamlClientTemplate(ClientScopeModel clientScope) {
+        this.clientScope = clientScope;
     }
 
     public String getId() {
-        return clientTemplate.getId();
+        return clientScope.getId();
     }
 
 //
 
     public String getCanonicalizationMethod() {
-        return clientTemplate.getAttribute(SamlConfigAttributes.SAML_CANONICALIZATION_METHOD_ATTRIBUTE);
+        return clientScope.getAttribute(SamlConfigAttributes.SAML_CANONICALIZATION_METHOD_ATTRIBUTE);
     }
 
     public void setCanonicalizationMethod(String value) {
-        clientTemplate.setAttribute(SamlConfigAttributes.SAML_CANONICALIZATION_METHOD_ATTRIBUTE, value);
+        clientScope.setAttribute(SamlConfigAttributes.SAML_CANONICALIZATION_METHOD_ATTRIBUTE, value);
     }
 
     public SignatureAlgorithm getSignatureAlgorithm() {
         String alg = null;
-        alg = clientTemplate.getAttribute(SamlConfigAttributes.SAML_CANONICALIZATION_METHOD_ATTRIBUTE);
+        alg = clientScope.getAttribute(SamlConfigAttributes.SAML_CANONICALIZATION_METHOD_ATTRIBUTE);
         if (alg != null) {
             SignatureAlgorithm algorithm = SignatureAlgorithm.valueOf(alg);
             if (algorithm != null)
@@ -58,98 +60,98 @@ public class SamlClientTemplate {
     }
 
     public void setSignatureAlgorithm(SignatureAlgorithm algorithm) {
-        clientTemplate.setAttribute(SamlConfigAttributes.SAML_SIGNATURE_ALGORITHM, algorithm.name());
+        clientScope.setAttribute(SamlConfigAttributes.SAML_SIGNATURE_ALGORITHM, algorithm.name());
     }
 
     public String getNameIDFormat() {
-        return clientTemplate.getAttributes().get(SamlConfigAttributes.SAML_NAME_ID_FORMAT_ATTRIBUTE);
+        return clientScope.getAttributes().get(SamlConfigAttributes.SAML_NAME_ID_FORMAT_ATTRIBUTE);
     }
     public void setNameIDFormat(String format) {
-        clientTemplate.setAttribute(SamlConfigAttributes.SAML_NAME_ID_FORMAT_ATTRIBUTE, format);
+        clientScope.setAttribute(SamlConfigAttributes.SAML_NAME_ID_FORMAT_ATTRIBUTE, format);
     }
 
     public boolean includeAuthnStatement() {
-        return "true".equals(clientTemplate.getAttribute(SamlConfigAttributes.SAML_AUTHNSTATEMENT));
+        return "true".equals(clientScope.getAttribute(SamlConfigAttributes.SAML_AUTHNSTATEMENT));
     }
 
     public void setIncludeAuthnStatement(boolean val) {
-        clientTemplate.setAttribute(SamlConfigAttributes.SAML_AUTHNSTATEMENT, Boolean.toString(val));
+        clientScope.setAttribute(SamlConfigAttributes.SAML_AUTHNSTATEMENT, Boolean.toString(val));
     }
 
     public boolean forceNameIDFormat() {
-        return "true".equals(clientTemplate.getAttribute(SamlConfigAttributes.SAML_FORCE_NAME_ID_FORMAT_ATTRIBUTE));
+        return "true".equals(clientScope.getAttribute(SamlConfigAttributes.SAML_FORCE_NAME_ID_FORMAT_ATTRIBUTE));
 
     }
     public void setForceNameIDFormat(boolean val) {
-        clientTemplate.setAttribute(SamlConfigAttributes.SAML_FORCE_NAME_ID_FORMAT_ATTRIBUTE, Boolean.toString(val));
+        clientScope.setAttribute(SamlConfigAttributes.SAML_FORCE_NAME_ID_FORMAT_ATTRIBUTE, Boolean.toString(val));
     }
 
     public boolean requiresRealmSignature() {
-        return "true".equals(clientTemplate.getAttribute(SamlConfigAttributes.SAML_SERVER_SIGNATURE));
+        return "true".equals(clientScope.getAttribute(SamlConfigAttributes.SAML_SERVER_SIGNATURE));
     }
 
     public void setRequiresRealmSignature(boolean val) {
-        clientTemplate.setAttribute(SamlConfigAttributes.SAML_SERVER_SIGNATURE, Boolean.toString(val));
+        clientScope.setAttribute(SamlConfigAttributes.SAML_SERVER_SIGNATURE, Boolean.toString(val));
     }
 
     public boolean addExtensionsElementWithKeyInfo() {
-        return Objects.equals("true", clientTemplate.getAttribute(SamlConfigAttributes.SAML_SERVER_SIGNATURE_KEYINFO_EXT));
+        return Objects.equals("true", clientScope.getAttribute(SamlConfigAttributes.SAML_SERVER_SIGNATURE_KEYINFO_EXT));
     }
 
     public void setAddExtensionsElementWithKeyInfo(boolean val) {
-        clientTemplate.setAttribute(SamlConfigAttributes.SAML_SERVER_SIGNATURE_KEYINFO_EXT, Boolean.toString(val));
+        clientScope.setAttribute(SamlConfigAttributes.SAML_SERVER_SIGNATURE_KEYINFO_EXT, Boolean.toString(val));
     }
 
     public boolean forcePostBinding() {
-        return "true".equals(clientTemplate.getAttribute(SamlConfigAttributes.SAML_FORCE_POST_BINDING));
+        return "true".equals(clientScope.getAttribute(SamlConfigAttributes.SAML_FORCE_POST_BINDING));
     }
 
     public void setForcePostBinding(boolean val) {
-        clientTemplate.setAttribute(SamlConfigAttributes.SAML_FORCE_POST_BINDING, Boolean.toString(val));
+        clientScope.setAttribute(SamlConfigAttributes.SAML_FORCE_POST_BINDING, Boolean.toString(val));
 
     }
     public boolean requiresAssertionSignature() {
-        return "true".equals(clientTemplate.getAttribute(SamlConfigAttributes.SAML_ASSERTION_SIGNATURE));
+        return "true".equals(clientScope.getAttribute(SamlConfigAttributes.SAML_ASSERTION_SIGNATURE));
     }
 
     public void setRequiresAssertionSignature(boolean val) {
-        clientTemplate.setAttribute(SamlConfigAttributes.SAML_ASSERTION_SIGNATURE   , Boolean.toString(val));
+        clientScope.setAttribute(SamlConfigAttributes.SAML_ASSERTION_SIGNATURE   , Boolean.toString(val));
 
     }
     public boolean requiresEncryption() {
-        return "true".equals(clientTemplate.getAttribute(SamlConfigAttributes.SAML_ENCRYPT));
+        return "true".equals(clientScope.getAttribute(SamlConfigAttributes.SAML_ENCRYPT));
     }
 
 
     public void setRequiresEncryption(boolean val) {
-        clientTemplate.setAttribute(SamlConfigAttributes.SAML_ENCRYPT, Boolean.toString(val));
+        clientScope.setAttribute(SamlConfigAttributes.SAML_ENCRYPT, Boolean.toString(val));
 
     }
 
     public boolean requiresClientSignature() {
-        return "true".equals(clientTemplate.getAttribute(SamlConfigAttributes.SAML_CLIENT_SIGNATURE_ATTRIBUTE));
+        return "true".equals(clientScope.getAttribute(SamlConfigAttributes.SAML_CLIENT_SIGNATURE_ATTRIBUTE));
     }
 
     public void setRequiresClientSignature(boolean val) {
-        clientTemplate.setAttribute(SamlConfigAttributes.SAML_CLIENT_SIGNATURE_ATTRIBUTE   , Boolean.toString(val));
+        clientScope.setAttribute(SamlConfigAttributes.SAML_CLIENT_SIGNATURE_ATTRIBUTE   , Boolean.toString(val));
 
     }
 
     public String getClientSigningCertificate() {
-        return clientTemplate.getAttribute(SamlConfigAttributes.SAML_SIGNING_CERTIFICATE_ATTRIBUTE);
+        return clientScope.getAttribute(SamlConfigAttributes.SAML_SIGNING_CERTIFICATE_ATTRIBUTE);
     }
 
     public void setClientSigningCertificate(String val) {
-        clientTemplate.setAttribute(SamlConfigAttributes.SAML_SIGNING_CERTIFICATE_ATTRIBUTE, val);
+        clientScope.setAttribute(SamlConfigAttributes.SAML_SIGNING_CERTIFICATE_ATTRIBUTE, val);
 
     }
 
     public String getClientSigningPrivateKey() {
-        return clientTemplate.getAttribute(SamlConfigAttributes.SAML_SIGNING_PRIVATE_KEY);
+        return clientScope.getAttribute(SamlConfigAttributes.SAML_SIGNING_PRIVATE_KEY);
     }
 
     public void setClientSigningPrivateKey(String val) {
-        clientTemplate.setAttribute(SamlConfigAttributes.SAML_SIGNING_PRIVATE_KEY, val);
+        clientScope.setAttribute(SamlConfigAttributes.SAML_SIGNING_PRIVATE_KEY, val);
 
     }
 }

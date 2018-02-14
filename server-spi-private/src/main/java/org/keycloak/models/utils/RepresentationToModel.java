@@ -61,7 +61,7 @@ import org.keycloak.models.AuthenticatorConfigModel;
 import org.keycloak.models.BrowserSecurityHeaders;
 import org.keycloak.models.ClaimMask;
 import org.keycloak.models.ClientModel;
-import org.keycloak.models.ClientTemplateModel;
+import org.keycloak.models.ClientScopeModel;
 import org.keycloak.models.Constants;
 import org.keycloak.models.FederatedIdentityModel;
 import org.keycloak.models.GroupModel;
@@ -91,7 +91,7 @@ import org.keycloak.representations.idm.AuthenticationFlowRepresentation;
 import org.keycloak.representations.idm.AuthenticatorConfigRepresentation;
 import org.keycloak.representations.idm.ClaimRepresentation;
 import org.keycloak.representations.idm.ClientRepresentation;
-import org.keycloak.representations.idm.ClientTemplateRepresentation;
+import org.keycloak.representations.idm.ClientScopeRepresentation;
 import org.keycloak.representations.idm.ComponentExportRepresentation;
 import org.keycloak.representations.idm.ComponentRepresentation;
 import org.keycloak.representations.idm.CredentialRepresentation;
@@ -258,8 +258,32 @@ public class RepresentationToModel {
         importIdentityProviders(rep, newRealm);
         importIdentityProviderMappers(rep, newRealm);
 
+        Map<String, ClientScopeModel> clientScopes = new HashMap<>();
         if (rep.getClientTemplates() != null) {
-            createClientTemplates(session, rep, newRealm);
+            clientScopes = createClientScopes(session, rep.getClientTemplates(), newRealm);
+        }
+        if (rep.getClientScopes() != null) {
+            clientScopes = createClientScopes(session, rep.getClientScopes(), newRealm);
+        }
+        if (rep.getDefaultDefaultClientScopes() != null) {
+            for (String clientScopeName : rep.getDefaultDefaultClientScopes()) {
+                ClientScopeModel clientScope = clientScopes.get(clientScopeName);
+                if (clientScope != null) {
+                    newRealm.addDefaultClientScope(clientScope, true);
+                } else {
+                    logger.warnf("Referenced client scope '%s' doesn't exists", clientScopeName);
+                }
+            }
+        }
+        if (rep.getDefaultOptionalClientScopes() != null) {
+            for (String clientScopeName : rep.getDefaultOptionalClientScopes()) {
+                ClientScopeModel clientScope = clientScopes.get(clientScopeName);
+                if (clientScope != null) {
+                    newRealm.addDefaultClientScope(clientScope, false);
+                } else {
+                    logger.warnf("Referenced client scope '%s' doesn't exists", clientScopeName);
+                }
+            }
         }
 
         if (rep.getClients() != null) {
@@ -1155,38 +1179,36 @@ public class RepresentationToModel {
         }
 
         if (resourceRep.getClientTemplate() != null) {
-            for (ClientTemplateModel template : realm.getClientTemplates()) {
-                if (template.getName().equals(resourceRep.getClientTemplate())) {
-                    client.setClientTemplate(template);
-                    break;
-                }
-                MigrationUtils.updateProtocolMappers(template);
+            addClientScopeToClient(realm, client, resourceRep.getClientTemplate(), true);
+        }
+
+        if (resourceRep.getDefaultClientScopes() != null) {
+            for (String clientScopeName : resourceRep.getDefaultClientScopes()) {
+                addClientScopeToClient(realm, client, clientScopeName, true);
+            }
+        }
+        if (resourceRep.getOptionalClientScopes() != null) {
+            for (String clientScopeName : resourceRep.getOptionalClientScopes()) {
+                addClientScopeToClient(realm, client, clientScopeName, false);
             }
         }
 
         if (resourceRep.isFullScopeAllowed() != null) {
             client.setFullScopeAllowed(resourceRep.isFullScopeAllowed());
         } else {
-            if (client.getClientTemplate() != null) {
-                client.setFullScopeAllowed(!client.isConsentRequired() && client.getClientTemplate().isFullScopeAllowed());
-
-            } else {
-                client.setFullScopeAllowed(!client.isConsentRequired());
-            }
+            client.setFullScopeAllowed(!client.isConsentRequired());
         }
-        if (resourceRep.isUseTemplateConfig() != null) client.setUseTemplateConfig(resourceRep.isUseTemplateConfig());
-        else client.setUseTemplateConfig(false); // default to false for now
-
-        if (resourceRep.isUseTemplateScope() != null) client.setUseTemplateScope(resourceRep.isUseTemplateScope());
-        else client.setUseTemplateScope(resourceRep.getClientTemplate() != null);
-
-        if (resourceRep.isUseTemplateMappers() != null)
-            client.setUseTemplateMappers(resourceRep.isUseTemplateMappers());
-        else client.setUseTemplateMappers(resourceRep.getClientTemplate() != null);
 
         client.updateClient();
 
         return client;
+    }
+
+    private static void addClientScopeToClient(RealmModel realm, ClientModel client, String clientScopeName, boolean defaultScope) {
+        ClientScopeModel clientScope = KeycloakModelUtils.getClientScopeByName(realm, clientScopeName);
+        if (clientScope != null) {
+            client.addClientScope(clientScope, defaultScope);
+        }
     }
 
     public static void updateClient(ClientRepresentation rep, ClientModel resource) {
@@ -1260,107 +1282,56 @@ public class RepresentationToModel {
             }
         }
 
-        if (rep.isUseTemplateConfig() != null) resource.setUseTemplateConfig(rep.isUseTemplateConfig());
-        if (rep.isUseTemplateScope() != null) resource.setUseTemplateScope(rep.isUseTemplateScope());
-        if (rep.isUseTemplateMappers() != null) resource.setUseTemplateMappers(rep.isUseTemplateMappers());
-
         if (rep.getSecret() != null) resource.setSecret(rep.getSecret());
-
-        if (rep.getClientTemplate() != null) {
-            if (rep.getClientTemplate().equals(ClientTemplateRepresentation.NONE)) {
-                resource.setClientTemplate(null);
-            } else {
-                RealmModel realm = resource.getRealm();
-                for (ClientTemplateModel template : realm.getClientTemplates()) {
-
-                    if (template.getName().equals(rep.getClientTemplate())) {
-                        resource.setClientTemplate(template);
-                        if (rep.isUseTemplateConfig() == null) resource.setUseTemplateConfig(true);
-                        if (rep.isUseTemplateScope() == null) resource.setUseTemplateScope(true);
-                        if (rep.isUseTemplateMappers() == null) resource.setUseTemplateMappers(true);
-                        break;
-                    }
-                }
-            }
-        }
 
         resource.updateClient();
     }
 
     // CLIENT TEMPLATES
 
-    private static Map<String, ClientTemplateModel> createClientTemplates(KeycloakSession session, RealmRepresentation rep, RealmModel realm) {
-        Map<String, ClientTemplateModel> appMap = new HashMap<>();
-        for (ClientTemplateRepresentation resourceRep : rep.getClientTemplates()) {
-            ClientTemplateModel app = createClientTemplate(session, realm, resourceRep);
+    private static Map<String, ClientScopeModel> createClientScopes(KeycloakSession session, List<ClientScopeRepresentation> clientScopes, RealmModel realm) {
+        Map<String, ClientScopeModel> appMap = new HashMap<>();
+        for (ClientScopeRepresentation resourceRep : clientScopes) {
+            ClientScopeModel app = createClientScope(session, realm, resourceRep);
             appMap.put(app.getName(), app);
         }
         return appMap;
     }
 
-    public static ClientTemplateModel createClientTemplate(KeycloakSession session, RealmModel realm, ClientTemplateRepresentation resourceRep) {
-        logger.debug("Create client template: {0}" + resourceRep.getName());
+    public static ClientScopeModel createClientScope(KeycloakSession session, RealmModel realm, ClientScopeRepresentation resourceRep) {
+        logger.debug("Create client scope: {0}" + resourceRep.getName());
 
-        ClientTemplateModel client = resourceRep.getId() != null ? realm.addClientTemplate(resourceRep.getId(), resourceRep.getName()) : realm.addClientTemplate(resourceRep.getName());
-        if (resourceRep.getName() != null) client.setName(resourceRep.getName());
-        if (resourceRep.getDescription() != null) client.setDescription(resourceRep.getDescription());
-        if (resourceRep.getProtocol() != null) client.setProtocol(resourceRep.getProtocol());
-        if (resourceRep.isFullScopeAllowed() != null) client.setFullScopeAllowed(resourceRep.isFullScopeAllowed());
+        ClientScopeModel clientScope = resourceRep.getId() != null ? realm.addClientScope(resourceRep.getId(), resourceRep.getName()) : realm.addClientScope(resourceRep.getName());
+        if (resourceRep.getName() != null) clientScope.setName(resourceRep.getName());
+        if (resourceRep.getDescription() != null) clientScope.setDescription(resourceRep.getDescription());
+        if (resourceRep.getProtocol() != null) clientScope.setProtocol(resourceRep.getProtocol());
         if (resourceRep.getProtocolMappers() != null) {
             // first, remove all default/built in mappers
-            Set<ProtocolMapperModel> mappers = client.getProtocolMappers();
-            for (ProtocolMapperModel mapper : mappers) client.removeProtocolMapper(mapper);
+            Set<ProtocolMapperModel> mappers = clientScope.getProtocolMappers();
+            for (ProtocolMapperModel mapper : mappers) clientScope.removeProtocolMapper(mapper);
 
             for (ProtocolMapperRepresentation mapper : resourceRep.getProtocolMappers()) {
-                client.addProtocolMapper(toModel(mapper));
+                clientScope.addProtocolMapper(toModel(mapper));
             }
+            MigrationUtils.updateProtocolMappers(clientScope);
         }
-        if (resourceRep.isBearerOnly() != null) client.setBearerOnly(resourceRep.isBearerOnly());
-        if (resourceRep.isConsentRequired() != null) client.setConsentRequired(resourceRep.isConsentRequired());
-
-        if (resourceRep.isStandardFlowEnabled() != null)
-            client.setStandardFlowEnabled(resourceRep.isStandardFlowEnabled());
-        if (resourceRep.isImplicitFlowEnabled() != null)
-            client.setImplicitFlowEnabled(resourceRep.isImplicitFlowEnabled());
-        if (resourceRep.isDirectAccessGrantsEnabled() != null)
-            client.setDirectAccessGrantsEnabled(resourceRep.isDirectAccessGrantsEnabled());
-        if (resourceRep.isServiceAccountsEnabled() != null)
-            client.setServiceAccountsEnabled(resourceRep.isServiceAccountsEnabled());
-
-        if (resourceRep.isPublicClient() != null) client.setPublicClient(resourceRep.isPublicClient());
-        if (resourceRep.isFrontchannelLogout() != null)
-            client.setFrontchannelLogout(resourceRep.isFrontchannelLogout());
 
         if (resourceRep.getAttributes() != null) {
             for (Map.Entry<String, String> entry : resourceRep.getAttributes().entrySet()) {
-                client.setAttribute(entry.getKey(), entry.getValue());
+                clientScope.setAttribute(entry.getKey(), entry.getValue());
             }
         }
 
 
-        return client;
+        return clientScope;
     }
 
-    public static void updateClientTemplate(ClientTemplateRepresentation rep, ClientTemplateModel resource) {
+    public static void updateClientScope(ClientScopeRepresentation rep, ClientScopeModel resource) {
         if (rep.getName() != null) resource.setName(rep.getName());
         if (rep.getDescription() != null) resource.setDescription(rep.getDescription());
-        if (rep.isFullScopeAllowed() != null) {
-            resource.setFullScopeAllowed(rep.isFullScopeAllowed());
-        }
 
 
         if (rep.getProtocol() != null) resource.setProtocol(rep.getProtocol());
-
-        if (rep.isBearerOnly() != null) resource.setBearerOnly(rep.isBearerOnly());
-        if (rep.isConsentRequired() != null) resource.setConsentRequired(rep.isConsentRequired());
-        if (rep.isStandardFlowEnabled() != null) resource.setStandardFlowEnabled(rep.isStandardFlowEnabled());
-        if (rep.isImplicitFlowEnabled() != null) resource.setImplicitFlowEnabled(rep.isImplicitFlowEnabled());
-        if (rep.isDirectAccessGrantsEnabled() != null)
-            resource.setDirectAccessGrantsEnabled(rep.isDirectAccessGrantsEnabled());
-        if (rep.isServiceAccountsEnabled() != null) resource.setServiceAccountsEnabled(rep.isServiceAccountsEnabled());
-        if (rep.isPublicClient() != null) resource.setPublicClient(rep.isPublicClient());
-        if (rep.isFullScopeAllowed() != null) resource.setFullScopeAllowed(rep.isFullScopeAllowed());
-        if (rep.isFrontchannelLogout() != null) resource.setFrontchannelLogout(rep.isFrontchannelLogout());
 
         if (rep.getAttributes() != null) {
             for (Map.Entry<String, String> entry : rep.getAttributes().entrySet()) {
@@ -1449,14 +1420,20 @@ public class RepresentationToModel {
                 throw new RuntimeException("Unknown client specification in scope mappings: " + scope.getClient());
             }
             return client;
-        } else if (scope.getClientTemplate() != null) {
-            ClientTemplateModel clientTemplate = KeycloakModelUtils.getClientTemplateByName(realm, scope.getClientTemplate());
+        } else if (scope.getClientScope() != null) {
+            ClientScopeModel clientScope = KeycloakModelUtils.getClientScopeByName(realm, scope.getClientScope());
+            if (clientScope == null) {
+                throw new RuntimeException("Unknown clientScope specification in scope mappings: " + scope.getClientScope());
+            }
+            return clientScope;
+        } else if (scope.getClientTemplate() != null) { // Backwards compatibility
+            ClientScopeModel clientTemplate = KeycloakModelUtils.getClientScopeByName(realm, scope.getClientTemplate());
             if (clientTemplate == null) {
-                throw new RuntimeException("Unknown clientTemplate specification in scope mappings: " + scope.getClientTemplate());
+                throw new RuntimeException("Unknown clientScope specification in scope mappings: " + scope.getClientTemplate());
             }
             return clientTemplate;
         } else {
-            throw new RuntimeException("Either client or clientTemplate needs to be specified in scope mappings");
+            throw new RuntimeException("Either client or clientScope needs to be specified in scope mappings");
         }
     }
 

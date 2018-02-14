@@ -23,7 +23,7 @@ import org.keycloak.component.ComponentModel;
 import org.keycloak.credential.CredentialModel;
 import org.keycloak.credential.UserCredentialStore;
 import org.keycloak.models.ClientModel;
-import org.keycloak.models.ClientTemplateModel;
+import org.keycloak.models.ClientScopeModel;
 import org.keycloak.models.FederatedIdentityModel;
 import org.keycloak.models.GroupModel;
 import org.keycloak.models.KeycloakSession;
@@ -310,20 +310,22 @@ public class JpaUserProvider implements UserProvider, UserCredentialStore {
         Collection<UserConsentProtocolMapperEntity> grantedProtocolMapperEntities = entity.getGrantedProtocolMappers();
         if (grantedProtocolMapperEntities != null) {
 
-            ClientTemplateModel clientTemplate = null;
-            if (client.useTemplateMappers()) {
-                clientTemplate = client.getClientTemplate();
-            }
+            // TODO:mposolda remove and refactoring
+//            ClientScopeModel clientTemplate = null;
+//            if (client.useTemplateMappers()) {
+//                clientTemplate = client.getClientTemplate();
+//            }
 
             for (UserConsentProtocolMapperEntity grantedProtMapper : grantedProtocolMapperEntities) {
                 ProtocolMapperModel protocolMapper = client.getProtocolMapperById(grantedProtMapper.getProtocolMapperId());
 
                 // Fallback to client template
-                if (protocolMapper == null) {
-                    if (clientTemplate != null) {
-                        protocolMapper = clientTemplate.getProtocolMapperById(grantedProtMapper.getProtocolMapperId());
-                    }
-                }
+                // TODO:mposolda remove and refactoring
+//                if (protocolMapper == null) {
+//                    if (clientTemplate != null) {
+//                        protocolMapper = clientTemplate.getProtocolMapperById(grantedProtMapper.getProtocolMapperId());
+//                    }
+//                }
 
                 if (protocolMapper != null) {
                     model.addGrantedProtocolMapper(protocolMapper);

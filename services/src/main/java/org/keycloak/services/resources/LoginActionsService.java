@@ -835,7 +835,7 @@ public class LoginActionsService {
         for (RoleModel role : ClientSessionCode.getRequestedRoles(authSession, realm)) {
             grantedConsent.addGrantedRole(role);
         }
-        for (ProtocolMapperModel protocolMapper : ClientSessionCode.getRequestedProtocolMappers(authSession.getProtocolMappers(), client)) {
+        for (ProtocolMapperModel protocolMapper : ClientSessionCode.getRequestedProtocolMappers(authSession)) {
             if (protocolMapper.isConsentRequired() && protocolMapper.getConsentText() != null) {
                 grantedConsent.addGrantedProtocolMapper(protocolMapper);
             }

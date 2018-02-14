@@ -22,8 +22,8 @@ import org.keycloak.admin.client.resource.AuthenticationManagementResource;
 import org.keycloak.admin.client.resource.ClientAttributeCertificateResource;
 import org.keycloak.admin.client.resource.ClientInitialAccessResource;
 import org.keycloak.admin.client.resource.ClientResource;
-import org.keycloak.admin.client.resource.ClientTemplateResource;
-import org.keycloak.admin.client.resource.ClientTemplatesResource;
+import org.keycloak.admin.client.resource.ClientScopeResource;
+import org.keycloak.admin.client.resource.ClientScopesResource;
 import org.keycloak.admin.client.resource.ClientsResource;
 import org.keycloak.admin.client.resource.ComponentsResource;
 import org.keycloak.admin.client.resource.GroupResource;
@@ -153,37 +153,37 @@ public class AdminEventPaths {
 
 
 
-    // CLIENT TEMPLATES
+    // CLIENT SCOPES
 
-    public static String clientTemplateResourcePath(String clientTemplateId) {
-        URI uri = UriBuilder.fromUri("").path(RealmResource.class, "clientTemplates").path(ClientTemplatesResource.class, "get").build(clientTemplateId);
+    public static String clientScopeResourcePath(String clientScopeId) {
+        URI uri = UriBuilder.fromUri("").path(RealmResource.class, "clientScopes").path(ClientScopesResource.class, "get").build(clientScopeId);
         return uri.toString();
     }
 
-    public static String clientTemplateScopeMappingsRealmLevelPath(String clientTemplateDbId) {
-        URI uri = UriBuilder.fromUri(clientTemplateResourcePath(clientTemplateDbId)).path(ClientTemplateResource.class, "getScopeMappings")
+    public static String clientScopeRoleMappingsRealmLevelPath(String clientScopeDbId) {
+        URI uri = UriBuilder.fromUri(clientScopeResourcePath(clientScopeDbId)).path(ClientScopeResource.class, "getScopeMappings")
                 .path(RoleMappingResource.class, "realmLevel")
                 .build();
         return uri.toString();
     }
 
-    public static String clientTemplateScopeMappingsClientLevelPath(String clientTemplateDbId, String clientOwningRoleId) {
-        URI uri = UriBuilder.fromUri(clientTemplateResourcePath(clientTemplateDbId)).path(ClientTemplateResource.class, "getScopeMappings")
+    public static String clientScopeRoleMappingsClientLevelPath(String clientScopeDbId, String clientOwningRoleId) {
+        URI uri = UriBuilder.fromUri(clientScopeResourcePath(clientScopeDbId)).path(ClientScopeResource.class, "getScopeMappings")
                 .path(RoleMappingResource.class, "clientLevel")
                 .build(clientOwningRoleId);
         return uri.toString();
     }
 
-    public static String clientTemplateProtocolMappersPath(String clientTemplateDbId) {
-        URI uri = UriBuilder.fromUri(clientTemplateResourcePath(clientTemplateDbId))
-                .path(ClientTemplateResource.class, "getProtocolMappers")
+    public static String clientScopeProtocolMappersPath(String clientScopeDbId) {
+        URI uri = UriBuilder.fromUri(clientScopeResourcePath(clientScopeDbId))
+                .path(ClientScopeResource.class, "getProtocolMappers")
                 .build();
         return uri.toString();
     }
 
 
-    public static String clientTemplateProtocolMapperPath(String clientTemplateDbId, String protocolMapperId) {
-        URI uri = UriBuilder.fromUri(clientTemplateProtocolMappersPath(clientTemplateDbId))
+    public static String clientScopeProtocolMapperPath(String clientScopeDbId, String protocolMapperId) {
+        URI uri = UriBuilder.fromUri(clientScopeProtocolMappersPath(clientScopeDbId))
                 .path(ProtocolMappersResource.class, "getMapperById")
                 .build(protocolMapperId);
         return uri.toString();

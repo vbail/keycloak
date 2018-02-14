@@ -31,7 +31,7 @@ import org.keycloak.events.EventType;
 import org.keycloak.protocol.oidc.OIDCLoginProtocol;
 import org.keycloak.representations.AccessToken;
 import org.keycloak.representations.idm.ClientRepresentation;
-import org.keycloak.representations.idm.ClientTemplateRepresentation;
+import org.keycloak.representations.idm.ClientScopeRepresentation;
 import org.keycloak.representations.idm.EventRepresentation;
 import org.keycloak.representations.idm.ProtocolMapperRepresentation;
 import org.keycloak.representations.idm.RealmRepresentation;
@@ -342,20 +342,19 @@ public class OAuthGrantTest extends AbstractKeycloakTest {
 
     // KEYCLOAK-4326
     @Test
-    public void oauthGrantClientTemplateMappers() throws Exception {
+    public void oauthGrantClientScopeMappers() throws Exception {
         // Add client template with some protocol mapper
         RealmResource appRealm = adminClient.realm(REALM_NAME);
 
-        ClientTemplateRepresentation template1 = new ClientTemplateRepresentation();
-        template1.setName("foo");
-        template1.setFullScopeAllowed(false);
-        template1.setProtocol(OIDCLoginProtocol.LOGIN_PROTOCOL);
-        Response response = appRealm.clientTemplates().create(template1);
+        ClientScopeRepresentation scope1 = new ClientScopeRepresentation();
+        scope1.setName("foo");
+        scope1.setProtocol(OIDCLoginProtocol.LOGIN_PROTOCOL);
+        Response response = appRealm.clientScopes().create(scope1);
         String templateId = ApiUtil.getCreatedId(response);
         response.close();
 
         ProtocolMapperRepresentation protocolMapper = ProtocolMapperUtil.createAddressMapper(true, true);
-        response = appRealm.clientTemplates().get(templateId).getProtocolMappers().createMapper(protocolMapper);
+        response = appRealm.clientScopes().get(templateId).getProtocolMappers().createMapper(protocolMapper);
         response.close();
 
         // Add template to client

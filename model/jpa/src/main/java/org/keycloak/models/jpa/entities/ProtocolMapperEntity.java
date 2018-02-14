@@ -67,8 +67,8 @@ public class ProtocolMapperEntity {
     private ClientEntity client;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "CLIENT_TEMPLATE_ID")
-    private ClientTemplateEntity clientTemplate;
+    @JoinColumn(name = "CLIENT_SCOPE_ID")
+    private ClientScopeEntity clientScope;
 
     public String getId() {
         return id;
@@ -118,12 +118,12 @@ public class ProtocolMapperEntity {
         this.client = client;
     }
 
-    public ClientTemplateEntity getClientTemplate() {
-        return clientTemplate;
+    public ClientScopeEntity getClientScope() {
+        return clientScope;
     }
 
-    public void setClientTemplate(ClientTemplateEntity clientTemplate) {
-        this.clientTemplate = clientTemplate;
+    public void setClientScope(ClientScopeEntity clientScope) {
+        this.clientScope = clientScope;
     }
 
     public boolean isConsentRequired() {

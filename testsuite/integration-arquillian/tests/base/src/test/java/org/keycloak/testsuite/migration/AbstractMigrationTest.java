@@ -32,7 +32,7 @@ import org.keycloak.representations.AccessToken;
 import org.keycloak.representations.idm.AuthenticationExecutionExportRepresentation;
 import org.keycloak.representations.idm.AuthenticationFlowRepresentation;
 import org.keycloak.representations.idm.ClientRepresentation;
-import org.keycloak.representations.idm.ClientTemplateRepresentation;
+import org.keycloak.representations.idm.ClientScopeRepresentation;
 import org.keycloak.representations.idm.ComponentRepresentation;
 import org.keycloak.representations.idm.MappingsRepresentation;
 import org.keycloak.representations.idm.ProtocolMapperRepresentation;
@@ -384,7 +384,7 @@ public abstract class AbstractMigrationTest extends AbstractKeycloakTest {
                     testUpdateProtocolMapper(protocolMapper);
                 }
             }
-            for (ClientTemplateRepresentation clientTemlate : realm.clientTemplates().findAll()) {
+            for (ClientScopeRepresentation clientTemlate : realm.clientScopes().findAll()) {
                 for (ProtocolMapperRepresentation protocolMapper : clientTemlate.getProtocolMappers()) {
                     testUpdateProtocolMapper(protocolMapper);
                 }

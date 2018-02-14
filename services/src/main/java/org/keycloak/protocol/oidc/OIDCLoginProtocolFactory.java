@@ -17,14 +17,16 @@
 package org.keycloak.protocol.oidc;
 
 import org.jboss.logging.Logger;
+import org.keycloak.OAuth2Constants;
 import org.keycloak.common.constants.KerberosConstants;
 import org.keycloak.common.util.UriUtils;
 import org.keycloak.events.EventBuilder;
 import org.keycloak.models.ClientModel;
-import org.keycloak.models.ClientTemplateModel;
+import org.keycloak.models.ClientScopeModel;
 import org.keycloak.models.KeycloakSession;
 import org.keycloak.models.ProtocolMapperModel;
 import org.keycloak.models.RealmModel;
+import org.keycloak.models.RoleModel;
 import org.keycloak.protocol.AbstractLoginProtocolFactory;
 import org.keycloak.protocol.LoginProtocol;
 import org.keycloak.protocol.oidc.mappers.AddressMapper;
@@ -34,12 +36,14 @@ import org.keycloak.protocol.oidc.mappers.UserAttributeMapper;
 import org.keycloak.protocol.oidc.mappers.UserPropertyMapper;
 import org.keycloak.protocol.oidc.mappers.UserSessionNoteMapper;
 import org.keycloak.representations.idm.ClientRepresentation;
-import org.keycloak.representations.idm.ClientTemplateRepresentation;
+import org.keycloak.representations.idm.ClientScopeRepresentation;
 import org.keycloak.services.ServicesLogger;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -56,8 +60,21 @@ public class OIDCLoginProtocolFactory extends AbstractLoginProtocolFactory {
     public static final String EMAIL_VERIFIED = "email verified";
     public static final String GIVEN_NAME = "given name";
     public static final String FAMILY_NAME = "family name";
+    public static final String MIDDLE_NAME = "middle_name";
+    public static final String NICKNAME = "nickname";
+    public static final String PROFILE_CLAIM = "profile";
+    public static final String PICTURE = "picture";
+    public static final String WEBSITE = "website";
+    public static final String GENDER = "gender";
+    public static final String BIRTHDATE = "birthdate";
+    public static final String ZONEINFO = "zoneinfo";
+    public static final String UPDATED_AT = "updated_at";
     public static final String FULL_NAME = "full name";
     public static final String LOCALE = "locale";
+    public static final String ADDRESS = "address";
+    public static final String PHONE_NUMBER = "phone_number";
+    public static final String PHONE_NUMBER_VERIFIED = "phone_number_verified";
+
     public static final String USERNAME_CONSENT_TEXT = "${username}";
     public static final String EMAIL_CONSENT_TEXT = "${email}";
     public static final String EMAIL_VERIFIED_CONSENT_TEXT = "${emailVerified}";
@@ -73,61 +90,67 @@ public class OIDCLoginProtocolFactory extends AbstractLoginProtocolFactory {
     }
 
     @Override
-    public List<ProtocolMapperModel> getBuiltinMappers() {
+    public Map<String, ProtocolMapperModel> getBuiltinMappers() {
         return builtins;
     }
 
     @Override
     public List<ProtocolMapperModel> getDefaultBuiltinMappers() {
-        return defaultBuiltins;
+        return Collections.emptyList();
     }
 
-    static List<ProtocolMapperModel> builtins = new ArrayList<>();
-    static List<ProtocolMapperModel> defaultBuiltins = new ArrayList<>();
+    static Map<String, ProtocolMapperModel> builtins = new HashMap<>();
 
     static {
-
-        ProtocolMapperModel model;
+                ProtocolMapperModel model;
         model = UserPropertyMapper.createClaimMapper(USERNAME,
                 "username",
                 "preferred_username", "String",
                 true, USERNAME_CONSENT_TEXT,
                 true, true);
-        builtins.add(model);
-        defaultBuiltins.add(model);
+        builtins.put(USERNAME, model);
+
         model = UserPropertyMapper.createClaimMapper(EMAIL,
                 "email",
                 "email", "String",
                 true, EMAIL_CONSENT_TEXT,
                 true, true);
-        builtins.add(model);
-        defaultBuiltins.add(model);
+        builtins.put(EMAIL, model);
+
         model = UserPropertyMapper.createClaimMapper(GIVEN_NAME,
                 "firstName",
                 "given_name", "String",
                 true, GIVEN_NAME_CONSENT_TEXT,
                 true, true);
-        builtins.add(model);
-        defaultBuiltins.add(model);
+        builtins.put(GIVEN_NAME, model);
+
         model = UserPropertyMapper.createClaimMapper(FAMILY_NAME,
                 "lastName",
                 "family_name", "String",
                 true, FAMILY_NAME_CONSENT_TEXT,
                 true, true);
-        builtins.add(model);
-        defaultBuiltins.add(model);
+        builtins.put(FAMILY_NAME, model);
+
+        createUserAttributeMapper(MIDDLE_NAME, "String");
+        createUserAttributeMapper(NICKNAME, "String");
+        createUserAttributeMapper(PROFILE_CLAIM, "String");
+        createUserAttributeMapper(PICTURE, "String");
+        createUserAttributeMapper(WEBSITE, "String");
+        createUserAttributeMapper(GENDER, "String");
+        createUserAttributeMapper(BIRTHDATE, "String");
+        createUserAttributeMapper(ZONEINFO, "String");
+        createUserAttributeMapper(UPDATED_AT, "String");
+        createUserAttributeMapper(LOCALE, "String");
+
+        createUserAttributeMapper(PHONE_NUMBER, "String");
+        createUserAttributeMapper(PHONE_NUMBER_VERIFIED, "boolean");
+
         model = UserPropertyMapper.createClaimMapper(EMAIL_VERIFIED,
                 "emailVerified",
                 "email_verified", "boolean",
                 false, EMAIL_VERIFIED_CONSENT_TEXT,
                 true, true);
-        builtins.add(model);
-        model = UserAttributeMapper.createClaimMapper(LOCALE,
-                "locale",
-                "locale", "String",
-                false, LOCALE_CONSENT_TEXT,
-                true, true, false);
-        builtins.add(model);
+        builtins.put(EMAIL_VERIFIED, model);
 
         ProtocolMapperModel fullName = new ProtocolMapperModel();
         fullName.setName(FULL_NAME);
@@ -139,23 +162,87 @@ public class OIDCLoginProtocolFactory extends AbstractLoginProtocolFactory {
         config.put(OIDCAttributeMapperHelper.INCLUDE_IN_ACCESS_TOKEN, "true");
         config.put(OIDCAttributeMapperHelper.INCLUDE_IN_ID_TOKEN, "true");
         fullName.setConfig(config);
-        builtins.add(fullName);
-        defaultBuiltins.add(fullName);
+        builtins.put(FULL_NAME, fullName);
 
         ProtocolMapperModel address = AddressMapper.createAddressMapper();
-        builtins.add(address);
+        builtins.put(ADDRESS, address);
 
         model = UserSessionNoteMapper.createClaimMapper(KerberosConstants.GSS_DELEGATION_CREDENTIAL_DISPLAY_NAME,
                 KerberosConstants.GSS_DELEGATION_CREDENTIAL,
                 KerberosConstants.GSS_DELEGATION_CREDENTIAL, "String",
                 true, "${gssDelegationCredential}",
                 true, false);
-        builtins.add(model);
+        builtins.put(KerberosConstants.GSS_DELEGATION_CREDENTIAL, model);
+    }
+
+    private static void createUserAttributeMapper(String name, String type) {
+        ProtocolMapperModel model = UserAttributeMapper.createClaimMapper(name,
+                name,
+                name, type,
+                true, name,
+                true, true, false);
+        builtins.put(name, model);
+    }
+
+    @Override
+    protected void createDefaultClientScopes(RealmModel newRealm) {
+        //name, family_name, given_name, middle_name, nickname, preferred_username, profile, picture, website, gender, birthdate, zoneinfo, locale, and updated_at.
+        ClientScopeModel profileScope = newRealm.addClientScope(OAuth2Constants.SCOPE_PROFILE);
+        // TODO:mposolda localize this description (same for other scopes)
+        profileScope.setDescription("OpenID Connect 'profile' scope");
+        profileScope.setProtocol(getId());
+        profileScope.addProtocolMapper(builtins.get(FULL_NAME));
+        profileScope.addProtocolMapper(builtins.get(FAMILY_NAME));
+        profileScope.addProtocolMapper(builtins.get(GIVEN_NAME));
+        profileScope.addProtocolMapper(builtins.get(MIDDLE_NAME));
+        profileScope.addProtocolMapper(builtins.get(NICKNAME));
+        profileScope.addProtocolMapper(builtins.get(USERNAME));
+        profileScope.addProtocolMapper(builtins.get(PROFILE_CLAIM));
+        profileScope.addProtocolMapper(builtins.get(PICTURE));
+        profileScope.addProtocolMapper(builtins.get(WEBSITE));
+        profileScope.addProtocolMapper(builtins.get(GENDER));
+        profileScope.addProtocolMapper(builtins.get(BIRTHDATE));
+        profileScope.addProtocolMapper(builtins.get(ZONEINFO));
+        profileScope.addProtocolMapper(builtins.get(LOCALE));
+        profileScope.addProtocolMapper(builtins.get(UPDATED_AT));
+
+        ClientScopeModel emailScope = newRealm.addClientScope(OAuth2Constants.SCOPE_EMAIL);
+        emailScope.setDescription("OpenID Connect 'email' scope");
+        emailScope.setProtocol(getId());
+        emailScope.addProtocolMapper(builtins.get(EMAIL));
+        emailScope.addProtocolMapper(builtins.get(EMAIL_VERIFIED));
+
+        ClientScopeModel addressScope = newRealm.addClientScope(OAuth2Constants.SCOPE_ADDRESS);
+        addressScope.setDescription("OpenID Connect 'address' scope");
+        addressScope.setProtocol(getId());
+        addressScope.addProtocolMapper(builtins.get(ADDRESS));
+
+        ClientScopeModel phoneScope = newRealm.addClientScope(OAuth2Constants.SCOPE_PHONE);
+        phoneScope.setDescription("OpenID Connect 'phone' scope");
+        phoneScope.setProtocol(getId());
+        phoneScope.addProtocolMapper(builtins.get(PHONE_NUMBER));
+        phoneScope.addProtocolMapper(builtins.get(PHONE_NUMBER_VERIFIED));
+
+        // 'profile' and 'email' will be default scopes for now. 'address' and 'phone' will be optional scopes
+        newRealm.addDefaultClientScope(profileScope, true);
+        newRealm.addDefaultClientScope(emailScope, true);
+        newRealm.addDefaultClientScope(addressScope, false);
+        newRealm.addDefaultClientScope(phoneScope, false);
+
+        RoleModel offlineRole = newRealm.getRole(OAuth2Constants.OFFLINE_ACCESS);
+        if (offlineRole != null) {
+            ClientScopeModel offlineAccessScope = newRealm.addClientScope(OAuth2Constants.OFFLINE_ACCESS);
+            offlineAccessScope.setDescription("OpenID Connect 'offline_access' scope");
+            offlineAccessScope.setProtocol(getId());
+            offlineAccessScope.addScopeMapping(offlineRole);
+
+            // Optional scope. Needs to be requested by scope parameter
+            newRealm.addDefaultClientScope(offlineAccessScope, false);
+        }
     }
 
     @Override
     protected void addDefaults(ClientModel client) {
-        for (ProtocolMapperModel model : defaultBuiltins) client.addProtocolMapper(model);
     }
 
     @Override
@@ -208,8 +295,4 @@ public class OIDCLoginProtocolFactory extends AbstractLoginProtocolFactory {
         if (rep.isFrontchannelLogout() == null) newClient.setFrontchannelLogout(false);
     }
 
-    @Override
-    public void setupTemplateDefaults(ClientTemplateRepresentation clientRep, ClientTemplateModel newClient) {
-
-    }
 }

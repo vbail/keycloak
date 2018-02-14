@@ -425,10 +425,10 @@ module.factory('ClientProtocolMapper', function($resource) {
     });
 });
 
-module.factory('ClientTemplateProtocolMapper', function($resource) {
-    return $resource(authUrl + '/admin/realms/:realm/client-templates/:template/protocol-mappers/models/:id', {
+module.factory('ClientScopeProtocolMapper', function($resource) {
+    return $resource(authUrl + '/admin/realms/:realm/client-scopes/:clientScope/protocol-mappers/models/:id', {
         realm : '@realm',
-        template: '@template',
+        clientScope: '@clientScope',
         id : "@id"
     }, {
         update : {
@@ -945,11 +945,24 @@ module.factory('ClientRole', function($resource) {
     });
 });
 
-module.factory('ClientClaims', function($resource) {
-    return $resource(authUrl + '/admin/realms/:realm/clients/:client/claims', {
+module.factory('ClientDefaultClientScopes', function($resource) {
+    return $resource(authUrl + '/admin/realms/:realm/clients/:client/default-client-scopes/:clientScopeId', {
         realm : '@realm',
-        client : "@client"
-    },  {
+        client : "@client",
+        clientScopeId : '@clientScopeId'
+    }, {
+        update : {
+            method : 'PUT'
+        }
+    });
+});
+
+module.factory('ClientOptionalClientScopes', function($resource) {
+    return $resource(authUrl + '/admin/realms/:realm/clients/:client/optional-client-scopes/:clientScopeId', {
+        realm : '@realm',
+        client : "@client",
+        clientScopeId : '@clientScopeId'
+    }, {
         update : {
             method : 'PUT'
         }
@@ -964,55 +977,55 @@ module.factory('ClientProtocolMappersByProtocol', function($resource) {
     });
 });
 
-module.factory('ClientTemplateProtocolMappersByProtocol', function($resource) {
-    return $resource(authUrl + '/admin/realms/:realm/client-templates/:template/protocol-mappers/protocol/:protocol', {
+module.factory('ClientScopeProtocolMappersByProtocol', function($resource) {
+    return $resource(authUrl + '/admin/realms/:realm/client-scopes/:clientScope/protocol-mappers/protocol/:protocol', {
         realm : '@realm',
-        template : "@template",
+        clientScope : "@clientScope",
         protocol : "@protocol"
     });
 });
 
-module.factory('ClientTemplateRealmScopeMapping', function($resource) {
-    return $resource(authUrl + '/admin/realms/:realm/client-templates/:template/scope-mappings/realm', {
+module.factory('ClientScopeRealmScopeMapping', function($resource) {
+    return $resource(authUrl + '/admin/realms/:realm/client-scopes/:clientScope/scope-mappings/realm', {
         realm : '@realm',
-        template : '@template'
+        clientScope : '@clientScope'
     });
 });
 
-module.factory('ClientTemplateAvailableRealmScopeMapping', function($resource) {
-    return $resource(authUrl + '/admin/realms/:realm/client-templates/:template/scope-mappings/realm/available', {
+module.factory('ClientScopeAvailableRealmScopeMapping', function($resource) {
+    return $resource(authUrl + '/admin/realms/:realm/client-scopes/:clientScope/scope-mappings/realm/available', {
         realm : '@realm',
-        template : '@template'
+        clientScope : '@clientScope'
     });
 });
 
-module.factory('ClientTemplateCompositeRealmScopeMapping', function($resource) {
-    return $resource(authUrl + '/admin/realms/:realm/client-templates/:template/scope-mappings/realm/composite', {
+module.factory('ClientScopeCompositeRealmScopeMapping', function($resource) {
+    return $resource(authUrl + '/admin/realms/:realm/client-scopes/:clientScope/scope-mappings/realm/composite', {
         realm : '@realm',
-        template : '@template'
+        clientScope : '@clientScope'
     });
 });
 
-module.factory('ClientTemplateClientScopeMapping', function($resource) {
-    return $resource(authUrl + '/admin/realms/:realm/client-templates/:template/scope-mappings/clients/:targetClient', {
+module.factory('ClientScopeClientScopeMapping', function($resource) {
+    return $resource(authUrl + '/admin/realms/:realm/client-scopes/:clientScope/scope-mappings/clients/:targetClient', {
         realm : '@realm',
-        template : '@template',
+        clientScope : '@clientScope',
         targetClient : '@targetClient'
     });
 });
 
-module.factory('ClientTemplateAvailableClientScopeMapping', function($resource) {
-    return $resource(authUrl + '/admin/realms/:realm/client-templates/:template/scope-mappings/clients/:targetClient/available', {
+module.factory('ClientScopeAvailableClientScopeMapping', function($resource) {
+    return $resource(authUrl + '/admin/realms/:realm/client-scopes/:clientScope/scope-mappings/clients/:targetClient/available', {
         realm : '@realm',
-        template : '@template',
+        clientScope : '@clientScope',
         targetClient : '@targetClient'
     });
 });
 
-module.factory('ClientTemplateCompositeClientScopeMapping', function($resource) {
-    return $resource(authUrl + '/admin/realms/:realm/client-templates/:template/scope-mappings/clients/:targetClient/composite', {
+module.factory('ClientScopeCompositeClientScopeMapping', function($resource) {
+    return $resource(authUrl + '/admin/realms/:realm/client-scopes/:clientScope/scope-mappings/clients/:targetClient/composite', {
         realm : '@realm',
-        template : '@template',
+        clientScope : '@clientScope',
         targetClient : '@targetClient'
     });
 });
@@ -1133,11 +1146,33 @@ module.factory('Client', function($resource) {
     });
 });
 
-module.factory('ClientTemplate', function($resource) {
-    return $resource(authUrl + '/admin/realms/:realm/client-templates/:template', {
+module.factory('ClientScope', function($resource) {
+    return $resource(authUrl + '/admin/realms/:realm/client-scopes/:clientScope', {
         realm : '@realm',
-        template : '@template'
+        clientScope : '@clientScope'
     },  {
+        update : {
+            method : 'PUT'
+        }
+    });
+});
+
+module.factory('RealmDefaultClientScopes', function($resource) {
+    return $resource(authUrl + '/admin/realms/:realm/default-default-client-scopes/:clientScopeId', {
+        realm : '@realm',
+        clientScopeId : '@clientScopeId'
+    }, {
+        update : {
+            method : 'PUT'
+        }
+    });
+});
+
+module.factory('RealmOptionalClientScopes', function($resource) {
+    return $resource(authUrl + '/admin/realms/:realm/default-optional-client-scopes/:clientScopeId', {
+        realm : '@realm',
+        clientScopeId : '@clientScopeId'
+    }, {
         update : {
             method : 'PUT'
         }

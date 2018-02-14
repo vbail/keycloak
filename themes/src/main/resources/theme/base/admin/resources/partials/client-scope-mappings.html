@@ -11,16 +11,6 @@
         <p class="subtitle"></p>
         <form class="form-horizontal" name="allowScope" novalidate kc-read-only="!client.access.manage">
             <fieldset class="border-top">
-                <div class="form-group" ng-show="client.clientTemplate">
-                    <label class="col-md-2 control-label" for="useTemplateScope">Inherit Template Scope</label>
-                    <kc-tooltip>Inherit scope from client template</kc-tooltip>
-                    <div class="col-md-1">
-                        <input ng-model="client.useTemplateScope" ng-click="changeFlag()" name="useTemplateScope" id="useTemplateScope" onoffswitch on-text="{{:: 'onText' | translate}}" off-text="{{:: 'offText' | translate}}" />
-                    </div>
-                    <div class="col-md-2">
-                        <a href="#/realms/{{realm.realm}}/client-templates/{{template.id}}/scope-mappings">view template scope</a>
-                    </div>
-                </div>
                 <div class="form-group" ng-hide="client.useTemplateScope && template && template.fullScopeAllowed">
                     <label class="col-md-2 control-label" for="fullScopeAllowed">{{:: 'full-scope-allowed' | translate}}</label>
                     <kc-tooltip>{{:: 'full-scope-allowed.tooltip' | translate}}</kc-tooltip>
