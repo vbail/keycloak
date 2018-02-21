@@ -21,6 +21,7 @@ import org.jboss.resteasy.annotations.cache.NoCache;
 import org.jboss.resteasy.spi.BadRequestException;
 import org.jboss.resteasy.spi.ResteasyProviderFactory;
 import org.keycloak.authorization.admin.AuthorizationService;
+import org.keycloak.common.ClientConnection;
 import org.keycloak.common.Profile;
 import org.keycloak.common.util.Time;
 import org.keycloak.events.admin.OperationType;
@@ -107,6 +108,9 @@ public class ClientResource {
 
     @Context
     protected KeycloakApplication keycloak;
+
+    @Context
+    protected ClientConnection clientConnection;
 
     protected KeycloakApplication getKeycloakApplication() {
         return keycloak;
@@ -384,6 +388,11 @@ public class ClientResource {
     @Path("optional-client-scopes/{clientScopeId}")
     public void removeDefaultOptionalClientScope(@PathParam("clientScopeId") String clientScopeId) {
         removeDefaultClientScope(clientScopeId);
+    }
+
+    @Path("evaluate-scopes")
+    public ClientScopeEvaluateResource clientScopeEvaluateResource() {
+        return new ClientScopeEvaluateResource(session, uriInfo, realm, auth, client, clientConnection);
     }
 
     /**

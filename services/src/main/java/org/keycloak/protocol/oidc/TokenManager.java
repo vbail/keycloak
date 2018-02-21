@@ -519,27 +519,6 @@ public class TokenManager {
         return clientScopes;
     }
 
-    // For now, just use "roleName" for realm roles and "clientId/roleName" for client roles
-    private static String getRoleNameForScopeParam(RoleModel role) {
-        if (role.getContainer() instanceof RealmModel) {
-            return role.getName();
-        } else {
-            ClientModel client = (ClientModel) role.getContainer();
-            return client.getClientId() + "/" + role.getName();
-        }
-    }
-
-    // For now, just use "roleName" for realm roles and "clientId/roleName" for client roles
-    private static RoleModel getRoleFromScopeParam(RealmModel realm, String scopeParamRole) {
-        String[] parts = scopeParamRole.split("/");
-        if (parts.length == 1) {
-            return realm.getRole(parts[0]);
-        } else {
-            ClientModel roleClient = realm.getClientByClientId(parts[0]);
-            return roleClient!=null ? roleClient.getRole(parts[1]) : null;
-        }
-    }
-
     public void verifyAccess(AccessToken token, AccessToken newToken) throws OAuthErrorException {
         if (token.getRealmAccess() != null) {
             if (newToken.getRealmAccess() == null) throw new OAuthErrorException(OAuthErrorException.INVALID_SCOPE, "User no long has permission for realm roles");

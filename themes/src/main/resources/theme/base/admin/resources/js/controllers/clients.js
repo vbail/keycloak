@@ -2085,13 +2085,263 @@ module.controller('ClientClientScopesSetupCtrl', function($scope, realm, Realm, 
 
 });
 
-module.controller('ClientClientScopesEvaluateCtrl', function($scope, realm, Realm, client, clientScopes, serverInfo, $route, Dialog, Notifications, $location) {
+module.controller('ClientClientScopesEvaluateCtrl', function($scope, Realm, User, ClientEvaluateProtocolMappers, ClientEvaluateGrantedRoles,
+        ClientEvaluateNotGrantedRoles, ClientEvaluateGenerateExampleToken, realm, client, clients, clientScopes, serverInfo,
+        clientOptionalClientScopes, clientDefaultClientScopes, $route, $routeParams, $http, Notifications, $location) {
 
     console.log('ClientClientScopesEvaluateCtrl');
 
+    var protocolMappers = serverInfo.protocolMapperTypes[client.protocol];
+    var mapperTypes = {};
+    for (var i = 0; i < protocolMappers.length; i++) {
+        mapperTypes[protocolMappers[i].id] = protocolMappers[i];
+    }
+    $scope.mapperTypes = mapperTypes;
+
     $scope.realm = realm;
     $scope.client = client;
+    $scope.clients = clients;
+    $scope.userId = null;
 
+    $scope.availableClientScopes = [];
+    $scope.assignedClientScopes = [];
+    $scope.selectedClientScopes = [];
+    $scope.selectedDefClientScopes = [];
+    $scope.effectiveClientScopes = [];
+
+    // Populate available client scopes. Available client scopes are neither already assigned to 'default' or 'optional'
+    for (var i = 0; i < clientOptionalClientScopes.length; i++) {
+        $scope.availableClientScopes.push(clientOptionalClientScopes[i]);
+    }
+
+    function clearEvalResponse() {
+        $scope.protocolMappers = null;
+        $scope.grantedRealmRoles = null;
+        $scope.notGrantedRealmRoles = null;
+        $scope.grantedClientRoles = null;
+        $scope.notGrantedClientRoles = null;
+        $scope.targetClient = null;
+        $scope.oidcAccessToken = null;
+
+        $scope.selectedTab = 0;
+    }
+
+    function updateState() {
+        // Compute scope parameter
+        $scope.scopeParam = 'openid';
+        for (var i = 0; i < $scope.assignedClientScopes.length; i++) {
+            var currentScopeParam = $scope.assignedClientScopes[i].name;
+            $scope.scopeParam = $scope.scopeParam + ' ' + currentScopeParam;
+        }
+
+        // Compute effective scopes
+        $scope.effectiveClientScopes = [];
+
+        for (var i = 0; i < clientDefaultClientScopes.length; i++) {
+            var currentScope = clientDefaultClientScopes[i];
+            $scope.effectiveClientScopes.push(currentScope);
+        }
+        for (var i = 0; i < $scope.assignedClientScopes.length; i++) {
+            var currentScope = $scope.assignedClientScopes[i];
+            $scope.effectiveClientScopes.push(currentScope);
+        }
+
+        // Clear the evaluation response
+        clearEvalResponse();
+    }
+
+    updateState();
+
+
+    $scope.addAppliedClientScope = function () {
+
+        for (var i = 0; i < $scope.selectedClientScopes.length; i++) {
+            var currentScope = $scope.selectedClientScopes[i];
+            console.log('adding assigned client scope: ' + currentScope.name);
+
+            $scope.assignedClientScopes.push(currentScope);
+
+            var index = $scope.availableClientScopes.indexOf(currentScope);
+            if (index > -1) {
+                $scope.availableClientScopes.splice(index, 1);
+            }
+        }
+
+        $scope.selectedClientScopes = [];
+
+        updateState();
+    };
+
+
+    $scope.deleteAppliedClientScope = function () {
+
+        console.log('deleteAppliedClientScope');
+
+        for (var i = 0; i < $scope.selectedDefClientScopes.length; i++) {
+            var currentScope = $scope.selectedDefClientScopes[i];
+            console.log('deleting assigned client scope: ' + currentScope.name);
+
+            $scope.availableClientScopes.push(currentScope);
+
+            var index = $scope.assignedClientScopes.indexOf(currentScope);
+            if (index > -1) {
+                $scope.assignedClientScopes.splice(index, 1);
+            }
+        }
+
+        $scope.selectedDefClientScopes = [];
+
+        updateState();
+    };
+
+    $scope.usersUiSelect = {
+        minimumInputLength: 1,
+        delay: 500,
+        allowClear: true,
+        query: function (query) {
+            var data = {results: []};
+            if ('' == query.term.trim()) {
+                query.callback(data);
+                return;
+            }
+            User.query({realm: $route.current.params.realm, search: query.term.trim(), max: 20}, function(response) {
+                data.results = response;
+                query.callback(data);
+            });
+        },
+        formatResult: function(object, container, query) {
+            object.text = object.username;
+            return object.username;
+        }
+    };
+
+    $scope.selectedUser = null;
+
+    $scope.selectUser = function(user) {
+        clearEvalResponse();
+
+        if (!user || !user.id) {
+            $scope.selectedUser = null;
+            $scope.userId = '';
+            return;
+        }
+
+        $scope.userId = user.id;
+    }
+
+
+    $scope.sendEvaluationRequest = function () {
+
+        console.log('sendEvaluationRequest');
+
+        // Send request for retrieve protocolMappers
+        $scope.protocolMappers = ClientEvaluateProtocolMappers.query({
+            realm: realm.realm,
+            client: client.id,
+            scopeParam: $scope.scopeParam
+        });
+
+        // Send request for retrieve realmRoles
+        updateScopeRealmRoles();
+
+        // Send request for retrieve accessToken (in case user was selected)
+        if ($scope.userId != null && $scope.userId !== '') {
+            var url = ClientEvaluateGenerateExampleToken.url({
+                realm: realm.realm,
+                client: client.id,
+                userId: $scope.userId,
+                scopeParam: $scope.scopeParam
+            });
+
+            $http.get(url).then(function (response) {
+                if (response.data) {
+                    var oidcAccessToken = angular.fromJson(response.data);
+                    oidcAccessToken = angular.toJson(oidcAccessToken, true);
+                    $scope.oidcAccessToken = oidcAccessToken;
+                } else {
+                    $scope.oidcAccessToken = null;
+                }
+            });
+        }
+
+        $scope.showTab(1);
+    };
+
+
+    $scope.isResponseAvailable = function () {
+        return $scope.protocolMappers != null;
+    }
+
+    $scope.isTokenAvailable = function () {
+        return $scope.oidcAccessToken != null;
+    }
+
+    $scope.showTab = function (tab) {
+        $scope.selectedTab = tab;
+
+        // Check if there is more clever way to do it... :/
+        if (tab === 1) {
+            $scope.tabCss = { tab1: 'active', tab2: '', tab3: '' }
+        } else if (tab === 2) {
+            $scope.tabCss = { tab1: '', tab2: 'active', tab3: '' }
+        } else if (tab === 3) {
+            $scope.tabCss = { tab1: '', tab2: '', tab3: 'active' }
+        }
+    }
+
+    $scope.protocolMappersShown = function () {
+        return $scope.selectedTab === 1;
+    }
+
+    $scope.rolesShown = function () {
+        return $scope.selectedTab === 2;
+    }
+
+    $scope.tokenShown = function () {
+        return $scope.selectedTab === 3;
+    }
+
+
+    // Roles
+
+    function updateScopeRealmRoles() {
+        $scope.grantedRealmRoles = ClientEvaluateGrantedRoles.query({
+            realm: realm.realm,
+            client: client.id,
+            roleContainerId: realm.id,
+            scopeParam: $scope.scopeParam
+        });
+        $scope.notGrantedRealmRoles = ClientEvaluateNotGrantedRoles.query({
+            realm: realm.realm,
+            client: client.id,
+            roleContainerId: realm.id,
+            scopeParam: $scope.scopeParam
+        });
+    }
+
+    function updateScopeClientRoles() {
+        if ($scope.targetClient) {
+            $scope.grantedClientRoles = ClientEvaluateGrantedRoles.query({
+                realm: realm.realm,
+                client: client.id,
+                roleContainerId: $scope.targetClient.id,
+                scopeParam: $scope.scopeParam
+            });
+            $scope.notGrantedClientRoles = ClientEvaluateNotGrantedRoles.query({
+                realm: realm.realm,
+                client: client.id,
+                roleContainerId: $scope.targetClient.id,
+                scopeParam: $scope.scopeParam
+            });
+        } else {
+            $scope.grantedClientRoles = null;
+            $scope.notGrantedClientRoles = null;
+        }
+    }
+
+    $scope.changeClient = function() {
+        updateScopeClientRoles();
+    };
 });
 
 

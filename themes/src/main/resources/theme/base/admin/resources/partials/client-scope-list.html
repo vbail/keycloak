@@ -5,8 +5,14 @@
     </h1>
 
     <ul class="nav nav-tabs">
-        <li class="active"><a href="#/realms/{{realm.realm}}/client-scopes">{{:: 'client-scopes' | translate}}</a></li>
-        <li><a href="#/realms/{{realm.realm}}/default-client-scopes">{{:: 'default-client-scopes' | translate}}</a></li>
+        <li class="active">
+            <a href="#/realms/{{realm.realm}}/client-scopes">{{:: 'client-scopes' | translate}}</a>
+            <kc-tooltip>{{:: 'client-scopes.tooltip' | translate}}</kc-tooltip>
+        </li>
+        <li>
+            <a href="#/realms/{{realm.realm}}/default-client-scopes">{{:: 'default-client-scopes' | translate}}</a>
+            <kc-tooltip>{{:: 'default-client-scopes.tooltip' | translate}}</kc-tooltip>
+        </li>
     </ul>
     <table class="table table-striped table-bordered">
         <thead>

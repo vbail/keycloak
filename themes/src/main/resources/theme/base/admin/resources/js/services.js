@@ -969,6 +969,46 @@ module.factory('ClientOptionalClientScopes', function($resource) {
     });
 });
 
+module.factory('ClientEvaluateProtocolMappers', function($resource) {
+    return $resource(authUrl + '/admin/realms/:realm/clients/:client/evaluate-scopes/protocol-mappers?scope=:scopeParam', {
+        realm : '@realm',
+        client : "@client",
+        scopeParam : "@scopeParam"
+    });
+});
+
+module.factory('ClientEvaluateGrantedRoles', function($resource) {
+    return $resource(authUrl + '/admin/realms/:realm/clients/:client/evaluate-scopes/scope-mappings/:roleContainerId/granted?scope=:scopeParam', {
+        realm : '@realm',
+        client : "@client",
+        roleContainerId : "@roleContainerId",
+        scopeParam : "@scopeParam"
+    });
+});
+
+module.factory('ClientEvaluateNotGrantedRoles', function($resource) {
+    return $resource(authUrl + '/admin/realms/:realm/clients/:client/evaluate-scopes/scope-mappings/:roleContainerId/not-granted?scope=:scopeParam', {
+        realm : '@realm',
+        client : "@client",
+        roleContainerId : "@roleContainerId",
+        scopeParam : "@scopeParam"
+    });
+});
+
+module.factory('ClientEvaluateGenerateExampleToken', function($resource) {
+    var url = authUrl + '/admin/realms/:realm/clients/:client/evaluate-scopes/generate-example-access-token?scope=:scopeParam&userId=:userId';
+    return {
+        url : function(parameters)
+        {
+            return url
+                .replace(':realm', parameters.realm)
+                .replace(':client', parameters.client)
+                .replace(':scopeParam', parameters.scopeParam)
+                .replace(':userId', parameters.userId);
+        }
+    }
+});
+
 module.factory('ClientProtocolMappersByProtocol', function($resource) {
     return $resource(authUrl + '/admin/realms/:realm/clients/:client/protocol-mappers/protocol/:protocol', {
         realm : '@realm',

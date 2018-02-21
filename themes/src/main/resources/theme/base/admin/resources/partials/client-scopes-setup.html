@@ -25,8 +25,14 @@
     <kc-tabs-client></kc-tabs-client>
 
     <ul class="nav nav-tabs nav-tabs-pf">
-        <li class="active"><a href="#/realms/{{realm.realm}}/clients/{{client.id}}/client-scopes/setup-scopes">{{:: 'client-scopes.setup' | translate}}</a></li>
-        <li><a href="#/realms/{{realm.realm}}/clients/{{client.id}}/client-scopes/evaluate-scopes">{{:: 'client-scopes.evaluate' | translate}}</a></li>
+        <li class="active">
+            <a href="#/realms/{{realm.realm}}/clients/{{client.id}}/client-scopes/setup-scopes">{{:: 'client-scopes.setup' | translate}}</a>
+            <kc-tooltip>{{:: 'client-scopes.setup.tooltip' | translate}}</kc-tooltip>
+        </li>
+        <li>
+            <a href="#/realms/{{realm.realm}}/clients/{{client.id}}/client-scopes/evaluate-scopes">{{:: 'client-scopes.evaluate' | translate}}</a>
+            <kc-tooltip>{{:: 'client-scopes.evaluate.tooltip' | translate}}</kc-tooltip>
+        </li>
     </ul>
 
     <form class="form-horizontal" name="realmForm" novalidate kc-read-only="!access.manageClients">

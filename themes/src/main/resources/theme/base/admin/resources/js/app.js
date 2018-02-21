@@ -1031,8 +1031,17 @@ module.config([ '$routeProvider', function($routeProvider) {
                 client : function(ClientLoader) {
                     return ClientLoader();
                 },
+                clients : function(ClientListLoader) {
+                    return ClientListLoader();
+                },
                 clientScopes : function(ClientScopeListLoader) {
                     return ClientScopeListLoader();
+                },
+                clientDefaultClientScopes : function(ClientDefaultClientScopesLoader) {
+                    return ClientDefaultClientScopesLoader();
+                },
+                clientOptionalClientScopes : function(ClientOptionalClientScopesLoader) {
+                    return ClientOptionalClientScopesLoader();
                 },
                 serverInfo : function(ServerInfoLoader) {
                     return ServerInfoLoader();
