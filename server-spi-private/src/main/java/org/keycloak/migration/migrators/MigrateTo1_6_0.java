@@ -74,15 +74,6 @@ public class MigrateTo1_6_0 implements Migration {
         realm.setOfflineSessionIdleTimeout(Constants.DEFAULT_OFFLINE_SESSION_IDLE_TIMEOUT);
 
         if (realm.getRole(Constants.OFFLINE_ACCESS_ROLE) == null) {
-            for (RoleModel realmRole : realm.getRoles()) {
-                realmRole.setScopeParamRequired(false);
-            }
-            for (ClientModel client : realm.getClients()) {
-                for (RoleModel clientRole : client.getRoles()) {
-                    clientRole.setScopeParamRequired(false);
-                }
-            }
-
             KeycloakModelUtils.setupOfflineTokens(realm);
             RoleModel role = realm.getRole(Constants.OFFLINE_ACCESS_ROLE);
 
@@ -99,7 +90,6 @@ public class MigrateTo1_6_0 implements Migration {
         if (client.getRole(AdminRoles.CREATE_CLIENT) == null) {
             RoleModel role = client.addRole(AdminRoles.CREATE_CLIENT);
             role.setDescription("${role_" + AdminRoles.CREATE_CLIENT + "}");
-            role.setScopeParamRequired(false);
 
             client.getRealm().getRole(AdminRoles.ADMIN).addCompositeRole(role);
         }
@@ -109,8 +99,6 @@ public class MigrateTo1_6_0 implements Migration {
             if (client.getRole(AdminRoles.CREATE_CLIENT) == null) {
                 RoleModel role = client.addRole(AdminRoles.CREATE_CLIENT);
                 role.setDescription("${role_" + AdminRoles.CREATE_CLIENT + "}");
-                role.setScopeParamRequired(false);
-
                 client.getRole(AdminRoles.REALM_ADMIN).addCompositeRole(role);
             }
         }

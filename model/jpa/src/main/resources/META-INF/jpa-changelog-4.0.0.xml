@@ -154,6 +154,7 @@
         <addForeignKeyConstraint baseColumnNames="CLIENT_ID" baseTableName="CLIENT_SCOPE_CLIENT" constraintName="FK_C_CLI_SCOPE_CLIENT" referencedColumnNames="ID" referencedTableName="CLIENT"/>
         <addForeignKeyConstraint baseColumnNames="SCOPE_ID" baseTableName="CLIENT_SCOPE_CLIENT" constraintName="FK_C_CLI_SCOPE_SCOPE" referencedColumnNames="ID" referencedTableName="CLIENT_SCOPE"/>
 
+        <!-- Default client scopes (global scopes configured at realm level) -->
         <createTable tableName="DEFAULT_CLIENT_SCOPE">
             <column name="REALM_ID" type="VARCHAR(36)">
                 <constraints nullable="false"/>
@@ -168,6 +169,9 @@
         <addPrimaryKey columnNames="REALM_ID, SCOPE_ID" constraintName="R_DEF_CLI_SCOPE_BIND" tableName="DEFAULT_CLIENT_SCOPE"/>
         <addForeignKeyConstraint baseColumnNames="REALM_ID" baseTableName="DEFAULT_CLIENT_SCOPE" constraintName="FK_R_DEF_CLI_SCOPE_REALM" referencedColumnNames="ID" referencedTableName="REALM"/>
         <addForeignKeyConstraint baseColumnNames="SCOPE_ID" baseTableName="DEFAULT_CLIENT_SCOPE" constraintName="FK_R_DEF_CLI_SCOPE_SCOPE" referencedColumnNames="ID" referencedTableName="CLIENT_SCOPE"/>
+
+        <!-- Remove scopeParamRequired -->
+        <dropColumn tableName="KEYCLOAK_ROLE" columnName="SCOPE_PARAM_REQUIRED" />
 
     </changeSet>
 

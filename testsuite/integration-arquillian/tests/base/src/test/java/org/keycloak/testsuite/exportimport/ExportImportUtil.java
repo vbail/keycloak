@@ -139,10 +139,6 @@ public class ExportImportUtil {
         Assert.assertTrue(containsRole(allRoles, findClientRole(realmRsc, application.getId(), "app-admin")));
         Assert.assertTrue(containsRole(allRoles, findClientRole(realmRsc, otherApp.getId(), "otherapp-admin")));
 
-        Assert.assertTrue(findClientRole(realmRsc, application.getId(), "app-admin").isScopeParamRequired());
-        Assert.assertFalse(findClientRole(realmRsc, otherApp.getId(), "otherapp-admin").isScopeParamRequired());
-        Assert.assertFalse(findClientRole(realmRsc, otherApp.getId(), "otherapp-user").isScopeParamRequired());
-
         UserRepresentation wburke = findByUsername(realmRsc, "wburke");
         // user with creation timestamp in import
         Assert.assertEquals(new Long(123654), wburke.getCreatedTimestamp());

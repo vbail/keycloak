@@ -324,7 +324,6 @@ public abstract class AbstractMigrationTest extends AbstractKeycloakTest {
             for (String roleName : Constants.AUTHZ_DEFAULT_AUTHORIZATION_ROLES) {
                 RoleResource role = realm.roles().get(roleName); //throws javax.ws.rs.NotFoundException if not found
 
-                assertFalse("Role's scopeParamRequired should be false.", role.toRepresentation().isScopeParamRequired());
                 assertFalse("Role shouldn't be composite should be false.", role.toRepresentation().isComposite());
 
                 assertTrue("role should be added to default roles for new users", realm.toRepresentation().getDefaultRoles().contains(roleName));

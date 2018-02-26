@@ -35,6 +35,7 @@ import org.keycloak.protocol.oidc.mappers.OIDCAttributeMapperHelper;
 import org.keycloak.protocol.oidc.mappers.UserAttributeMapper;
 import org.keycloak.protocol.oidc.mappers.UserPropertyMapper;
 import org.keycloak.protocol.oidc.mappers.UserSessionNoteMapper;
+import org.keycloak.representations.IDToken;
 import org.keycloak.representations.idm.ClientRepresentation;
 import org.keycloak.representations.idm.ClientScopeRepresentation;
 import org.keycloak.services.ServicesLogger;
@@ -60,7 +61,7 @@ public class OIDCLoginProtocolFactory extends AbstractLoginProtocolFactory {
     public static final String EMAIL_VERIFIED = "email verified";
     public static final String GIVEN_NAME = "given name";
     public static final String FAMILY_NAME = "family name";
-    public static final String MIDDLE_NAME = "middle_name";
+    public static final String MIDDLE_NAME = "middle name";
     public static final String NICKNAME = "nickname";
     public static final String PROFILE_CLAIM = "profile";
     public static final String PICTURE = "picture";
@@ -68,12 +69,12 @@ public class OIDCLoginProtocolFactory extends AbstractLoginProtocolFactory {
     public static final String GENDER = "gender";
     public static final String BIRTHDATE = "birthdate";
     public static final String ZONEINFO = "zoneinfo";
-    public static final String UPDATED_AT = "updated_at";
+    public static final String UPDATED_AT = "updated at";
     public static final String FULL_NAME = "full name";
     public static final String LOCALE = "locale";
     public static final String ADDRESS = "address";
-    public static final String PHONE_NUMBER = "phone_number";
-    public static final String PHONE_NUMBER_VERIFIED = "phone_number_verified";
+    public static final String PHONE_NUMBER = "phone number";
+    public static final String PHONE_NUMBER_VERIFIED = "phone number verified";
 
     public static final String USERNAME_CONSENT_TEXT = "${username}";
     public static final String EMAIL_CONSENT_TEXT = "${email}";
@@ -131,19 +132,19 @@ public class OIDCLoginProtocolFactory extends AbstractLoginProtocolFactory {
                 true, true);
         builtins.put(FAMILY_NAME, model);
 
-        createUserAttributeMapper(MIDDLE_NAME, "String");
-        createUserAttributeMapper(NICKNAME, "String");
-        createUserAttributeMapper(PROFILE_CLAIM, "String");
-        createUserAttributeMapper(PICTURE, "String");
-        createUserAttributeMapper(WEBSITE, "String");
-        createUserAttributeMapper(GENDER, "String");
-        createUserAttributeMapper(BIRTHDATE, "String");
-        createUserAttributeMapper(ZONEINFO, "String");
-        createUserAttributeMapper(UPDATED_AT, "String");
-        createUserAttributeMapper(LOCALE, "String");
+        createUserAttributeMapper(MIDDLE_NAME, "middleName", IDToken.MIDDLE_NAME, "String");
+        createUserAttributeMapper(NICKNAME, "nickname", IDToken.NICKNAME, "String");
+        createUserAttributeMapper(PROFILE_CLAIM, "profile", IDToken.PROFILE, "String");
+        createUserAttributeMapper(PICTURE, "picture", IDToken.PICTURE, "String");
+        createUserAttributeMapper(WEBSITE, "website", IDToken.WEBSITE, "String");
+        createUserAttributeMapper(GENDER, "gender", IDToken.GENDER, "String");
+        createUserAttributeMapper(BIRTHDATE, "birthdate", IDToken.BIRTHDATE, "String");
+        createUserAttributeMapper(ZONEINFO, "zoneinfo", IDToken.ZONEINFO, "String");
+        createUserAttributeMapper(UPDATED_AT, "updatedAt", IDToken.UPDATED_AT, "String");
+        createUserAttributeMapper(LOCALE, "locale", IDToken.LOCALE, "String");
 
-        createUserAttributeMapper(PHONE_NUMBER, "String");
-        createUserAttributeMapper(PHONE_NUMBER_VERIFIED, "boolean");
+        createUserAttributeMapper(PHONE_NUMBER, "phoneNumber", IDToken.PHONE_NUMBER, "String");
+        createUserAttributeMapper(PHONE_NUMBER_VERIFIED, "phoneNumberVerified", IDToken.PHONE_NUMBER_VERIFIED, "boolean");
 
         model = UserPropertyMapper.createClaimMapper(EMAIL_VERIFIED,
                 "emailVerified",
@@ -175,11 +176,11 @@ public class OIDCLoginProtocolFactory extends AbstractLoginProtocolFactory {
         builtins.put(KerberosConstants.GSS_DELEGATION_CREDENTIAL, model);
     }
 
-    private static void createUserAttributeMapper(String name, String type) {
+    private static void createUserAttributeMapper(String name, String attrName, String claimName, String type) {
         ProtocolMapperModel model = UserAttributeMapper.createClaimMapper(name,
-                name,
-                name, type,
-                true, name,
+                attrName,
+                claimName, type,
+                true, attrName,
                 true, true, false);
         builtins.put(name, model);
     }

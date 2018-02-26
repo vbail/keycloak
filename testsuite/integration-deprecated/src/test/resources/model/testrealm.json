@@ -226,8 +226,7 @@
         "application" : {
             "Application" : [
                 {
-                    "name": "app-admin",
-                    "scopeParamRequired": true
+                    "name": "app-admin"
                 },
                 {
                     "name": "app-user"
@@ -235,8 +234,7 @@
             ],
             "OtherApp" : [
                 {
-                    "name": "otherapp-admin",
-                    "scopeParamRequired": false
+                    "name": "otherapp-admin"
                 },
                 {
                     "name": "otherapp-user"

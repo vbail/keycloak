@@ -40,7 +40,6 @@ public class MigrationUtils {
         if (client != null && client.getRole(roleName) == null) {
             RoleModel role = client.addRole(roleName);
             role.setDescription("${role_" + roleName + "}");
-            role.setScopeParamRequired(false);
 
             client.getRealm().getRole(AdminRoles.ADMIN).addCompositeRole(role);
         }
@@ -50,7 +49,6 @@ public class MigrationUtils {
             if (client != null && client.getRole(roleName) == null) {
                 RoleModel role = client.addRole(roleName);
                 role.setDescription("${role_" + roleName + "}");
-                role.setScopeParamRequired(false);
 
                 client.getRole(AdminRoles.REALM_ADMIN).addCompositeRole(role);
             }

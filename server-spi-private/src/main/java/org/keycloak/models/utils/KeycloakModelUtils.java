@@ -307,7 +307,6 @@ public final class KeycloakModelUtils {
         if (realm.getRole(Constants.OFFLINE_ACCESS_ROLE) == null) {
             RoleModel role = realm.addRole(Constants.OFFLINE_ACCESS_ROLE);
             role.setDescription("${role_offline-access}");
-            role.setScopeParamRequired(true);
             realm.addDefaultRole(Constants.OFFLINE_ACCESS_ROLE);
         }
     }
@@ -525,7 +524,6 @@ public final class KeycloakModelUtils {
             if (realm.getRole(roleName) == null) {
                 RoleModel role = realm.addRole(roleName);
                 role.setDescription("${role_" + roleName + "}");
-                role.setScopeParamRequired(false);
                 realm.addDefaultRole(roleName);
             }
         }

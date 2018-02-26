@@ -298,13 +298,11 @@ public class RealmManager {
             RoleModel createRealmRole = realm.addRole(AdminRoles.CREATE_REALM);
             adminRole.addCompositeRole(createRealmRole);
             createRealmRole.setDescription("${role_" + AdminRoles.CREATE_REALM + "}");
-            createRealmRole.setScopeParamRequired(false);
         } else {
             adminRealm = model.getRealm(Config.getAdminRealm());
             adminRole = adminRealm.getRole(AdminRoles.ADMIN);
         }
         adminRole.setDescription("${role_"+AdminRoles.ADMIN+"}");
-        adminRole.setScopeParamRequired(false);
 
         ClientModel realmAdminApp = KeycloakModelUtils.createClient(adminRealm, KeycloakModelUtils.getMasterRealmAdminApplicationClientId(realm.getName()));
         // No localized name for now
@@ -315,7 +313,6 @@ public class RealmManager {
         for (String r : AdminRoles.ALL_REALM_ROLES) {
             RoleModel role = realmAdminApp.addRole(r);
             role.setDescription("${role_"+r+"}");
-            role.setScopeParamRequired(false);
             adminRole.addCompositeRole(role);
         }
         addQueryCompositeRoles(realmAdminApp);
@@ -347,7 +344,6 @@ public class RealmManager {
         }
         RoleModel adminRole = realmAdminClient.addRole(AdminRoles.REALM_ADMIN);
         adminRole.setDescription("${role_" + AdminRoles.REALM_ADMIN + "}");
-        adminRole.setScopeParamRequired(false);
         realmAdminClient.setBearerOnly(true);
         realmAdminClient.setFullScopeAllowed(false);
         realmAdminClient.setProtocol(OIDCLoginProtocol.LOGIN_PROTOCOL);
@@ -361,7 +357,6 @@ public class RealmManager {
     private void addAndSetAdminRole(String roleName, ClientModel parentClient, RoleModel parentRole) {
         RoleModel role = parentClient.addRole(roleName);
         role.setDescription("${role_" + roleName + "}");
-        role.setScopeParamRequired(false);
         parentRole.addCompositeRole(role);
     }
 
@@ -400,11 +395,9 @@ public class RealmManager {
                 client.addDefaultRole(role);
                 RoleModel roleModel = client.getRole(role);
                 roleModel.setDescription("${role_" + role + "}");
-                roleModel.setScopeParamRequired(false);
             }
             RoleModel manageAccountLinks = client.addRole(AccountRoles.MANAGE_ACCOUNT_LINKS);
             manageAccountLinks.setDescription("${role_" + AccountRoles.MANAGE_ACCOUNT_LINKS + "}");
-            manageAccountLinks.setScopeParamRequired(false);
             RoleModel manageAccount = client.getRole(AccountRoles.MANAGE_ACCOUNT);
             manageAccount.addCompositeRole(manageAccountLinks);
         }
@@ -426,7 +419,6 @@ public class RealmManager {
             for (String role : Constants.BROKER_SERVICE_ROLES) {
                 RoleModel roleModel = client.addRole(role);
                 roleModel.setDescription("${role_"+ role.toLowerCase().replaceAll("_", "-") +"}");
-                roleModel.setScopeParamRequired(false);
             }
         }
     }
