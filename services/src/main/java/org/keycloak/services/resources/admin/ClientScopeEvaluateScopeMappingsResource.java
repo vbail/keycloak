@@ -19,6 +19,7 @@ package org.keycloak.services.resources.admin;
 
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 import javax.ws.rs.GET;
@@ -28,6 +29,7 @@ import javax.ws.rs.core.MediaType;
 
 import org.jboss.resteasy.annotations.cache.NoCache;
 import org.keycloak.models.ClientModel;
+import org.keycloak.models.ClientScopeModel;
 import org.keycloak.models.KeycloakSession;
 import org.keycloak.models.RoleContainerModel;
 import org.keycloak.models.RoleModel;
@@ -117,14 +119,12 @@ public class ClientScopeEvaluateScopeMappingsResource {
             return new LinkedList<>(roleContainer.getRoles());
         }
 
-        List<ScopeContainerModel> scopeContainers = new LinkedList<>();
-        scopeContainers.add(client);
-        scopeContainers.addAll(TokenManager.getRequestedClientScopes(scopeParam, client));
+        Set<ClientScopeModel> clientScopes = TokenManager.getRequestedClientScopes(scopeParam, client);
 
         List<RoleModel> result = new LinkedList<>();
 
         for (RoleModel role : roleContainer.getRoles()) {
-            for (ScopeContainerModel scopeContainer : scopeContainers) {
+            for (ScopeContainerModel scopeContainer : clientScopes) {
                 if (scopeContainer.hasScope(role)) {
                     result.add(role);
                     break;

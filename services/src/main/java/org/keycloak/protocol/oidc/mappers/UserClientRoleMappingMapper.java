@@ -125,14 +125,9 @@ public class UserClientRoleMappingMapper extends AbstractUserRoleMappingMapper {
             return clientRoleMappings::contains;
         }
 
-        // Add scope mappings of current client
         Set<RoleModel> scopeMappings = new HashSet<>();
-        Set<RoleModel> clientScopeMappings = client.getScopeMappings();
-        if (clientScopeMappings != null) {
-            scopeMappings.addAll(clientScopeMappings);
-        }
 
-        // Add scope mappings of all clientScopes of this client (including optional scopes if scope parameter matches)
+        // Add scope mappings of current client + all clientScopes of this client (including optional scopes if scope parameter matches)
         String scopeParam = null;
         AuthenticatedClientSessionModel authClientSession = userSession.getAuthenticatedClientSessionByClient(client.getId());
         if (authClientSession != null) {

@@ -24,7 +24,7 @@ import java.util.Set;
  * @author <a href="mailto:bill@burkecentral.com">Bill Burke</a>
  * @version $Revision: 1 $
  */
-public interface ClientModel extends RoleContainerModel,  ProtocolMapperContainerModel, ScopeContainerModel {
+public interface ClientModel extends ClientScopeModel, RoleContainerModel,  ProtocolMapperContainerModel, ScopeContainerModel {
 
     // COMMON ATTRIBUTES
 

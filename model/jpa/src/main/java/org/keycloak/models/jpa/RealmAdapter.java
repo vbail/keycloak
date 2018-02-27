@@ -1822,6 +1822,9 @@ public class RealmAdapter implements RealmModel, JpaModel<RealmEntity> {
         if (clientScope == null) {
             return false;
         }
+
+        session.users().preRemove(clientScope);
+
         em.createNamedQuery("deleteClientScopeRoleMappingByClientScope").setParameter("clientScope", clientScopeEntity).executeUpdate();
         em.flush();
         em.remove(clientScopeEntity);

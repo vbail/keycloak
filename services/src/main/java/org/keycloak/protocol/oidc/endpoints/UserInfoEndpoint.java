@@ -19,6 +19,7 @@ package org.keycloak.protocol.oidc.endpoints;
 import org.jboss.resteasy.annotations.cache.NoCache;
 import org.jboss.resteasy.spi.HttpRequest;
 import org.jboss.resteasy.spi.HttpResponse;
+import org.keycloak.OAuth2Constants;
 import org.keycloak.OAuthErrorException;
 import org.keycloak.RSATokenVerifier;
 import org.keycloak.common.ClientConnection;
@@ -31,6 +32,8 @@ import org.keycloak.jose.jws.Algorithm;
 import org.keycloak.jose.jws.JWSBuilder;
 import org.keycloak.models.AuthenticatedClientSessionModel;
 import org.keycloak.models.ClientModel;
+import org.keycloak.models.ClientScopeModel;
+import org.keycloak.models.ClientSessionContext;
 import org.keycloak.models.KeycloakSession;
 import org.keycloak.models.RealmModel;
 import org.keycloak.models.UserModel;
@@ -44,6 +47,7 @@ import org.keycloak.services.managers.AppAuthManager;
 import org.keycloak.services.managers.AuthenticationManager;
 import org.keycloak.services.managers.UserSessionCrossDCManager;
 import org.keycloak.services.resources.Cors;
+import org.keycloak.services.util.DefaultClientSessionContext;
 import org.keycloak.utils.MediaType;
 
 import javax.ws.rs.GET;
@@ -57,6 +61,7 @@ import javax.ws.rs.core.UriInfo;
 import java.security.PrivateKey;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Set;
 
 /**
  * @author pedroigor
@@ -168,8 +173,13 @@ public class UserInfoEndpoint {
         // Existence of authenticatedClientSession for our client already handled before
         AuthenticatedClientSessionModel clientSession = userSession.getAuthenticatedClientSessionByClient(clientModel.getId());
 
+        // Retrieve by latest scope parameter
+        String scopeParam = clientSession.getNote(OAuth2Constants.SCOPE);
+        Set<ClientScopeModel> clientScopes = TokenManager.getRequestedClientScopes(scopeParam, clientModel);
+        ClientSessionContext clientSessionCtx = DefaultClientSessionContext.fromClientScopes(clientSession, clientScopes);
+
         AccessToken userInfo = new AccessToken();
-        tokenManager.transformUserInfoAccessToken(session, userInfo, realm, clientModel, userModel, userSession, clientSession);
+        tokenManager.transformUserInfoAccessToken(session, userInfo, userSession, clientSessionCtx);
 
         Map<String, Object> claims = new HashMap<String, Object>();
         claims.put("sub", userModel.getId());

@@ -36,12 +36,14 @@
         </tr>
         <tr data-ng-hide="clients.length == 0">
             <th>{{:: 'name' | translate}}</th>
+            <th>{{:: 'description' | translate}}</th>
             <th colspan="2" class="w-25">{{:: 'actions' | translate}}</th>
         </tr>
         </thead>
         <tbody>
         <tr ng-repeat="clientScope in clientScopes | filter:search | orderBy:'name'">
             <td><a href="#/realms/{{realm.realm}}/client-scopes/{{clientScope.id}}">{{clientScope.name}}</a></td>
+            <td>{{clientScope.description}}</td>
             <td class="kc-action-cell" kc-open="/realms/{{realm.realm}}/client-scopes/{{clientScope.id}}">{{:: 'edit' | translate}}</td>
             <td class="kc-action-cell" data-ng-click="removeClientScope(clientScope)">{{:: 'delete' | translate}}</td>
         </tr>

@@ -464,19 +464,21 @@ public class ModelToRepresentation {
         return rep;
     }
 
-    public static ClientScopeRepresentation toRepresentation(ClientScopeModel clientModel) {
+    public static ClientScopeRepresentation toRepresentation(ClientScopeModel clientScopeModel) {
         ClientScopeRepresentation rep = new ClientScopeRepresentation();
-        rep.setId(clientModel.getId());
-        rep.setName(clientModel.getName());
-        rep.setDescription(clientModel.getDescription());
-        rep.setProtocol(clientModel.getProtocol());
-        if (!clientModel.getProtocolMappers().isEmpty()) {
+        rep.setId(clientScopeModel.getId());
+        rep.setName(clientScopeModel.getName());
+        rep.setDescription(clientScopeModel.getDescription());
+        rep.setProtocol(clientScopeModel.getProtocol());
+        if (!clientScopeModel.getProtocolMappers().isEmpty()) {
             List<ProtocolMapperRepresentation> mappings = new LinkedList<>();
-            for (ProtocolMapperModel model : clientModel.getProtocolMappers()) {
+            for (ProtocolMapperModel model : clientScopeModel.getProtocolMappers()) {
                 mappings.add(toRepresentation(model));
             }
             rep.setProtocolMappers(mappings);
         }
+
+        rep.setAttributes(new HashMap<>(clientScopeModel.getAttributes()));
 
         return rep;
     }
@@ -610,33 +612,14 @@ public class ModelToRepresentation {
     public static UserConsentRepresentation toRepresentation(UserConsentModel model) {
         String clientId = model.getClient().getClientId();
 
-        Map<String, List<String>> grantedProtocolMappers = new HashMap<String, List<String>>();
-        for (ProtocolMapperModel protocolMapper : model.getGrantedProtocolMappers()) {
-            String protocol = protocolMapper.getProtocol();
-            List<String> currentProtocolMappers = grantedProtocolMappers.computeIfAbsent(protocol, k -> new LinkedList<String>());
-            currentProtocolMappers.add(protocolMapper.getName());
+        List<String> grantedClientScopes = new LinkedList<>();
+        for (ClientScopeModel clientScope : model.getGrantedClientScopes()) {
+            grantedClientScopes.add(clientScope.getName());
         }
-
-        List<String> grantedRealmRoles = new LinkedList<String>();
-        Map<String, List<String>> grantedClientRoles = new HashMap<String, List<String>>();
-        for (RoleModel role : model.getGrantedRoles()) {
-            if (role.getContainer() instanceof RealmModel) {
-                grantedRealmRoles.add(role.getName());
-            } else {
-                ClientModel client2 = (ClientModel) role.getContainer();
-
-                String clientId2 = client2.getClientId();
-                List<String> currentClientRoles = grantedClientRoles.computeIfAbsent(clientId2, k -> new LinkedList<String>());
-                currentClientRoles.add(role.getName());
-            }
-        }
-
 
         UserConsentRepresentation consentRep = new UserConsentRepresentation();
         consentRep.setClientId(clientId);
-        consentRep.setGrantedProtocolMappers(grantedProtocolMappers);
-        consentRep.setGrantedRealmRoles(grantedRealmRoles);
-        consentRep.setGrantedClientRoles(grantedClientRoles);
+        consentRep.setGrantedClientScopes(grantedClientScopes);
         consentRep.setCreatedDate(model.getCreatedDate());
         consentRep.setLastUpdatedDate(model.getLastUpdatedDate());
         return consentRep;

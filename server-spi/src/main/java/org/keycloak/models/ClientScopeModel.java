@@ -43,4 +43,28 @@ public interface ClientScopeModel extends ProtocolMapperContainerModel, ScopeCon
     String getAttribute(String name);
     Map<String, String> getAttributes();
 
+
+    // CONFIGS
+
+    String DISPLAY_ON_CONSENT_SCREEN = "display.on.consent.screen";
+    String CONSENT_SCREEN_TEXT = "consent.screen.text";
+
+    default boolean isDisplayOnConsentScreen() {
+        String displayVal = getAttribute(DISPLAY_ON_CONSENT_SCREEN);
+        return displayVal==null ? true : Boolean.parseBoolean(displayVal);
+    }
+
+    default void setDisplayOnConsentScreen(boolean displayOnConsentScreen) {
+        setAttribute(DISPLAY_ON_CONSENT_SCREEN, String.valueOf(displayOnConsentScreen));
+    }
+
+    default String getConsentScreenText() {
+        return getAttribute(CONSENT_SCREEN_TEXT);
+    }
+
+    default void setConsentScreenText(String consentScreenText) {
+        setAttribute(CONSENT_SCREEN_TEXT, consentScreenText);
+    }
+
+
 }

@@ -35,12 +35,9 @@ import org.keycloak.protocol.LoginProtocol.Error;
 import org.keycloak.services.ErrorPageException;
 import org.keycloak.services.managers.AuthenticationManager;
 import org.keycloak.services.managers.AuthenticationSessionManager;
-import org.keycloak.services.managers.ClientSessionCode;
 import org.keycloak.services.managers.UserSessionCrossDCManager;
 import org.keycloak.services.messages.Messages;
 import org.keycloak.services.resources.LoginActionsService;
-import org.keycloak.services.util.CacheControlUtil;
-import org.keycloak.services.util.AuthenticationFlowURLHelper;
 import org.keycloak.sessions.AuthenticationSessionModel;
 import org.keycloak.sessions.RootAuthenticationSessionModel;
 
@@ -124,7 +121,7 @@ public abstract class AuthorizationEndpointBase {
                     return response;
                 }
 
-                AuthenticationManager.setRolesAndMappersInSession(authSession);
+                AuthenticationManager.setClientScopesInSession(authSession);
 
                 if (processor.nextRequiredAction() != null) {
                     Response response = protocol.sendError(authSession, Error.PASSIVE_INTERACTION_REQUIRED);

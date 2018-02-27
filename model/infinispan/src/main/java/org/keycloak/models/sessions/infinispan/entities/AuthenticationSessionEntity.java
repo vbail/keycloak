@@ -45,8 +45,7 @@ public class AuthenticationSessionEntity implements Serializable {
 
     private String redirectUri;
     private String action;
-    private Set<String> roles;
-    private Set<String> protocolMappers;
+    private Set<String> clientScopes;
 
     private Map<String, AuthenticationSessionModel.ExecutionStatus> executionStatus = new ConcurrentHashMap<>();
     private String protocol;
@@ -115,20 +114,12 @@ public class AuthenticationSessionEntity implements Serializable {
         this.action = action;
     }
 
-    public Set<String> getRoles() {
-        return roles;
+    public Set<String> getClientScopes() {
+        return clientScopes;
     }
 
-    public void setRoles(Set<String> roles) {
-        this.roles = roles;
-    }
-
-    public Set<String> getProtocolMappers() {
-        return protocolMappers;
-    }
-
-    public void setProtocolMappers(Set<String> protocolMappers) {
-        this.protocolMappers = protocolMappers;
+    public void setClientScopes(Set<String> clientScopes) {
+        this.clientScopes = clientScopes;
     }
 
     public Map<String, AuthenticationSessionModel.ExecutionStatus> getExecutionStatus() {

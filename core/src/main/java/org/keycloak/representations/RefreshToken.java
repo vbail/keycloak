@@ -17,16 +17,21 @@
 
 package org.keycloak.representations;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import org.keycloak.util.TokenUtil;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Set;
 
 /**
  * @author <a href="mailto:bill@burkecentral.com">Bill Burke</a>
  * @version $Revision: 1 $
  */
 public class RefreshToken extends AccessToken {
+
+    @JsonProperty("client-scopes")
+    private Set<String> clientScopes;
 
     private RefreshToken() {
         type(TokenUtil.TOKEN_TYPE_REFRESH);
@@ -55,5 +60,13 @@ public class RefreshToken extends AccessToken {
                 resourceAccess.put(entry.getKey(), entry.getValue().clone());
             }
         }
+    }
+
+    public Set<String> getClientScopes() {
+        return clientScopes;
+    }
+
+    public void setClientScopes(Set<String> clientScopes) {
+        this.clientScopes = clientScopes;
     }
 }

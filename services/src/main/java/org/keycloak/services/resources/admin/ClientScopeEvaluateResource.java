@@ -17,8 +17,6 @@
 
 package org.keycloak.services.resources.admin;
 
-import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
@@ -39,6 +37,7 @@ import org.keycloak.common.ClientConnection;
 import org.keycloak.models.AuthenticatedClientSessionModel;
 import org.keycloak.models.ClientModel;
 import org.keycloak.models.ClientScopeModel;
+import org.keycloak.models.ClientSessionContext;
 import org.keycloak.models.KeycloakSession;
 import org.keycloak.models.ProtocolMapperContainerModel;
 import org.keycloak.models.ProtocolMapperModel;
@@ -113,11 +112,9 @@ public class ClientScopeEvaluateResource {
 
         List<ProtocolMapperEvaluationRepresentation> protocolMappers = new LinkedList<>();
 
-        List<ProtocolMapperContainerModel> mapperContainers = new LinkedList<>();
-        mapperContainers.add(client);
-        mapperContainers.addAll(TokenManager.getRequestedClientScopes(scopeParam, client));
+        Set<ClientScopeModel> clientScopes = TokenManager.getRequestedClientScopes(scopeParam, client);
 
-        for (ProtocolMapperContainerModel mapperContainer : mapperContainers) {
+        for (ProtocolMapperContainerModel mapperContainer : clientScopes) {
             Set<ProtocolMapperModel> currentMappers = mapperContainer.getProtocolMappers();
             for (ProtocolMapperModel current : currentMappers) {
                 if (current.getProtocol().equals(client.getProtocol())) {
@@ -195,12 +192,12 @@ public class ClientScopeEvaluateResource {
             userSession = session.sessions().createUserSession(authSession.getParentSession().getId(), realm, user, user.getUsername(),
                     clientConnection.getRemoteAddr(), "example-auth", false, null, null);
 
-            AuthenticationManager.setRolesAndMappersInSession(authSession);
-            AuthenticatedClientSessionModel clientSession = TokenManager.attachAuthenticationSession(session, userSession, authSession);
+            AuthenticationManager.setClientScopesInSession(authSession);
+            ClientSessionContext clientSessionCtx = TokenManager.attachAuthenticationSession(session, userSession, authSession);
 
             TokenManager tokenManager = new TokenManager();
 
-            TokenManager.AccessTokenResponseBuilder responseBuilder = tokenManager.responseBuilder(realm, client, null, session, userSession, clientSession)
+            TokenManager.AccessTokenResponseBuilder responseBuilder = tokenManager.responseBuilder(realm, client, null, session, userSession, clientSessionCtx)
                     .generateAccessToken();
 
             return responseBuilder.getAccessToken();

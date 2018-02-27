@@ -1410,9 +1410,6 @@ module.config([ '$routeProvider', function($routeProvider) {
                 realm : function(RealmLoader) {
                     return RealmLoader();
                 },
-                clientScopes : function(ClientScopeListLoader) {
-                    return ClientScopeListLoader();
-                },
                 clientScope : function() {
                     return {};
                 },
@@ -1427,9 +1424,6 @@ module.config([ '$routeProvider', function($routeProvider) {
             resolve : {
                 realm : function(RealmLoader) {
                     return RealmLoader();
-                },
-                clientScopes : function(ClientScopeListLoader) {
-                    return ClientScopeListLoader();
                 },
                 clientScope : function(ClientScopeLoader) {
                     return ClientScopeLoader();

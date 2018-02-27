@@ -173,6 +173,72 @@
         <!-- Remove scopeParamRequired -->
         <dropColumn tableName="KEYCLOAK_ROLE" columnName="SCOPE_PARAM_REQUIRED" />
 
+        <!-- Consents related changes -->
+        <dropForeignKeyConstraint baseTableName="USER_CONSENT_ROLE" constraintName="FK_GRNTCSNT_ROLE_GR" />
+        <dropTable tableName="USER_CONSENT_ROLE" />
+        <dropForeignKeyConstraint baseTableName="USER_CONSENT_PROT_MAPPER" constraintName="FK_GRNTCSNT_PRM_GR" />
+        <dropTable tableName="USER_CONSENT_PROT_MAPPER" />
+
+        <createTable tableName="USER_CONSENT_CLIENT_SCOPE">
+            <column name="USER_CONSENT_ID" type="VARCHAR(36)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="SCOPE_ID" type="VARCHAR(36)">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+        <addPrimaryKey columnNames="USER_CONSENT_ID, SCOPE_ID" constraintName="CONSTRAINT_GRNTCSNT_CLSC_PM" tableName="USER_CONSENT_CLIENT_SCOPE"/>
+        <addForeignKeyConstraint baseColumnNames="USER_CONSENT_ID" baseTableName="USER_CONSENT_CLIENT_SCOPE" constraintName="FK_GRNTCSNT_CLSC_USC" referencedColumnNames="ID" referencedTableName="USER_CONSENT"/>
+
+        <!-- Federated consents related changes -->
+        <dropTable tableName="FED_USER_CONSENT_ROLE" />
+        <dropTable tableName="FED_USER_CONSENT_PROT_MAPPER" />
+
+        <createTable tableName="FED_USER_CONSENT_CL_SCOPE">
+            <column name="USER_CONSENT_ID" type="VARCHAR(36)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="SCOPE_ID" type="VARCHAR(36)">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+        <addPrimaryKey columnNames="USER_CONSENT_ID, SCOPE_ID" constraintName="CONSTRAINT_FGRNTCSNT_CLSC_PM" tableName="FED_USER_CONSENT_CL_SCOPE"/>
+
+        <!-- Indexes for foreign keys -->
+        <createIndex indexName="IDX_REALM_CLSCOPE" tableName="CLIENT_SCOPE">
+            <column name="REALM_ID" type="VARCHAR(36)"/>
+        </createIndex>
+        <createIndex indexName="IDX_CLSCOPE_PROTMAP" tableName="PROTOCOL_MAPPER">
+            <column name="CLIENT_SCOPE_ID" type="VARCHAR(36)"/>
+        </createIndex>
+        <createIndex indexName="IDX_CLSCOPE_ROLE" tableName="CLIENT_SCOPE_ROLE_MAPPING">
+            <column name="SCOPE_ID" type="VARCHAR(36)"/>
+        </createIndex>
+        <createIndex indexName="IDX_ROLE_CLSCOPE" tableName="CLIENT_SCOPE_ROLE_MAPPING">
+            <column name="ROLE_ID" type="VARCHAR(36)"/>
+        </createIndex>
+        <createIndex indexName="IDX_CLSCOPE_ATTRS" tableName="CLIENT_SCOPE_ATTRIBUTES">
+            <column name="SCOPE_ID" type="VARCHAR(36)"/>
+        </createIndex>
+
+        <createIndex indexName="IDX_CLSCOPE_CL" tableName="CLIENT_SCOPE_CLIENT">
+            <column name="CLIENT_ID" type="VARCHAR(36)"/>
+        </createIndex>
+        <createIndex indexName="IDX_CL_CLSCOPE" tableName="CLIENT_SCOPE_CLIENT">
+            <column name="SCOPE_ID" type="VARCHAR(36)"/>
+        </createIndex>
+
+        <createIndex indexName="IDX_DEFCLS_REALM" tableName="DEFAULT_CLIENT_SCOPE">
+            <column name="REALM_ID" type="VARCHAR(36)"/>
+        </createIndex>
+        <createIndex indexName="IDX_DEFCLS_SCOPE" tableName="DEFAULT_CLIENT_SCOPE">
+            <column name="SCOPE_ID" type="VARCHAR(36)"/>
+        </createIndex>
+
+        <createIndex indexName="IDX_USCONSENT_CLSCOPE" tableName="USER_CONSENT_CLIENT_SCOPE">
+            <column name="USER_CONSENT_ID" type="VARCHAR(36)"/>
+        </createIndex>
+
     </changeSet>
 
 </databaseChangeLog>

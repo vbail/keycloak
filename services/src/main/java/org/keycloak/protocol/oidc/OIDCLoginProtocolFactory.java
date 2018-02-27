@@ -191,6 +191,8 @@ public class OIDCLoginProtocolFactory extends AbstractLoginProtocolFactory {
         ClientScopeModel profileScope = newRealm.addClientScope(OAuth2Constants.SCOPE_PROFILE);
         // TODO:mposolda localize this description (same for other scopes)
         profileScope.setDescription("OpenID Connect 'profile' scope");
+        profileScope.setDisplayOnConsentScreen(true);
+        profileScope.setConsentScreenText("User profile");
         profileScope.setProtocol(getId());
         profileScope.addProtocolMapper(builtins.get(FULL_NAME));
         profileScope.addProtocolMapper(builtins.get(FAMILY_NAME));
@@ -209,17 +211,23 @@ public class OIDCLoginProtocolFactory extends AbstractLoginProtocolFactory {
 
         ClientScopeModel emailScope = newRealm.addClientScope(OAuth2Constants.SCOPE_EMAIL);
         emailScope.setDescription("OpenID Connect 'email' scope");
+        emailScope.setDisplayOnConsentScreen(true);
+        emailScope.setConsentScreenText("Email address");
         emailScope.setProtocol(getId());
         emailScope.addProtocolMapper(builtins.get(EMAIL));
         emailScope.addProtocolMapper(builtins.get(EMAIL_VERIFIED));
 
         ClientScopeModel addressScope = newRealm.addClientScope(OAuth2Constants.SCOPE_ADDRESS);
         addressScope.setDescription("OpenID Connect 'address' scope");
+        addressScope.setDisplayOnConsentScreen(true);
+        addressScope.setConsentScreenText("Address");
         addressScope.setProtocol(getId());
         addressScope.addProtocolMapper(builtins.get(ADDRESS));
 
         ClientScopeModel phoneScope = newRealm.addClientScope(OAuth2Constants.SCOPE_PHONE);
         phoneScope.setDescription("OpenID Connect 'phone' scope");
+        phoneScope.setDisplayOnConsentScreen(true);
+        phoneScope.setConsentScreenText("Phone number");
         phoneScope.setProtocol(getId());
         phoneScope.addProtocolMapper(builtins.get(PHONE_NUMBER));
         phoneScope.addProtocolMapper(builtins.get(PHONE_NUMBER_VERIFIED));
@@ -233,7 +241,9 @@ public class OIDCLoginProtocolFactory extends AbstractLoginProtocolFactory {
         RoleModel offlineRole = newRealm.getRole(OAuth2Constants.OFFLINE_ACCESS);
         if (offlineRole != null) {
             ClientScopeModel offlineAccessScope = newRealm.addClientScope(OAuth2Constants.OFFLINE_ACCESS);
-            offlineAccessScope.setDescription("OpenID Connect 'offline_access' scope");
+            offlineAccessScope.setDescription("OpenID Connect 'offline_access' scope. Used when requesting offline tokens");
+            offlineAccessScope.setDisplayOnConsentScreen(true);
+            offlineAccessScope.setConsentScreenText("Offline Access");
             offlineAccessScope.setProtocol(getId());
             offlineAccessScope.addScopeMapping(offlineRole);
 
