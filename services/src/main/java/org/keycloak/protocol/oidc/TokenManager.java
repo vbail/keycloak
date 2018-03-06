@@ -538,6 +538,10 @@ public class TokenManager {
         UserConsentModel grantedConsent = session.users().getConsentByClient(client.getRealm(), user.getId(), client.getId());
 
         for (ClientScopeModel requestedScope : requestedClientScopes) {
+            if (!requestedScope.isDisplayOnConsentScreen()) {
+                continue;
+            }
+
             if (!grantedConsent.getGrantedClientScopes().contains(requestedScope)) {
                 // TODO:mposolda debug
                 logger.infof("Client '%s' no longer has requested consent from user '%s' for client scope '%s'",

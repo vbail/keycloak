@@ -52,6 +52,8 @@ import org.keycloak.testsuite.util.AdminClientUtil;
 
 import javax.ws.rs.ClientErrorException;
 import javax.ws.rs.core.Response;
+
+import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -439,7 +441,7 @@ public class FineGrainAdminUnitTest extends AbstractKeycloakTest {
             client.setFullScopeAllowed(false);
             realmClient.realm(TEST).clients().get(client.getId()).update(client);
 
-            client.setClientTemplate(template.getName());
+            client.setDefaultClientScopes(Collections.singletonList(template.getName()));
             try {
                 realmClient.realm(TEST).clients().get(client.getId()).update(client);
                 Assert.fail("should fail with forbidden exception");
@@ -447,7 +449,7 @@ public class FineGrainAdminUnitTest extends AbstractKeycloakTest {
                 Assert.assertEquals(403, e.getResponse().getStatus());
 
             }
-            client.setClientTemplate(null);
+            client.setDefaultClientScopes(null);
             realmClient.realm(TEST).clients().get(client.getId()).update(client);
 
             try {

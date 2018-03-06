@@ -15,7 +15,7 @@
             <thead>
               <tr>
                 <td>${msg("application")}</td>
-                <td>${msg("availablePermissions")}</td>
+                <td>${msg("availableRoles")}</td>
                 <td>${msg("grantedPermissions")}</td>
                 <td>${msg("additionalGrants")}</td>
                 <td>${msg("action")}</td>
@@ -63,7 +63,7 @@
                     </td>
 
                     <td>
-                        <#if (application.client.consentRequired && application.claimsGranted?has_content) || application.additionalGrants?has_content>
+                        <#if (application.client.consentRequired && application.clientScopesGranted?has_content) || application.additionalGrants?has_content>
                             <button type='submit' class='${properties.kcButtonClass!} ${properties.kcButtonPrimaryClass!}' id='revoke-${application.client.clientId}' name='clientId' value="${application.client.id}">${msg("revoke")}</button>
                         </#if>
                     </td>

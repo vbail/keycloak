@@ -153,11 +153,11 @@ public interface ClientResource {
 
     @PUT
     @Path("optional-client-scopes/{clientScopeId}")
-    void addDefaultOptionalClientScope(@PathParam("clientScopeId") String clientScopeId);
+    void addOptionalClientScope(@PathParam("clientScopeId") String clientScopeId);
 
     @DELETE
     @Path("optional-client-scopes/{clientScopeId}")
-    void removeDefaultOptionalClientScope(@PathParam("clientScopeId") String clientScopeId);
+    void removeOptionalClientScope(@PathParam("clientScopeId") String clientScopeId);
 
     @Path("/service-account-user")
     @GET

@@ -83,7 +83,7 @@ public class ApplicationsBean {
                 if (consent != null) {
 
                     for (ClientScopeModel clientScope : consent.getGrantedClientScopes()) {
-                        String consentText = clientScope.getConsentScreenText()==null ? clientScope.getName() : clientScope.getConsentScreenText();
+                        String consentText = clientScope.getConsentScreenText();
                         clientScopesGranted.add(consentText);
                     }
                 }

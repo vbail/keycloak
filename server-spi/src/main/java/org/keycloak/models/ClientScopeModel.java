@@ -58,8 +58,13 @@ public interface ClientScopeModel extends ProtocolMapperContainerModel, ScopeCon
         setAttribute(DISPLAY_ON_CONSENT_SCREEN, String.valueOf(displayOnConsentScreen));
     }
 
+    // Fallback to name if consentScreenText attribute is null
     default String getConsentScreenText() {
-        return getAttribute(CONSENT_SCREEN_TEXT);
+        String consentScreenText = getAttribute(CONSENT_SCREEN_TEXT);
+        if (consentScreenText == null) {
+            consentScreenText = getName();
+        }
+        return consentScreenText;
     }
 
     default void setConsentScreenText(String consentScreenText) {

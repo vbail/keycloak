@@ -59,6 +59,16 @@ public class AdminEventPaths {
         return uri.toString();
     }
 
+    public static String defaultDefaultClientScopePath(String clientScopeId) {
+        URI uri = UriBuilder.fromUri("").path(RealmResource.class, "addDefaultDefaultClientScope").build(clientScopeId);
+        return uri.toString();
+    }
+
+    public static String defaultOptionalClientScopePath(String clientScopeId) {
+        URI uri = UriBuilder.fromUri("").path(RealmResource.class, "addDefaultOptionalClientScope").build(clientScopeId);
+        return uri.toString();
+    }
+
 
     // CLIENT RESOURCE
 

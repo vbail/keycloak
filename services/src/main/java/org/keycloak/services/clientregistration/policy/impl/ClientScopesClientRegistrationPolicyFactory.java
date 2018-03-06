@@ -18,6 +18,7 @@
 package org.keycloak.services.clientregistration.policy.impl;
 
 import java.util.Collections;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -38,8 +39,9 @@ public class ClientScopesClientRegistrationPolicyFactory extends AbstractClientR
 
     public static final String PROVIDER_ID = "allowed-client-scopes";
 
-    // TODO:mposolda should keep the name for backwards compatibility or not?
-    public static final String ALLOWED_CLIENT_TEMPLATES = "allowed-client-templates";
+    public static final String ALLOWED_CLIENT_SCOPES = "allowed-client-scopes";
+
+    public static final String ALLOW_DEFAULT_SCOPES = "allow-default-scopes";
 
     @Override
     public ClientRegistrationPolicy create(KeycloakSession session, ComponentModel model) {
@@ -53,30 +55,40 @@ public class ClientScopesClientRegistrationPolicyFactory extends AbstractClientR
 
     @Override
     public List<ProviderConfigProperty> getConfigProperties(KeycloakSession session) {
+        List<ProviderConfigProperty> configProps = new LinkedList<>();
+
         ProviderConfigProperty property;
         property = new ProviderConfigProperty();
-        property.setName(ALLOWED_CLIENT_TEMPLATES);
+        property.setName(ALLOWED_CLIENT_SCOPES);
         property.setLabel("allowed-client-scopes.label");
         property.setHelpText("allowed-client-scopes.tooltip");
         property.setType(ProviderConfigProperty.MULTIVALUED_LIST_TYPE);
 
         if (session != null) {
-            property.setOptions(getClientTemplates(session));
+            property.setOptions(getClientScopes(session));
         }
+        configProps.add(property);
 
-        configProperties = Collections.singletonList(property);
+        property = new ProviderConfigProperty();
+        property.setName(ALLOW_DEFAULT_SCOPES);
+        property.setLabel("allow-default-scopes.label");
+        property.setHelpText("allow-default-scopes.tooltip");
+        property.setType(ProviderConfigProperty.BOOLEAN_TYPE);
+        property.setDefaultValue(true);
+        configProps.add(property);
 
+        configProperties = configProps;
         return configProperties;
     }
 
-    private List<String> getClientTemplates(KeycloakSession session) {
+    private List<String> getClientScopes(KeycloakSession session) {
         RealmModel realm = session.getContext().getRealm();
         if (realm == null) {
             return Collections.emptyList();
         } else {
-            List<ClientScopeModel> clientTemplates = realm.getClientScopes();
+            List<ClientScopeModel> clientScopes = realm.getClientScopes();
 
-            return clientTemplates.stream().map((ClientScopeModel clientScope) -> {
+            return clientScopes.stream().map((ClientScopeModel clientScope) -> {
 
                 return clientScope.getName();
 

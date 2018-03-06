@@ -109,8 +109,9 @@ public class DefaultClientRegistrationPolicies {
         protMapperModel.getConfig().putSingle(ProtocolMappersClientRegistrationPolicyFactory.CONSENT_REQUIRED_FOR_ALL_MAPPERS, "true");
         realm.addComponentModel(protMapperModel);
 
-        ComponentModel clientTemplatesModel = createModelInstance("Allowed Client Templates", realm, ClientScopesClientRegistrationPolicyFactory.PROVIDER_ID, policyTypeKey);
-        clientTemplatesModel.getConfig().put(ClientScopesClientRegistrationPolicyFactory.ALLOWED_CLIENT_TEMPLATES, Collections.emptyList());
+        ComponentModel clientTemplatesModel = createModelInstance("Allowed Client Scopes", realm, ClientScopesClientRegistrationPolicyFactory.PROVIDER_ID, policyTypeKey);
+        clientTemplatesModel.getConfig().put(ClientScopesClientRegistrationPolicyFactory.ALLOWED_CLIENT_SCOPES, Collections.emptyList());
+        clientTemplatesModel.put(ClientScopesClientRegistrationPolicyFactory.ALLOW_DEFAULT_SCOPES, true);
         realm.addComponentModel(clientTemplatesModel);
     }
 

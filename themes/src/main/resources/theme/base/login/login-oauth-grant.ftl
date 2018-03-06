@@ -13,7 +13,7 @@
                 <#if oauth.clientScopesRequested??>
                     <#list oauth.clientScopesRequested as clientScope>
                         <li>
-                            <span><#if clientScope.consentScreenText??>${advancedMsg(clientScope.consentScreenText)}<#else>${advancedMsg(clientScope.name)}</#if></span>
+                            <span>${advancedMsg(clientScope.consentScreenText)}</span>
                         </li>
                     </#list>
                 </#if>

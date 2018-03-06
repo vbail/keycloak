@@ -195,4 +195,22 @@ public interface ClientModel extends ClientScopeModel, RoleContainerModel,  Prot
     void registerNode(String nodeHost, int registrationTime);
 
     void unregisterNode(String nodeHost);
+
+
+    // Clients are not displayed on consent screen by default
+    @Override
+    default boolean isDisplayOnConsentScreen() {
+        String displayVal = getAttribute(DISPLAY_ON_CONSENT_SCREEN);
+        return displayVal==null ? false : Boolean.parseBoolean(displayVal);
+    }
+
+    // Fallback to name or clientId if consentScreenText attribute is null
+    @Override
+    default String getConsentScreenText() {
+        String consentScreenText = ClientScopeModel.super.getConsentScreenText();
+        if (consentScreenText == null) {
+            consentScreenText = getClientId();
+        }
+        return consentScreenText;
+    }
 }

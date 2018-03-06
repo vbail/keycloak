@@ -18,6 +18,8 @@ package org.keycloak.forms.login.freemarker.model;
 
 import org.keycloak.models.ClientModel;
 import org.keycloak.models.ClientScopeModel;
+
+import java.util.LinkedList;
 import java.util.List;
 
 /**
@@ -25,14 +27,17 @@ import java.util.List;
  */
 public class OAuthGrantBean {
 
-    private List<ClientScopeModel> clientScopesRequested;
+    private List<ClientScopeEntry> clientScopesRequested = new LinkedList<>();
     private String code;
     private ClientModel client;
 
     public OAuthGrantBean(String code, ClientModel client, List<ClientScopeModel> clientScopesRequested) {
         this.code = code;
         this.client = client;
-        this.clientScopesRequested = clientScopesRequested;
+
+        for (ClientScopeModel clientScope : clientScopesRequested) {
+            this.clientScopesRequested.add(new ClientScopeEntry(clientScope.getConsentScreenText()));
+        }
     }
 
     public String getCode() {
@@ -45,7 +50,22 @@ public class OAuthGrantBean {
     }
 
 
-    public List<ClientScopeModel> getClientScopesRequested() {
+    public List<ClientScopeEntry> getClientScopesRequested() {
         return clientScopesRequested;
+    }
+
+
+    // Converting ClientScopeModel due the freemarker limitations. It's not able to read "getConsentScreenText" default method defined on interface
+    public static class ClientScopeEntry {
+
+        private final String consentScreenText;
+
+        private ClientScopeEntry(String consentScreenText) {
+            this.consentScreenText = consentScreenText;
+        }
+
+        public String getConsentScreenText() {
+            return consentScreenText;
+        }
     }
 }

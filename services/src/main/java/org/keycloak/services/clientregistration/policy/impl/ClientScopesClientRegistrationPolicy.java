@@ -17,12 +17,16 @@
 
 package org.keycloak.services.clientregistration.policy.impl;
 
+import java.util.LinkedList;
 import java.util.List;
+import java.util.stream.Collectors;
 
+import org.jboss.logging.Logger;
 import org.keycloak.component.ComponentModel;
 import org.keycloak.models.ClientModel;
 import org.keycloak.models.ClientScopeModel;
 import org.keycloak.models.KeycloakSession;
+import org.keycloak.models.RealmModel;
 import org.keycloak.services.clientregistration.ClientRegistrationContext;
 import org.keycloak.services.clientregistration.ClientRegistrationProvider;
 import org.keycloak.services.clientregistration.policy.ClientRegistrationPolicy;
@@ -33,20 +37,28 @@ import org.keycloak.services.clientregistration.policy.ClientRegistrationPolicyE
  */
 public class ClientScopesClientRegistrationPolicy implements ClientRegistrationPolicy {
 
+    private static final Logger logger = Logger.getLogger(ClientScopesClientRegistrationPolicy.class);
+
     private final KeycloakSession session;
+    private final RealmModel realm;
     private final ComponentModel componentModel;
 
     public ClientScopesClientRegistrationPolicy(KeycloakSession session, ComponentModel componentModel) {
         this.session = session;
         this.componentModel = componentModel;
+        this.realm = session.realms().getRealm(componentModel.getParentId());
     }
 
     @Override
     public void beforeRegister(ClientRegistrationContext context) throws ClientRegistrationPolicyException {
-        String clientTemplate = context.getClient().getClientTemplate();
-        if (!isClientScopeAllowed(clientTemplate)) {
-            throw new ClientRegistrationPolicyException("Not permitted to use specified clientScope");
-        }
+        List<String> requestedDefaultScopeNames = context.getClient().getDefaultClientScopes();
+        List<String> requestedOptionalScopeNames = context.getClient().getOptionalClientScopes();
+
+        List<String> allowedDefaultScopeNames = getAllowedScopeNames(realm, true);
+        List<String> allowedOptionalScopeNames = getAllowedScopeNames(realm, false);
+
+        checkClientScopesAllowed(requestedDefaultScopeNames, allowedDefaultScopeNames);
+        checkClientScopesAllowed(requestedOptionalScopeNames, allowedOptionalScopeNames);
     }
 
     @Override
@@ -56,16 +68,22 @@ public class ClientScopesClientRegistrationPolicy implements ClientRegistrationP
 
     @Override
     public void beforeUpdate(ClientRegistrationContext context, ClientModel clientModel) throws ClientRegistrationPolicyException {
-        String newScope = context.getClient().getClientTemplate();
+        List<String> requestedDefaultScopeNames = context.getClient().getDefaultClientScopes();
+        List<String> requestedOptionalScopeNames = context.getClient().getOptionalClientScopes();
 
-        // Check if template was already set before. Then we allow update
-        // TODO:mposolda re-evaluate this implementation. Should check all clientScopes probably. Also should have a flag on policy if defaultClientScopes should be count or not
-//        ClientScopeModel currentClientScope = clientModel.getClientTemplate();
-//        if (currentClientScope == null || !currentClientScope.getName().equals(newScope)) {
-//            if (!isClientScopeAllowed(newScope)) {
-//                throw new ClientRegistrationPolicyException("Not permitted to use specified clientScope");
-//            }
-//        }
+        // Allow scopes, which were already presented before
+        if (requestedDefaultScopeNames != null) {
+            requestedDefaultScopeNames.removeAll(clientModel.getClientScopes(true).keySet());
+        }
+        if (requestedOptionalScopeNames != null) {
+            requestedOptionalScopeNames.removeAll(clientModel.getClientScopes(false).keySet());
+        }
+
+        List<String> allowedDefaultScopeNames = getAllowedScopeNames(realm, true);
+        List<String> allowedOptionalScopeNames = getAllowedScopeNames(realm, false);
+
+        checkClientScopesAllowed(requestedDefaultScopeNames, allowedDefaultScopeNames);
+        checkClientScopesAllowed(requestedOptionalScopeNames, allowedOptionalScopeNames);
     }
 
     @Override
@@ -83,12 +101,38 @@ public class ClientScopesClientRegistrationPolicy implements ClientRegistrationP
 
     }
 
-    private boolean isClientScopeAllowed(String clientScope) {
-        if (clientScope == null) {
-            return true;
-        } else {
-            List<String> allowedTemplates = componentModel.getConfig().getList(ClientScopesClientRegistrationPolicyFactory.ALLOWED_CLIENT_TEMPLATES);
-            return allowedTemplates.contains(clientScope);
+    private void checkClientScopesAllowed(List<String> requestedScopes, List<String> allowedScopes) throws ClientRegistrationPolicyException {
+        if (requestedScopes != null) {
+            for (String requested : requestedScopes) {
+                if (!allowedScopes.contains(requested)) {
+                    logger.warnf("Requested scope '%s' not trusted in the list: %s", requested, allowedScopes.toString());
+                    throw new ClientRegistrationPolicyException("Not permitted to use specified clientScope");
+                }
+            }
         }
+    }
+
+    private List<String> getAllowedScopeNames(RealmModel realm, boolean defaultScopes) {
+        List<String> allAllowed = new LinkedList<>();
+
+        // Add client scopes allowed by config
+        List<String> allowedScopesConfig = componentModel.getConfig().getList(ClientScopesClientRegistrationPolicyFactory.ALLOWED_CLIENT_SCOPES);
+        if (allowedScopesConfig != null) {
+            allAllowed.addAll(allowedScopesConfig);
+        }
+
+        // If allowDefaultScopes, then realm default scopes are allowed as default scopes (+ optional scopes are allowed as optional scopes)
+        boolean allowDefaultScopes = componentModel.get(ClientScopesClientRegistrationPolicyFactory.ALLOW_DEFAULT_SCOPES, true);
+        if (allowDefaultScopes) {
+            List<String> scopeNames = realm.getDefaultClientScopes(defaultScopes).stream().map((ClientScopeModel clientScope) -> {
+
+                return clientScope.getName();
+
+            }).collect(Collectors.toList());
+
+            allAllowed.addAll(scopeNames);
+        }
+
+        return allAllowed;
     }
 }

@@ -76,6 +76,12 @@ public class OIDCLoginProtocolFactory extends AbstractLoginProtocolFactory {
     public static final String PHONE_NUMBER = "phone number";
     public static final String PHONE_NUMBER_VERIFIED = "phone number verified";
 
+    public static final String PROFILE_SCOPE_CONSENT_TEXT = "${profileScopeConsentText}";
+    public static final String EMAIL_SCOPE_CONSENT_TEXT = "${emailScopeConsentText}";
+    public static final String ADDRESS_SCOPE_CONSENT_TEXT = "${addressScopeConsentText}";
+    public static final String PHONE_SCOPE_CONSENT_TEXT = "${phoneScopeConsentText}";
+    public static final String OFFLINE_ACCESS_SCOPE_CONSENT_TEXT = "${offlineAccessScopeConsentText}";
+
     public static final String USERNAME_CONSENT_TEXT = "${username}";
     public static final String EMAIL_CONSENT_TEXT = "${email}";
     public static final String EMAIL_VERIFIED_CONSENT_TEXT = "${emailVerified}";
@@ -189,10 +195,9 @@ public class OIDCLoginProtocolFactory extends AbstractLoginProtocolFactory {
     protected void createDefaultClientScopes(RealmModel newRealm) {
         //name, family_name, given_name, middle_name, nickname, preferred_username, profile, picture, website, gender, birthdate, zoneinfo, locale, and updated_at.
         ClientScopeModel profileScope = newRealm.addClientScope(OAuth2Constants.SCOPE_PROFILE);
-        // TODO:mposolda localize this description (same for other scopes)
-        profileScope.setDescription("OpenID Connect 'profile' scope");
+        profileScope.setDescription("OpenID Connect built-in scope: profile");
         profileScope.setDisplayOnConsentScreen(true);
-        profileScope.setConsentScreenText("User profile");
+        profileScope.setConsentScreenText(PROFILE_SCOPE_CONSENT_TEXT);
         profileScope.setProtocol(getId());
         profileScope.addProtocolMapper(builtins.get(FULL_NAME));
         profileScope.addProtocolMapper(builtins.get(FAMILY_NAME));
@@ -210,24 +215,24 @@ public class OIDCLoginProtocolFactory extends AbstractLoginProtocolFactory {
         profileScope.addProtocolMapper(builtins.get(UPDATED_AT));
 
         ClientScopeModel emailScope = newRealm.addClientScope(OAuth2Constants.SCOPE_EMAIL);
-        emailScope.setDescription("OpenID Connect 'email' scope");
+        emailScope.setDescription("OpenID Connect built-in scope: email");
         emailScope.setDisplayOnConsentScreen(true);
-        emailScope.setConsentScreenText("Email address");
+        emailScope.setConsentScreenText(EMAIL_SCOPE_CONSENT_TEXT);
         emailScope.setProtocol(getId());
         emailScope.addProtocolMapper(builtins.get(EMAIL));
         emailScope.addProtocolMapper(builtins.get(EMAIL_VERIFIED));
 
         ClientScopeModel addressScope = newRealm.addClientScope(OAuth2Constants.SCOPE_ADDRESS);
-        addressScope.setDescription("OpenID Connect 'address' scope");
+        addressScope.setDescription("OpenID Connect built-in scope: address");
         addressScope.setDisplayOnConsentScreen(true);
-        addressScope.setConsentScreenText("Address");
+        addressScope.setConsentScreenText(ADDRESS_SCOPE_CONSENT_TEXT);
         addressScope.setProtocol(getId());
         addressScope.addProtocolMapper(builtins.get(ADDRESS));
 
         ClientScopeModel phoneScope = newRealm.addClientScope(OAuth2Constants.SCOPE_PHONE);
-        phoneScope.setDescription("OpenID Connect 'phone' scope");
+        phoneScope.setDescription("OpenID Connect built-in scope: phone");
         phoneScope.setDisplayOnConsentScreen(true);
-        phoneScope.setConsentScreenText("Phone number");
+        phoneScope.setConsentScreenText(PHONE_SCOPE_CONSENT_TEXT);
         phoneScope.setProtocol(getId());
         phoneScope.addProtocolMapper(builtins.get(PHONE_NUMBER));
         phoneScope.addProtocolMapper(builtins.get(PHONE_NUMBER_VERIFIED));
@@ -241,9 +246,9 @@ public class OIDCLoginProtocolFactory extends AbstractLoginProtocolFactory {
         RoleModel offlineRole = newRealm.getRole(OAuth2Constants.OFFLINE_ACCESS);
         if (offlineRole != null) {
             ClientScopeModel offlineAccessScope = newRealm.addClientScope(OAuth2Constants.OFFLINE_ACCESS);
-            offlineAccessScope.setDescription("OpenID Connect 'offline_access' scope. Used when requesting offline tokens");
+            offlineAccessScope.setDescription("OpenID Connect built-in scope: offline_access");
             offlineAccessScope.setDisplayOnConsentScreen(true);
-            offlineAccessScope.setConsentScreenText("Offline Access");
+            offlineAccessScope.setConsentScreenText(OFFLINE_ACCESS_SCOPE_CONSENT_TEXT);
             offlineAccessScope.setProtocol(getId());
             offlineAccessScope.addScopeMapping(offlineRole);
 

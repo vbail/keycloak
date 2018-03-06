@@ -79,7 +79,6 @@ import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriBuilder;
 import java.io.IOException;
 import java.net.URI;
-import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
@@ -730,6 +729,7 @@ public class AccessTokenTest extends AbstractKeycloakTest {
         Response response = realm.clientScopes().create(rep);
         assertEquals(201, response.getStatus());
         URI templateUri = response.getLocation();
+        String clientScopeId = ApiUtil.getCreatedId(response);
         response.close();
         ClientScopeResource clientScopeResource = adminClient.proxy(ClientScopeResource.class, templateUri);
         ProtocolMapperModel hard = HardcodedClaim.create("hard", "hard", "coded", "String", false, null, true, true);
@@ -739,11 +739,8 @@ public class AccessTokenTest extends AbstractKeycloakTest {
         response.close();
 
         ClientRepresentation clientRep = ApiUtil.findClientByClientId(realm, "test-app").toRepresentation();
-        clientRep.setClientTemplate("template");
+        realm.clients().get(clientRep.getId()).addDefaultClientScope(clientScopeId);
         clientRep.setFullScopeAllowed(false);
-        clientRep.setUseTemplateMappers(true);
-        clientRep.setUseTemplateScope(true);
-        clientRep.setUseTemplateConfig(true);
         realm.clients().get(clientRep.getId()).update(clientRep);
 
         {
@@ -846,8 +843,7 @@ public class AccessTokenTest extends AbstractKeycloakTest {
         }
 
         // test don't use template scope. Add roles back to the clientScope, but they won't be available
-        clientRep.setUseTemplateScope(false);
-        realm.clients().get(clientRep.getId()).update(clientRep);
+        realm.clients().get(clientRep.getId()).removeDefaultClientScope(clientScopeId);
         clientScopeResource.getScopeMappings().realmLevel().add(addRole1);
         clientScopeResource.getScopeMappings().realmLevel().add(addRole2);
 
@@ -864,16 +860,16 @@ public class AccessTokenTest extends AbstractKeycloakTest {
             AccessToken accessToken = getAccessToken(tokenResponse);
             Assert.assertFalse(accessToken.getRealmAccess().getRoles().contains(realmRole.getName()));
             Assert.assertFalse(accessToken.getRealmAccess().getRoles().contains(realmRole2.getName()));
+            assertNull(accessToken.getOtherClaims().get("hard"));
 
+            IDToken idToken = getIdToken(tokenResponse);
+            assertNull(idToken.getOtherClaims().get("hard"));
 
             response.close();
             client.close();
         }
 
         // undo mappers
-        clientRep.setClientTemplate(ClientScopeRepresentation.NONE);
-        clientRep.setFullScopeAllowed(true);
-        realm.clients().get(clientRep.getId()).update(clientRep);
         realm.users().get(user.getId()).roles().realmLevel().remove(addRoles);
         realm.roles().get(realmRole.getName()).remove();
         realm.roles().get(realmRole2.getName()).remove();

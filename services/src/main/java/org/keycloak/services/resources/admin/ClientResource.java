@@ -379,14 +379,14 @@ public class ClientResource {
     @PUT
     @NoCache
     @Path("optional-client-scopes/{clientScopeId}")
-    public void addDefaultOptionalClientScope(@PathParam("clientScopeId") String clientScopeId) {
+    public void addOptionalClientScope(@PathParam("clientScopeId") String clientScopeId) {
         addDefaultClientScope(clientScopeId, false);
     }
 
     @DELETE
     @NoCache
     @Path("optional-client-scopes/{clientScopeId}")
-    public void removeDefaultOptionalClientScope(@PathParam("clientScopeId") String clientScopeId) {
+    public void removeOptionalClientScope(@PathParam("clientScopeId") String clientScopeId) {
         removeDefaultClientScope(clientScopeId);
     }
 

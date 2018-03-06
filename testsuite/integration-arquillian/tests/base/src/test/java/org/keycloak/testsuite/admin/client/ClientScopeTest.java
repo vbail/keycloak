@@ -50,6 +50,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertThat;
@@ -84,38 +85,46 @@ public class ClientScopeTest extends AbstractClientTest {
     }
 
 
+    private List<String> getClientScopeNames(List<ClientScopeRepresentation> scopes) {
+        return scopes.stream().map((ClientScopeRepresentation clientScope) -> {
+
+            return clientScope.getName();
+
+        }).collect(Collectors.toList());
+    }
+
     @Test
     public void testRemoveClientScope() {
-        // Create template1
+        // Create scope1
         ClientScopeRepresentation templateRep = new ClientScopeRepresentation();
         templateRep.setName("scope1");
         String template1Id = createClientScope(templateRep);
 
-        List<ClientScopeRepresentation> clientTemplates = clientScopes().findAll();
-        Assert.assertEquals(1, clientTemplates.size());
-        Assert.assertEquals("scope1", clientTemplates.get(0).getName());
+        List<ClientScopeRepresentation> clientScopes = clientScopes().findAll();
+        Assert.assertTrue(getClientScopeNames(clientScopes).contains("scope1"));
 
-        // Create template2
+        // Create scope2
         templateRep = new ClientScopeRepresentation();
         templateRep.setName("scope2");
         String template2Id = createClientScope(templateRep);
 
-        clientTemplates = clientScopes().findAll();
-        Assert.assertEquals(2, clientTemplates.size());
+        clientScopes = clientScopes().findAll();
+        Assert.assertTrue(getClientScopeNames(clientScopes).contains("scope2"));
 
-        // Remove template1
+        // Remove scope1
         removeClientScope(template1Id);
 
-        clientTemplates = clientScopes().findAll();
-        Assert.assertEquals(1, clientTemplates.size());
-        Assert.assertEquals("scope2", clientTemplates.get(0).getName());
+        clientScopes = clientScopes().findAll();
+        Assert.assertFalse(getClientScopeNames(clientScopes).contains("scope1"));
+        Assert.assertTrue(getClientScopeNames(clientScopes).contains("scope2"));
 
 
-        // Remove template2
+        // Remove scope2
         removeClientScope(template2Id);
 
-        clientTemplates = clientScopes().findAll();
-        Assert.assertEquals(0, clientTemplates.size());
+        clientScopes = clientScopes().findAll();
+        Assert.assertFalse(getClientScopeNames(clientScopes).contains("scope1"));
+        Assert.assertFalse(getClientScopeNames(clientScopes).contains("scope2"));
     }
 
 
@@ -325,12 +334,13 @@ public class ClientScopeTest extends AbstractClientTest {
         clientRep.setName("bar-client");
         clientRep.setRootUrl("foo");
         clientRep.setProtocol("openid-connect");
-        clientRep.setClientTemplate("foo-template");
+        clientRep.setDefaultClientScopes(Collections.singletonList("foo-template"));
         String clientDbId = createClient(clientRep);
 
         // Can't remove clientTemplate
         try {
             clientScopes().get(templateId).remove();
+            Assert.fail("Not expected to successfully remove clientScope in use");
         } catch (BadRequestException bre) {
             ErrorRepresentation error = bre.getResponse().readEntity(ErrorRepresentation.class);
             Assert.assertEquals("Cannot remove client scope, it is currently in use", error.getErrorMessage());
@@ -343,6 +353,79 @@ public class ClientScopeTest extends AbstractClientTest {
         // Can remove clientTemplate now
         removeClientScope(templateId);
     }
+
+
+    @Test
+    public void testRealmDefaultClientScopes() {
+        // Create 2 client scopes
+        ClientScopeRepresentation templateRep = new ClientScopeRepresentation();
+        templateRep.setName("scope-def");
+        templateRep.setProtocol("openid-connect");
+        String scopeDefId = createClientScope(templateRep);
+        getCleanup().addClientScopeId(scopeDefId);
+
+        templateRep = new ClientScopeRepresentation();
+        templateRep.setName("scope-opt");
+        templateRep.setProtocol("openid-connect");
+        String scopeOptId = createClientScope(templateRep);
+        getCleanup().addClientScopeId(scopeOptId);
+
+        // Add scope-def as default and scope-opt as optional client scope
+        testRealmResource().addDefaultDefaultClientScope(scopeDefId);
+        assertAdminEvents.assertEvent(getRealmId(), OperationType.CREATE, AdminEventPaths.defaultDefaultClientScopePath(scopeDefId), ResourceType.CLIENT_SCOPE);
+        testRealmResource().addDefaultOptionalClientScope(scopeOptId);
+        assertAdminEvents.assertEvent(getRealmId(), OperationType.CREATE, AdminEventPaths.defaultOptionalClientScopePath(scopeOptId), ResourceType.CLIENT_SCOPE);
+
+        // Ensure defaults and optional scopes are here
+        List<String> realmDefaultScopes = getClientScopeNames(testRealmResource().getDefaultDefaultClientScopes());
+        List<String> realmOptionalScopes = getClientScopeNames(testRealmResource().getDefaultOptionalClientScopes());
+        Assert.assertTrue(realmDefaultScopes.contains("scope-def"));
+        Assert.assertFalse(realmOptionalScopes .contains("scope-def"));
+        Assert.assertFalse(realmDefaultScopes.contains("scope-opt"));
+        Assert.assertTrue(realmOptionalScopes .contains("scope-opt"));
+
+        // create client. Ensure that it has scope-def and scope-opt scopes assigned
+        ClientRepresentation clientRep = new ClientRepresentation();
+        clientRep.setClientId("bar-client");
+        clientRep.setProtocol("openid-connect");
+        String clientUuid = createClient(clientRep);
+        getCleanup().addClientUuid(clientUuid);
+
+        List<String> clientDefaultScopes = getClientScopeNames(testRealmResource().clients().get(clientUuid).getDefaultClientScopes());
+        List<String> clientOptionalScopes = getClientScopeNames(testRealmResource().clients().get(clientUuid).getOptionalClientScopes());
+        Assert.assertTrue(clientDefaultScopes.contains("scope-def"));
+        Assert.assertFalse(clientOptionalScopes .contains("scope-def"));
+        Assert.assertFalse(clientDefaultScopes.contains("scope-opt"));
+        Assert.assertTrue(clientOptionalScopes .contains("scope-opt"));
+
+        // Unassign scope-def and scope-opt from realm
+        testRealmResource().removeDefaultDefaultClientScope(scopeDefId);
+        assertAdminEvents.assertEvent(getRealmId(), OperationType.DELETE, AdminEventPaths.defaultDefaultClientScopePath(scopeDefId), ResourceType.CLIENT_SCOPE);
+        testRealmResource().removeDefaultOptionalClientScope(scopeOptId);
+        assertAdminEvents.assertEvent(getRealmId(), OperationType.DELETE, AdminEventPaths.defaultOptionalClientScopePath(scopeOptId), ResourceType.CLIENT_SCOPE);
+
+        realmDefaultScopes = getClientScopeNames(testRealmResource().getDefaultDefaultClientScopes());
+        realmOptionalScopes = getClientScopeNames(testRealmResource().getDefaultOptionalClientScopes());
+        Assert.assertFalse(realmDefaultScopes.contains("scope-def"));
+        Assert.assertFalse(realmOptionalScopes .contains("scope-def"));
+        Assert.assertFalse(realmDefaultScopes.contains("scope-opt"));
+        Assert.assertFalse(realmOptionalScopes .contains("scope-opt"));
+
+        // Create another client. Check it doesn't have scope-def and scope-opt scopes assigned
+        clientRep = new ClientRepresentation();
+        clientRep.setClientId("bar-client-2");
+        clientRep.setProtocol("openid-connect");
+        clientUuid = createClient(clientRep);
+        getCleanup().addClientUuid(clientUuid);
+
+        clientDefaultScopes = getClientScopeNames(testRealmResource().clients().get(clientUuid).getDefaultClientScopes());
+        clientOptionalScopes = getClientScopeNames(testRealmResource().clients().get(clientUuid).getOptionalClientScopes());
+        Assert.assertFalse(clientDefaultScopes.contains("scope-def"));
+        Assert.assertFalse(clientOptionalScopes .contains("scope-def"));
+        Assert.assertFalse(clientDefaultScopes.contains("scope-opt"));
+        Assert.assertFalse(clientOptionalScopes .contains("scope-opt"));
+    }
+
 
     // KEYCLOAK-5863
     @Test
