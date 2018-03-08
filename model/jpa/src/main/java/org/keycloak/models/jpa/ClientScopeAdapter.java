@@ -77,6 +77,7 @@ public class ClientScopeAdapter implements ClientScopeModel, JpaModel<ClientScop
 
     @Override
     public void setName(String name) {
+        name = KeycloakModelUtils.convertClientScopeName(name);
         entity.setName(name);
     }
 
@@ -106,8 +107,6 @@ public class ClientScopeAdapter implements ClientScopeModel, JpaModel<ClientScop
             mapping.setName(entity.getName());
             mapping.setProtocol(entity.getProtocol());
             mapping.setProtocolMapper(entity.getProtocolMapper());
-            mapping.setConsentRequired(entity.isConsentRequired());
-            mapping.setConsentText(entity.getConsentText());
             Map<String, String> config = new HashMap<String, String>();
             if (entity.getConfig() != null) {
                 config.putAll(entity.getConfig());
@@ -131,8 +130,6 @@ public class ClientScopeAdapter implements ClientScopeModel, JpaModel<ClientScop
         entity.setProtocolMapper(model.getProtocolMapper());
         entity.setClientScope(this.entity);
         entity.setConfig(model.getConfig());
-        entity.setConsentRequired(model.isConsentRequired());
-        entity.setConsentText(model.getConsentText());
 
         em.persist(entity);
         this.entity.getProtocolMappers().add(entity);
@@ -175,8 +172,6 @@ public class ClientScopeAdapter implements ClientScopeModel, JpaModel<ClientScop
     public void updateProtocolMapper(ProtocolMapperModel mapping) {
         ProtocolMapperEntity entity = getProtocolMapperEntity(mapping.getId());
         entity.setProtocolMapper(mapping.getProtocolMapper());
-        entity.setConsentRequired(mapping.isConsentRequired());
-        entity.setConsentText(mapping.getConsentText());
         if (entity.getConfig() == null) {
             entity.setConfig(mapping.getConfig());
         } else {
@@ -207,8 +202,6 @@ public class ClientScopeAdapter implements ClientScopeModel, JpaModel<ClientScop
         mapping.setName(entity.getName());
         mapping.setProtocol(entity.getProtocol());
         mapping.setProtocolMapper(entity.getProtocolMapper());
-        mapping.setConsentRequired(entity.isConsentRequired());
-        mapping.setConsentText(entity.getConsentText());
         Map<String, String> config = new HashMap<String, String>();
         if (entity.getConfig() != null) config.putAll(entity.getConfig());
         mapping.setConfig(config);

@@ -198,6 +198,7 @@ public class ClientModelTest extends AbstractModelTest {
     @Test
     public void testClientScopesBinding() {
         ClientModel client = realm.addClient("templatized");
+        client.setProtocol(OIDCLoginProtocol.LOGIN_PROTOCOL);
         ClientScopeModel scope1 = realm.addClientScope("scope1");
         scope1.setProtocol(OIDCLoginProtocol.LOGIN_PROTOCOL);
         ClientScopeModel scope2 = realm.addClientScope("scope2");
@@ -223,12 +224,12 @@ public class ClientModelTest extends AbstractModelTest {
         realm = realmManager.getRealmByName("original");
         client = realm.getClientByClientId("templatized");
 
-        Map<String, ClientScopeModel> clientScopes1 = client.getClientScopes(true);
+        Map<String, ClientScopeModel> clientScopes1 = client.getClientScopes(true, true);
         Assert.assertTrue(clientScopes1.containsKey("scope1"));
         Assert.assertFalse(clientScopes1.containsKey("scope2"));
         Assert.assertFalse(clientScopes1.containsKey("scope3"));
 
-        Map<String, ClientScopeModel> clientScopes2 = client.getClientScopes(false);
+        Map<String, ClientScopeModel> clientScopes2 = client.getClientScopes(false, true);
         Assert.assertFalse(clientScopes2.containsKey("scope1"));
         Assert.assertTrue(clientScopes2.containsKey("scope2"));
         Assert.assertTrue(clientScopes2.containsKey("scope3"));
@@ -241,12 +242,12 @@ public class ClientModelTest extends AbstractModelTest {
         realm = realmManager.getRealmByName("original");
         client = realm.getClientByClientId("templatized");
 
-        clientScopes1 = client.getClientScopes(true);
+        clientScopes1 = client.getClientScopes(true, true);
         Assert.assertFalse(clientScopes1.containsKey("scope1"));
         Assert.assertFalse(clientScopes1.containsKey("scope2"));
         Assert.assertFalse(clientScopes1.containsKey("scope3"));
 
-        clientScopes2 = client.getClientScopes(false);
+        clientScopes2 = client.getClientScopes(false, true);
         Assert.assertFalse(clientScopes2.containsKey("scope1"));
         Assert.assertFalse(clientScopes2.containsKey("scope2"));
         Assert.assertTrue(clientScopes2.containsKey("scope3"));
@@ -303,18 +304,19 @@ public class ClientModelTest extends AbstractModelTest {
         // Add client
         realm = realmManager.getRealmByName("original");
         ClientModel client = realm.addClient("foo");
+        client.setProtocol(OIDCLoginProtocol.LOGIN_PROTOCOL);
         commit();
 
         // Ensure that client has scopes attached
         realm = realmManager.getRealmByName("original");
         client = realm.getClientByClientId("foo");
 
-        Map<String, ClientScopeModel> clientScopes1 = client.getClientScopes(true);
+        Map<String, ClientScopeModel> clientScopes1 = client.getClientScopes(true, true);
         Assert.assertTrue(clientScopes1.containsKey("scope1"));
         Assert.assertFalse(clientScopes1.containsKey("scope2"));
         Assert.assertFalse(clientScopes1.containsKey("scope3"));
 
-        Map<String, ClientScopeModel> clientScopes2 = client.getClientScopes(false);
+        Map<String, ClientScopeModel> clientScopes2 = client.getClientScopes(false, true);
         Assert.assertFalse(clientScopes2.containsKey("scope1"));
         Assert.assertTrue(clientScopes2.containsKey("scope2"));
         Assert.assertTrue(clientScopes2.containsKey("scope3"));
@@ -327,17 +329,18 @@ public class ClientModelTest extends AbstractModelTest {
         // Create client and ensure clientScopes not there
         realm = realmManager.getRealmByName("original");
         client = realm.addClient("foo2");
+        client.setProtocol(OIDCLoginProtocol.LOGIN_PROTOCOL);
         commit();
 
         realm = realmManager.getRealmByName("original");
         client = realm.getClientByClientId("foo2");
 
-        clientScopes1 = client.getClientScopes(true);
+        clientScopes1 = client.getClientScopes(true, true);
         Assert.assertFalse(clientScopes1.containsKey("scope1"));
         Assert.assertFalse(clientScopes1.containsKey("scope2"));
         Assert.assertFalse(clientScopes1.containsKey("scope3"));
 
-        clientScopes2 = client.getClientScopes(false);
+        clientScopes2 = client.getClientScopes(false, true);
         Assert.assertFalse(clientScopes2.containsKey("scope1"));
         Assert.assertFalse(clientScopes2.containsKey("scope2"));
         Assert.assertTrue(clientScopes2.containsKey("scope3"));

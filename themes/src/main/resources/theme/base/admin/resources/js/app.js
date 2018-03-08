@@ -1101,7 +1101,7 @@ module.config([ '$routeProvider', function($routeProvider) {
             },
             controller : 'ClientScopeProtocolMapperCtrl'
         })
-        .when('/create/client-scope/:realm/:template/mappers', {
+        .when('/create/client-scope/:realm/:clientScope/mappers', {
             templateUrl : resourceUrl + '/partials/client-scope-protocol-mapper-detail.html',
             resolve : {
                 realm : function(RealmLoader) {
@@ -1110,7 +1110,7 @@ module.config([ '$routeProvider', function($routeProvider) {
                 serverInfo : function(ServerInfoLoader) {
                     return ServerInfoLoader();
                 },
-                template : function(ClientScopeLoader) {
+                clientScope : function(ClientScopeLoader) {
                     return ClientScopeLoader();
                 },
                 clients : function(ClientListLoader) {

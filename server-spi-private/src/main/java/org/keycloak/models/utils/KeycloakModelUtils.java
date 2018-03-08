@@ -501,8 +501,8 @@ public final class KeycloakModelUtils {
 
     public static boolean isClientScopeUsed(RealmModel realm, ClientScopeModel clientScope) {
         for (ClientModel client : realm.getClients()) {
-            if ((client.getClientScopes(true).containsKey(clientScope.getName())) ||
-                    (client.getClientScopes(false).containsKey(clientScope.getName()))) {
+            if ((client.getClientScopes(true, false).containsKey(clientScope.getName())) ||
+                    (client.getClientScopes(false, false).containsKey(clientScope.getName()))) {
                 return true;
             }
         }
@@ -530,6 +530,15 @@ public final class KeycloakModelUtils {
             return clientScope;
         } else {
             return realm.getClientById(clientScopeId);
+        }
+    }
+
+    /** Replace spaces in the name with underscore, so that scope name can be used as value of scope parameter **/
+    public static String convertClientScopeName(String previousName) {
+        if (previousName.contains(" ")) {
+            return previousName.replaceAll(" ", "_");
+        } else {
+            return previousName;
         }
     }
 

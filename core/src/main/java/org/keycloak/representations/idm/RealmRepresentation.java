@@ -161,6 +161,8 @@ public class RealmRepresentation {
     protected List<ApplicationRepresentation> applications;
     @Deprecated
     protected List<OAuthClientRepresentation> oauthClients;
+    @Deprecated
+    protected List<ClientTemplateRepresentation> clientTemplates;
 
     public String getId() {
         return id;
@@ -933,8 +935,8 @@ public class RealmRepresentation {
     }
 
     @Deprecated // use getClientScopes() instead
-    public List<ClientScopeRepresentation> getClientTemplates() {
-        return clientScopes;
+    public List<ClientTemplateRepresentation> getClientTemplates() {
+        return clientTemplates;
     }
 
     public List<ClientScopeRepresentation> getClientScopes() {

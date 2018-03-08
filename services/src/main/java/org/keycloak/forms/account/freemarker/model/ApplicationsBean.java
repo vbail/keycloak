@@ -62,8 +62,8 @@ public class ApplicationsBean {
 
             } else {
                 // Construct scope parameter with all optional scopes to see all potentially available roles
-                Set<ClientScopeModel> allClientScopes = new HashSet<>(client.getClientScopes(true).values());
-                allClientScopes.addAll(client.getClientScopes(false).values());
+                Set<ClientScopeModel> allClientScopes = new HashSet<>(client.getClientScopes(true, true).values());
+                allClientScopes.addAll(client.getClientScopes(false, true).values());
                 allClientScopes.add(client);
 
                 availableRoles = TokenManager.getAccess(user, client, allClientScopes);

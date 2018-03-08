@@ -81,6 +81,12 @@ public class ClientScopeEvaluateResource {
     }
 
 
+    /**
+     *
+     * @param scopeParam
+     * @param roleContainerId either realm name OR client UUID
+     * @return
+     */
     @Path("scope-mappings/{roleContainerId}")
     public ClientScopeEvaluateScopeMappingsResource scopeMappings(@QueryParam("scope") String scopeParam, @PathParam("roleContainerId") String roleContainerId) {
         auth.clients().requireView(client);
@@ -89,7 +95,7 @@ public class ClientScopeEvaluateResource {
             throw new NotFoundException("No roleContainerId provided");
         }
 
-        RoleContainerModel roleContainer = roleContainerId.equals(realm.getId()) ? realm : realm.getClientById(roleContainerId);
+        RoleContainerModel roleContainer = roleContainerId.equals(realm.getName()) ? realm : realm.getClientById(roleContainerId);
         if (roleContainer == null) {
             throw new NotFoundException("Role Container not found");
         }
@@ -109,6 +115,7 @@ public class ClientScopeEvaluateResource {
     @NoCache
     @Produces(MediaType.APPLICATION_JSON)
     public List<ProtocolMapperEvaluationRepresentation> getGrantedProtocolMappers(@QueryParam("scope") String scopeParam) {
+        auth.clients().requireView(client);
 
         List<ProtocolMapperEvaluationRepresentation> protocolMappers = new LinkedList<>();
 

@@ -36,6 +36,9 @@ public class UserConsentRepresentation {
 
     private Long lastUpdatedDate;
 
+    @Deprecated
+    protected List<String> grantedRealmRoles;
+
     public String getClientId() {
         return clientId;
     }
@@ -66,5 +69,10 @@ public class UserConsentRepresentation {
 
     public Long getLastUpdatedDate() {
         return lastUpdatedDate;
+    }
+
+    @Deprecated
+    public List<String> getGrantedRealmRoles() {
+        return grantedRealmRoles;
     }
 }

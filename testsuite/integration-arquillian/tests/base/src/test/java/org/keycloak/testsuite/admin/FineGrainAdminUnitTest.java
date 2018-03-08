@@ -441,16 +441,13 @@ public class FineGrainAdminUnitTest extends AbstractKeycloakTest {
             client.setFullScopeAllowed(false);
             realmClient.realm(TEST).clients().get(client.getId()).update(client);
 
-            client.setDefaultClientScopes(Collections.singletonList(template.getName()));
             try {
-                realmClient.realm(TEST).clients().get(client.getId()).update(client);
+                realmClient.realm(TEST).clients().get(client.getId()).addDefaultClientScope(template.getId());
                 Assert.fail("should fail with forbidden exception");
             } catch (ClientErrorException e) {
                 Assert.assertEquals(403, e.getResponse().getStatus());
 
             }
-            client.setDefaultClientScopes(null);
-            realmClient.realm(TEST).clients().get(client.getId()).update(client);
 
             try {
                 realmClient.realm(TEST).clients().get(client.getId()).getScopeMappings().realmLevel().add(realmRoleSet);

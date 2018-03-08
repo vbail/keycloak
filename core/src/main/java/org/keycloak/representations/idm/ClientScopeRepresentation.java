@@ -21,14 +21,10 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * @author <a href="mailto:bill@burkecentral.com">Bill Burke</a>
- * @version $Revision: 1 $
+ * @author <a href="mailto:mposolda@redhat.com">Marek Posolda</a>
  */
 public class ClientScopeRepresentation {
-    /**
-     * Use this value in ClientRepresentation.setClientTemplate when you want to clear this value
-     */
-    public static final String NONE = "NONE";
+
     protected String id;
     protected String name;
     protected String description;
@@ -36,25 +32,6 @@ public class ClientScopeRepresentation {
     protected Map<String, String> attributes;
 
     protected List<ProtocolMapperRepresentation> protocolMappers;
-
-    @Deprecated
-    protected Boolean fullScopeAllowed;
-    @Deprecated
-    protected Boolean bearerOnly;
-    @Deprecated
-    protected Boolean consentRequired;
-    @Deprecated
-    protected Boolean standardFlowEnabled;
-    @Deprecated
-    protected Boolean implicitFlowEnabled;
-    @Deprecated
-    protected Boolean directAccessGrantsEnabled;
-    @Deprecated
-    protected Boolean serviceAccountsEnabled;
-    @Deprecated
-    protected Boolean publicClient;
-    @Deprecated
-    protected Boolean frontchannelLogout;
 
     public String getId() {
         return id;
@@ -95,51 +72,6 @@ public class ClientScopeRepresentation {
 
     public void setProtocol(String protocol) {
         this.protocol = protocol;
-    }
-
-    @Deprecated
-    public Boolean isFullScopeAllowed() {
-        return fullScopeAllowed;
-    }
-
-    @Deprecated
-    public Boolean isBearerOnly() {
-        return bearerOnly;
-    }
-
-    @Deprecated
-    public Boolean isConsentRequired() {
-        return consentRequired;
-    }
-
-    @Deprecated
-    public Boolean isStandardFlowEnabled() {
-        return standardFlowEnabled;
-    }
-
-    @Deprecated
-    public Boolean isImplicitFlowEnabled() {
-        return implicitFlowEnabled;
-    }
-
-    @Deprecated
-    public Boolean isDirectAccessGrantsEnabled() {
-        return directAccessGrantsEnabled;
-    }
-
-    @Deprecated
-    public Boolean isServiceAccountsEnabled() {
-        return serviceAccountsEnabled;
-    }
-
-    @Deprecated
-    public Boolean isPublicClient() {
-        return publicClient;
-    }
-
-    @Deprecated
-    public Boolean isFrontchannelLogout() {
-        return frontchannelLogout;
     }
 
     public Map<String, String> getAttributes() {

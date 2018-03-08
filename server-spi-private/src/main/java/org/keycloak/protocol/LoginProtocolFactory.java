@@ -49,6 +49,15 @@ public interface LoginProtocolFactory extends ProviderFactory<LoginProtocol> {
 
     Object createProtocolEndpoint(RealmModel realm, EventBuilder event);
 
+
+    /**
+     * Called when new realm is created
+     *
+     * @param newRealm
+     */
+    void createDefaultClientScopes(RealmModel newRealm);
+
+
     /**
      * Setup default values for new clients. This expects that the representation has already set up the client
      *

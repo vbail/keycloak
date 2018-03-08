@@ -40,15 +40,6 @@ public abstract class AbstractLoginProtocolFactory implements LoginProtocolFacto
         factory.register(new ProviderEventListener() {
             @Override
             public void onEvent(ProviderEvent event) {
-                if (event instanceof RealmModel.RealmPostCreateEvent) {
-                    RealmModel newRealm = ((RealmModel.RealmPostCreateEvent)event).getCreatedRealm();
-                    createDefaultClientScopes(newRealm);
-
-                    // Create default client scopes for realm built-in clients too
-                    for (ClientModel client : newRealm.getClients()) {
-                        addDefaultClientScopes(newRealm, client);
-                    }
-                }
                 if (event instanceof RealmModel.ClientCreationEvent) {
                     ClientModel client = ((RealmModel.ClientCreationEvent)event).getCreatedClient();
                     addDefaultClientScopes(client.getRealm(), client);
@@ -58,10 +49,21 @@ public abstract class AbstractLoginProtocolFactory implements LoginProtocolFacto
         });
     }
 
+
+    @Override
+    public void createDefaultClientScopes(RealmModel newRealm) {
+        createDefaultClientScopesImpl(newRealm);
+
+        // Create default client scopes for realm built-in clients too
+        for (ClientModel client : newRealm.getClients()) {
+            addDefaultClientScopes(newRealm, client);
+        }
+    }
+
     /**
      * Impl should create default client scopes. This is called usually when new realm is created
      */
-    protected abstract void createDefaultClientScopes(RealmModel newRealm);
+    protected abstract void createDefaultClientScopesImpl(RealmModel newRealm);
 
 
     protected void addDefaultClientScopes(RealmModel realm, ClientModel newClient) {

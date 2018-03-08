@@ -215,7 +215,7 @@ public class HardcodedClientStorageProvider implements ClientStorageProvider, Cl
         }
 
         @Override
-        public Map<String, ClientScopeModel> getClientScopes(boolean defaultScope) {
+        public Map<String, ClientScopeModel> getClientScopes(boolean defaultScope, boolean filterByProtocol) {
             return Collections.EMPTY_MAP;
         }
 

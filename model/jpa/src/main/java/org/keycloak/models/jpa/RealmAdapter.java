@@ -1790,6 +1790,7 @@ public class RealmAdapter implements RealmModel, JpaModel<RealmEntity> {
     public ClientScopeModel addClientScope(String id, String name) {
         ClientScopeEntity entity = new ClientScopeEntity();
         entity.setId(id);
+        name = KeycloakModelUtils.convertClientScopeName(name);
         entity.setName(name);
         entity.setRealm(realm);
         realm.getClientScopes().add(entity);

@@ -37,7 +37,7 @@
 
     <form class="form-horizontal" name="evaluateForm" novalidate kc-read-only="!access.viewClients">
         <fieldset>
-            <div class="form-group clearfix">
+            <div class="form-group clearfix" data-ng-show="client.protocol == 'openid-connect'">
                 <label class="col-md-2 control-label" for="scopeParam">{{:: 'scope-parameter' | translate}}</label>
                 <div class="col-md-6">
                     <input class="form-control" id="scopeParam" type="text" value="{{scopeParam}}" readonly kc-select-action="click">
@@ -89,7 +89,7 @@
             </div>
         </div>
 
-        <div class="form-group clearfix">
+        <div class="form-group clearfix" data-ng-show="access.viewUsers">
             <label class="col-md-2 control-label" for="users">{{:: 'user' | translate}}</label>
 
             <div class="col-md-6">
@@ -101,7 +101,7 @@
         </div>
 
         <div class="form-group clearfix">
-            <div class="col-md-10 col-md-offset-1" data-ng-show="client.access.configure">
+            <div class="col-md-10 col-md-offset-1" data-ng-show="client.access.view">
                 <button type="submit" data-ng-click="sendEvaluationRequest()" class="btn btn-primary" tooltip-trigger="mouseover mouseout" tooltip="{{:: 'send-evaluation-request.tooltip' | translate}}" tooltip-placement="bottom">{{:: 'send-evaluation-request' | translate}}</button>
             </div>
         </div>

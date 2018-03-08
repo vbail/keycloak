@@ -74,9 +74,6 @@ public class ClientScopeEvaluateScopeMappingsResource {
     @Produces(MediaType.APPLICATION_JSON)
     @NoCache
     public List<RoleRepresentation> getGrantedScopeMappings() {
-        // TODO:mposolda admin permissions...
-        // viewPermission.require();
-
         return getGrantedRoles().stream().map((RoleModel role) -> {
 
             return ModelToRepresentation.toRepresentation(role);
@@ -96,8 +93,6 @@ public class ClientScopeEvaluateScopeMappingsResource {
     @Produces(MediaType.APPLICATION_JSON)
     @NoCache
     public List<RoleRepresentation> getNotGrantedScopeMappings() {
-        // TODO:mposolda admin permissions...
-        // viewPermission.require();
         List<RoleModel> grantedRoles = getGrantedRoles();
 
         return roleContainer.getRoles().stream().filter((RoleModel role) -> {
@@ -124,6 +119,8 @@ public class ClientScopeEvaluateScopeMappingsResource {
         List<RoleModel> result = new LinkedList<>();
 
         for (RoleModel role : roleContainer.getRoles()) {
+            if (!auth.roles().canView(role)) continue;
+
             for (ScopeContainerModel scopeContainer : clientScopes) {
                 if (scopeContainer.hasScope(role)) {
                     result.add(role);

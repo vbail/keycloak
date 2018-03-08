@@ -142,7 +142,7 @@ public class SamlProtocolFactory extends AbstractLoginProtocolFactory {
 
     // TODO:mposolda doublecheck this
     @Override
-    protected void createDefaultClientScopes(RealmModel newRealm) {
+    protected void createDefaultClientScopesImpl(RealmModel newRealm) {
 
     }
 

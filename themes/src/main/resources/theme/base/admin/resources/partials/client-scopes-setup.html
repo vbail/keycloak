@@ -70,7 +70,7 @@
             </div>
         </div>
 
-        <div class="form-group">
+        <div class="form-group" data-ng-show="client.protocol == 'openid-connect'">
             <label class="col-md-2 control-label" class="control-label">{{:: 'client-scopes.optional' | translate}}</label>
             <kc-tooltip>{{:: 'client-scopes.optional.tooltip' | translate}}</kc-tooltip>
 

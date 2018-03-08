@@ -109,15 +109,17 @@ public class ClientAdapter implements ClientModel, CachedObject {
     }
 
     @Override
-    public Map<String, ClientScopeModel> getClientScopes(boolean defaultScope) {
-        if (isUpdated()) return updated.getClientScopes(defaultScope);
+    public Map<String, ClientScopeModel> getClientScopes(boolean defaultScope, boolean filterByProtocol) {
+        if (isUpdated()) return updated.getClientScopes(defaultScope, filterByProtocol);
         List<String> clientScopeIds = defaultScope ? cached.getDefaultClientScopesIds() : cached.getOptionalClientScopesIds();
 
         Map<String, ClientScopeModel> clientScopes = new HashMap<>();
         for (String scopeId : clientScopeIds) {
             ClientScopeModel clientScope = cacheSession.getClientScopeById(scopeId, cachedRealm);
             if (clientScope != null) {
-                clientScopes.put(clientScope.getName(), clientScope);
+                if (!filterByProtocol || clientScope.getProtocol().equals(getProtocol())) {
+                    clientScopes.put(clientScope.getName(), clientScope);
+                }
             }
         }
         return clientScopes;

@@ -188,6 +188,7 @@ public class TokenManager {
 
         // Setup clientScopes from refresh token to the context
         Set<String> clientScopeIds = oldToken.getClientScopes();
+        // TODO:mposolda for migration of offline token from older version, the "getClientScopes" will be null. Need to cover that (Likely include just defaultScopes)
         ClientSessionContext clientSessionCtx = DefaultClientSessionContext.fromClientScopeIds(clientSession, clientScopeIds);
 
         // Check user didn't revoke granted consent
@@ -506,7 +507,7 @@ public class TokenManager {
     /** Return client itself + all default client scopes of client + optional client scopes requested by scope parameter **/
     public static Set<ClientScopeModel> getRequestedClientScopes(String scopeParam, ClientModel client) {
         // Add all default client scopes automatically
-        Set<ClientScopeModel> clientScopes = new HashSet<>(client.getClientScopes(true).values());
+        Set<ClientScopeModel> clientScopes = new HashSet<>(client.getClientScopes(true, true).values());
 
         // Add client itself
         clientScopes.add(client);
@@ -518,7 +519,7 @@ public class TokenManager {
         // Add optional client scopes requested by scope parameter
         String[] scopes = scopeParam.split(" ");
         Collection<String> scopeParamParts = Arrays.asList(scopes);
-        Map<String, ClientScopeModel> allOptionalScopes = client.getClientScopes(false);
+        Map<String, ClientScopeModel> allOptionalScopes = client.getClientScopes(false, true);
         for (String scopeParamPart : scopeParamParts) {
             ClientScopeModel scope = allOptionalScopes.get(scopeParamPart);
             if (scope != null) {
@@ -907,7 +908,7 @@ public class TokenManager {
         private String getScopeParameterValue() {
             StringBuilder builder = new StringBuilder();
 
-            Collection<ClientScopeModel> optionalScopes = client.getClientScopes(false).values();
+            Collection<ClientScopeModel> optionalScopes = client.getClientScopes(false, true).values();
 
             // Add just optional scopes to scope parameter
             boolean first = true;

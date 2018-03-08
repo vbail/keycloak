@@ -22,6 +22,7 @@ import java.util.List;
 import org.keycloak.component.ComponentModel;
 import org.keycloak.migration.ModelVersion;
 import org.keycloak.models.ClientModel;
+import org.keycloak.models.ClientScopeModel;
 import org.keycloak.models.Constants;
 import org.keycloak.models.KeycloakSession;
 import org.keycloak.models.RealmModel;
@@ -55,6 +56,14 @@ public class MigrateTo4_0_0 implements Migration {
 
     // TODO:mposolda Test this migration (maybe write automated test)
     protected void migrateRealm(RealmModel realm) {
+        // Upgrade names of clientScopes to not contain space
+        for (ClientScopeModel clientScope : realm.getClientScopes()) {
+            if (clientScope.getName().contains(" ")) {
+                String replacedName = clientScope.getName().replaceAll(" ", "_");
+                clientScope.setName(replacedName);
+            }
+        }
+
         for (ComponentModel component : realm.getComponents(realm.getId(), "org.keycloak.services.clientregistration.policy.ClientRegistrationPolicy")) {
             if ("allowed-client-templates".equals(component.getProviderId())) {
                 component.setProviderId("allowed-client-scopes");

@@ -30,7 +30,6 @@ public class DockerAuthV2ProtocolFactory extends AbstractLoginProtocolFactory im
         addAllRequestedScopeMapper.setName(AllowAllDockerProtocolMapper.PROVIDER_ID);
         addAllRequestedScopeMapper.setProtocolMapper(AllowAllDockerProtocolMapper.PROVIDER_ID);
         addAllRequestedScopeMapper.setProtocol(DockerAuthV2Protocol.LOGIN_PROTOCOL);
-        addAllRequestedScopeMapper.setConsentRequired(false);
         addAllRequestedScopeMapper.setConfig(Collections.EMPTY_MAP);
         builtins.put(AllowAllDockerProtocolMapper.PROVIDER_ID, addAllRequestedScopeMapper);
         defaultBuiltins.add(addAllRequestedScopeMapper);
@@ -38,7 +37,7 @@ public class DockerAuthV2ProtocolFactory extends AbstractLoginProtocolFactory im
 
     // TODO:mposolda doublecheck this
     @Override
-    protected void createDefaultClientScopes(RealmModel newRealm) {
+    protected void createDefaultClientScopesImpl(RealmModel newRealm) {
         // no-op
     }
 

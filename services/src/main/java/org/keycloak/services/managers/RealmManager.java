@@ -39,9 +39,12 @@ import org.keycloak.models.utils.DefaultAuthenticationFlows;
 import org.keycloak.models.utils.DefaultRequiredActions;
 import org.keycloak.models.utils.KeycloakModelUtils;
 import org.keycloak.models.utils.RepresentationToModel;
+import org.keycloak.protocol.LoginProtocol;
+import org.keycloak.protocol.LoginProtocolFactory;
 import org.keycloak.protocol.ProtocolMapperUtils;
 import org.keycloak.protocol.oidc.OIDCLoginProtocol;
 import org.keycloak.protocol.oidc.OIDCLoginProtocolFactory;
+import org.keycloak.provider.ProviderFactory;
 import org.keycloak.representations.idm.ApplicationRepresentation;
 import org.keycloak.representations.idm.ClientRepresentation;
 import org.keycloak.representations.idm.OAuthClientRepresentation;
@@ -120,6 +123,7 @@ public class RealmManager {
         setupAuthenticationFlows(realm);
         setupRequiredActions(realm);
         setupOfflineTokens(realm);
+        createDefaultClientScopes(realm);
         setupAuthorizationServices(realm);
         setupClientRegistrations(realm);
 
@@ -138,6 +142,14 @@ public class RealmManager {
 
     protected void setupOfflineTokens(RealmModel realm) {
         KeycloakModelUtils.setupOfflineTokens(realm);
+    }
+
+    protected void createDefaultClientScopes(RealmModel realm) {
+        List<ProviderFactory> loginProtocolFactories = session.getKeycloakSessionFactory().getProviderFactories(LoginProtocol.class);
+        for (ProviderFactory factory : loginProtocolFactories) {
+            LoginProtocolFactory lpf = (LoginProtocolFactory) factory;
+            lpf.createDefaultClientScopes(realm);
+        }
     }
 
     protected void setupAdminConsole(RealmModel realm) {
@@ -472,6 +484,10 @@ public class RealmManager {
         }
 
         if (!hasRealmRole(rep, Constants.OFFLINE_ACCESS_ROLE)) setupOfflineTokens(realm);
+
+        if (rep.getClientScopes() == null) {
+            createDefaultClientScopes(realm);
+        }
 
         RepresentationToModel.importRealm(session, rep, realm, skipUserDependent);
 

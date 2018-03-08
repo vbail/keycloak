@@ -173,6 +173,10 @@
         <!-- Remove scopeParamRequired -->
         <dropColumn tableName="KEYCLOAK_ROLE" columnName="SCOPE_PARAM_REQUIRED" />
 
+        <!-- Drop consent stuff from protocolMappers table -->
+        <dropColumn tableName="PROTOCOL_MAPPER" columnName="CONSENT_REQUIRED" />
+        <dropColumn tableName="PROTOCOL_MAPPER" columnName="CONSENT_TEXT" />
+
         <!-- Consents related changes -->
         <dropForeignKeyConstraint baseTableName="USER_CONSENT_ROLE" constraintName="FK_GRNTCSNT_ROLE_GR" />
         <dropTable tableName="USER_CONSENT_ROLE" />

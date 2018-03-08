@@ -156,7 +156,6 @@ public class UserClientRoleMappingMapper extends AbstractUserRoleMappingMapper {
                                              boolean accessToken, boolean idToken, boolean multiValued) {
         ProtocolMapperModel mapper = OIDCAttributeMapperHelper.createClaimMapper(name, "foo",
                 tokenClaimName, "String",
-                true, name,
                 accessToken, idToken,
                 PROVIDER_ID);
 

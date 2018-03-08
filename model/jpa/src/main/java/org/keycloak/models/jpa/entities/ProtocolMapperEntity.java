@@ -51,10 +51,6 @@ public class ProtocolMapperEntity {
     protected String protocol;
     @Column(name = "PROTOCOL_MAPPER_NAME")
     protected String protocolMapper;
-    @Column(name="CONSENT_REQUIRED")
-    protected boolean consentRequired;
-    @Column(name="CONSENT_TEXT")
-    protected String consentText;
 
     @ElementCollection
     @MapKeyColumn(name="NAME")
@@ -126,21 +122,6 @@ public class ProtocolMapperEntity {
         this.clientScope = clientScope;
     }
 
-    public boolean isConsentRequired() {
-        return consentRequired;
-    }
-
-    public void setConsentRequired(boolean consentRequired) {
-        this.consentRequired = consentRequired;
-    }
-
-    public String getConsentText() {
-        return consentText;
-    }
-
-    public void setConsentText(String consentText) {
-        this.consentText = consentText;
-    }
 
     @Override
     public boolean equals(Object o) {

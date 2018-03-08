@@ -531,8 +531,6 @@ public class ClientRegistrationPoliciesTest extends AbstractClientRegistrationTe
         protocolMapper.setName("Hardcoded foo role");
         protocolMapper.setProtocolMapper(HardcodedRole.PROVIDER_ID);
         protocolMapper.setProtocol(OIDCLoginProtocol.LOGIN_PROTOCOL);
-        protocolMapper.setConsentRequired(false);
-        protocolMapper.setConsentText(null);
         protocolMapper.getConfig().put(HardcodedRole.ROLE_CONFIG, "foo-role");
         return protocolMapper;
     }
@@ -547,8 +545,6 @@ public class ClientRegistrationPoliciesTest extends AbstractClientRegistrationTe
         protocolMapper.setName("Full name");
         protocolMapper.setProtocolMapper(FullNameMapper.PROVIDER_ID);
         protocolMapper.setProtocol(OIDCLoginProtocol.LOGIN_PROTOCOL);
-        protocolMapper.setConsentRequired(true);
-        protocolMapper.setConsentText("Full name");
 
         ClientRepresentation clientRep = createRep("test-app");
         clientRep.setProtocolMappers(Collections.singletonList(protocolMapper));
@@ -610,8 +606,6 @@ public class ClientRegistrationPoliciesTest extends AbstractClientRegistrationTe
 
         Assert.assertEquals(1, registeredClient.getProtocolMappers().size());
         ProtocolMapperRepresentation hardcodedMapper = registeredClient.getProtocolMappers().get(0);
-        Assert.assertTrue(hardcodedMapper.isConsentRequired());
-        Assert.assertEquals("Hardcoded foo role", hardcodedMapper.getConsentText());
 
         // Revert
         ApiUtil.findClientResourceByClientId(realmResource(), "test-app").remove();

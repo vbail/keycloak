@@ -317,7 +317,7 @@ public class ClientResource {
         auth.clients().requireView(client);
 
         List<ClientScopeRepresentation> defaults = new LinkedList<>();
-        for (ClientScopeModel clientScope : client.getClientScopes(defaultScope).values()) {
+        for (ClientScopeModel clientScope : client.getClientScopes(defaultScope, true).values()) {
             ClientScopeRepresentation rep = new ClientScopeRepresentation();
             rep.setId(clientScope.getId());
             rep.setName(clientScope.getName());

@@ -146,7 +146,6 @@ public class ClientScopeProtocolMapperTest extends AbstractProtocolMapperTest {
 
         rep.getConfig().put("role", "account.manage-account");
         rep.setId(createdId);
-        rep.setConsentRequired(false);
         samlMappersRsc.update(createdId, rep);
         assertAdminEvents.assertEvent(getRealmId(), OperationType.UPDATE, AdminEventPaths.clientScopeProtocolMapperPath(samlClientScopeId, createdId), rep, ResourceType.PROTOCOL_MAPPER);
 
@@ -165,7 +164,6 @@ public class ClientScopeProtocolMapperTest extends AbstractProtocolMapperTest {
 
         rep.getConfig().put("role", "myotherrole");
         rep.setId(createdId);
-        rep.setConsentRequired(false);
         oidcMappersRsc.update(createdId, rep);
         assertAdminEvents.assertEvent(getRealmId(), OperationType.UPDATE, AdminEventPaths.clientScopeProtocolMapperPath(oidcClientScopeId, createdId), rep, ResourceType.PROTOCOL_MAPPER);
 

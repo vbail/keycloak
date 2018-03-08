@@ -732,7 +732,7 @@ public class AccessTokenTest extends AbstractKeycloakTest {
         String clientScopeId = ApiUtil.getCreatedId(response);
         response.close();
         ClientScopeResource clientScopeResource = adminClient.proxy(ClientScopeResource.class, templateUri);
-        ProtocolMapperModel hard = HardcodedClaim.create("hard", "hard", "coded", "String", false, null, true, true);
+        ProtocolMapperModel hard = HardcodedClaim.create("hard", "hard", "coded", "String", true, true);
         ProtocolMapperRepresentation mapper = ModelToRepresentation.toRepresentation(hard);
         response = clientScopeResource.getProtocolMappers().createMapper(mapper);
         assertEquals(201, response.getStatus());

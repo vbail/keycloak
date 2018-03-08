@@ -82,14 +82,6 @@ public class OIDCLoginProtocolFactory extends AbstractLoginProtocolFactory {
     public static final String PHONE_SCOPE_CONSENT_TEXT = "${phoneScopeConsentText}";
     public static final String OFFLINE_ACCESS_SCOPE_CONSENT_TEXT = "${offlineAccessScopeConsentText}";
 
-    public static final String USERNAME_CONSENT_TEXT = "${username}";
-    public static final String EMAIL_CONSENT_TEXT = "${email}";
-    public static final String EMAIL_VERIFIED_CONSENT_TEXT = "${emailVerified}";
-    public static final String GIVEN_NAME_CONSENT_TEXT = "${givenName}";
-    public static final String FAMILY_NAME_CONSENT_TEXT = "${familyName}";
-    public static final String FULL_NAME_CONSENT_TEXT = "${fullName}";
-    public static final String LOCALE_CONSENT_TEXT = "${locale}";
-
 
     @Override
     public LoginProtocol create(KeycloakSession session) {
@@ -113,28 +105,24 @@ public class OIDCLoginProtocolFactory extends AbstractLoginProtocolFactory {
         model = UserPropertyMapper.createClaimMapper(USERNAME,
                 "username",
                 "preferred_username", "String",
-                true, USERNAME_CONSENT_TEXT,
                 true, true);
         builtins.put(USERNAME, model);
 
         model = UserPropertyMapper.createClaimMapper(EMAIL,
                 "email",
                 "email", "String",
-                true, EMAIL_CONSENT_TEXT,
                 true, true);
         builtins.put(EMAIL, model);
 
         model = UserPropertyMapper.createClaimMapper(GIVEN_NAME,
                 "firstName",
                 "given_name", "String",
-                true, GIVEN_NAME_CONSENT_TEXT,
                 true, true);
         builtins.put(GIVEN_NAME, model);
 
         model = UserPropertyMapper.createClaimMapper(FAMILY_NAME,
                 "lastName",
                 "family_name", "String",
-                true, FAMILY_NAME_CONSENT_TEXT,
                 true, true);
         builtins.put(FAMILY_NAME, model);
 
@@ -155,7 +143,6 @@ public class OIDCLoginProtocolFactory extends AbstractLoginProtocolFactory {
         model = UserPropertyMapper.createClaimMapper(EMAIL_VERIFIED,
                 "emailVerified",
                 "email_verified", "boolean",
-                false, EMAIL_VERIFIED_CONSENT_TEXT,
                 true, true);
         builtins.put(EMAIL_VERIFIED, model);
 
@@ -163,8 +150,6 @@ public class OIDCLoginProtocolFactory extends AbstractLoginProtocolFactory {
         fullName.setName(FULL_NAME);
         fullName.setProtocolMapper(FullNameMapper.PROVIDER_ID);
         fullName.setProtocol(OIDCLoginProtocol.LOGIN_PROTOCOL);
-        fullName.setConsentRequired(true);
-        fullName.setConsentText(FULL_NAME_CONSENT_TEXT);
         Map<String, String> config = new HashMap<String, String>();
         config.put(OIDCAttributeMapperHelper.INCLUDE_IN_ACCESS_TOKEN, "true");
         config.put(OIDCAttributeMapperHelper.INCLUDE_IN_ID_TOKEN, "true");
@@ -177,7 +162,6 @@ public class OIDCLoginProtocolFactory extends AbstractLoginProtocolFactory {
         model = UserSessionNoteMapper.createClaimMapper(KerberosConstants.GSS_DELEGATION_CREDENTIAL_DISPLAY_NAME,
                 KerberosConstants.GSS_DELEGATION_CREDENTIAL,
                 KerberosConstants.GSS_DELEGATION_CREDENTIAL, "String",
-                true, "${gssDelegationCredential}",
                 true, false);
         builtins.put(KerberosConstants.GSS_DELEGATION_CREDENTIAL, model);
     }
@@ -186,13 +170,12 @@ public class OIDCLoginProtocolFactory extends AbstractLoginProtocolFactory {
         ProtocolMapperModel model = UserAttributeMapper.createClaimMapper(name,
                 attrName,
                 claimName, type,
-                true, attrName,
                 true, true, false);
         builtins.put(name, model);
     }
 
     @Override
-    protected void createDefaultClientScopes(RealmModel newRealm) {
+    protected void createDefaultClientScopesImpl(RealmModel newRealm) {
         //name, family_name, given_name, middle_name, nickname, preferred_username, profile, picture, website, gender, birthdate, zoneinfo, locale, and updated_at.
         ClientScopeModel profileScope = newRealm.addClientScope(OAuth2Constants.SCOPE_PROFILE);
         profileScope.setDescription("OpenID Connect built-in scope: profile");

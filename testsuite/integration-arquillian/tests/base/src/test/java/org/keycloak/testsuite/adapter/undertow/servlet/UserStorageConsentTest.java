@@ -120,7 +120,6 @@ public class UserStorageConsentTest extends AbstractServletsAdapterTest {
                     config.putAll(mapper.getConfig());
                     copy.setConfig(config);
                     copy.setProtocolMapper(mapper.getProtocolMapper());
-                    copy.setConsentText(mapper.getConsentText());
                     clientScope.addProtocolMapper(copy);
                 }
             }

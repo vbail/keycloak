@@ -21,6 +21,7 @@ import org.keycloak.models.ClientModel;
 import org.keycloak.models.ClientScopeModel;
 import org.keycloak.models.KeycloakSession;
 import org.keycloak.models.ModelDuplicateException;
+import org.keycloak.models.ModelException;
 import org.keycloak.models.ProtocolMapperModel;
 import org.keycloak.models.RealmModel;
 import org.keycloak.models.RoleContainerModel;
@@ -322,7 +323,7 @@ public class ClientAdapter implements ClientModel, JpaModel<ClientEntity> {
 
     @Override
     public void addClientScope(ClientScopeModel clientScope, boolean defaultScope) {
-        if (getClientScopes(defaultScope).containsKey(clientScope.getName())) return;
+        if (getClientScopes(defaultScope, false).containsKey(clientScope.getName())) return;
 
         ClientScopeClientMappingEntity entity = new ClientScopeClientMappingEntity();
         entity.setClientScope(ClientScopeAdapter.toClientScopeEntity(clientScope, em));
@@ -343,7 +344,7 @@ public class ClientAdapter implements ClientModel, JpaModel<ClientEntity> {
     }
 
     @Override
-    public Map<String, ClientScopeModel> getClientScopes(boolean defaultScope) {
+    public Map<String, ClientScopeModel> getClientScopes(boolean defaultScope, boolean filterByProtocol) {
         TypedQuery<String> query = em.createNamedQuery("clientScopeClientMappingIdsByClient", String.class);
         query.setParameter("client", getEntity());
         query.setParameter("defaultScope", defaultScope);
@@ -353,7 +354,9 @@ public class ClientAdapter implements ClientModel, JpaModel<ClientEntity> {
         for (String clientScopeId : ids) {
             ClientScopeModel clientScope = realm.getClientScopeById(clientScopeId);
             if (clientScope == null) continue;
-            clientScopes.put(clientScope.getName(), clientScope);
+            if (!filterByProtocol || clientScope.getProtocol().equals(getProtocol())) {
+                clientScopes.put(clientScope.getName(), clientScope);
+            }
         }
         return clientScopes;
     }
@@ -375,8 +378,6 @@ public class ClientAdapter implements ClientModel, JpaModel<ClientEntity> {
             mapping.setName(entity.getName());
             mapping.setProtocol(entity.getProtocol());
             mapping.setProtocolMapper(entity.getProtocolMapper());
-            mapping.setConsentRequired(entity.isConsentRequired());
-            mapping.setConsentText(entity.getConsentText());
             Map<String, String> config = new HashMap<String, String>();
             if (entity.getConfig() != null) {
                 config.putAll(entity.getConfig());
@@ -400,8 +401,6 @@ public class ClientAdapter implements ClientModel, JpaModel<ClientEntity> {
         entity.setProtocolMapper(model.getProtocolMapper());
         entity.setClient(this.entity);
         entity.setConfig(model.getConfig());
-        entity.setConsentRequired(model.isConsentRequired());
-        entity.setConsentText(model.getConsentText());
 
         em.persist(entity);
         this.entity.getProtocolMappers().add(entity);
@@ -444,8 +443,6 @@ public class ClientAdapter implements ClientModel, JpaModel<ClientEntity> {
     public void updateProtocolMapper(ProtocolMapperModel mapping) {
         ProtocolMapperEntity entity = getProtocolMapperEntity(mapping.getId());
         entity.setProtocolMapper(mapping.getProtocolMapper());
-        entity.setConsentRequired(mapping.isConsentRequired());
-        entity.setConsentText(mapping.getConsentText());
         if (entity.getConfig() == null) {
             entity.setConfig(mapping.getConfig());
         } else {
@@ -476,8 +473,6 @@ public class ClientAdapter implements ClientModel, JpaModel<ClientEntity> {
         mapping.setName(entity.getName());
         mapping.setProtocol(entity.getProtocol());
         mapping.setProtocolMapper(entity.getProtocolMapper());
-        mapping.setConsentRequired(entity.isConsentRequired());
-        mapping.setConsentText(entity.getConsentText());
         Map<String, String> config = new HashMap<String, String>();
         if (entity.getConfig() != null) config.putAll(entity.getConfig());
         mapping.setConfig(config);

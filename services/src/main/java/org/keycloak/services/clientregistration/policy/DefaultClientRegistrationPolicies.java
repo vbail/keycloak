@@ -106,7 +106,6 @@ public class DefaultClientRegistrationPolicies {
     private static void addGenericPolicies(RealmModel realm, String policyTypeKey) {
         ComponentModel protMapperModel = createModelInstance("Allowed Protocol Mapper Types", realm, ProtocolMappersClientRegistrationPolicyFactory.PROVIDER_ID, policyTypeKey);
         protMapperModel.getConfig().put(ProtocolMappersClientRegistrationPolicyFactory.ALLOWED_PROTOCOL_MAPPER_TYPES, Arrays.asList(DEFAULT_ALLOWED_PROTOCOL_MAPPERS));
-        protMapperModel.getConfig().putSingle(ProtocolMappersClientRegistrationPolicyFactory.CONSENT_REQUIRED_FOR_ALL_MAPPERS, "true");
         realm.addComponentModel(protMapperModel);
 
         ComponentModel clientTemplatesModel = createModelInstance("Allowed Client Scopes", realm, ClientScopesClientRegistrationPolicyFactory.PROVIDER_ID, policyTypeKey);

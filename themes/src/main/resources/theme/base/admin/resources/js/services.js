@@ -978,19 +978,19 @@ module.factory('ClientEvaluateProtocolMappers', function($resource) {
 });
 
 module.factory('ClientEvaluateGrantedRoles', function($resource) {
-    return $resource(authUrl + '/admin/realms/:realm/clients/:client/evaluate-scopes/scope-mappings/:roleContainerId/granted?scope=:scopeParam', {
+    return $resource(authUrl + '/admin/realms/:realm/clients/:client/evaluate-scopes/scope-mappings/:roleContainer/granted?scope=:scopeParam', {
         realm : '@realm',
         client : "@client",
-        roleContainerId : "@roleContainerId",
+        roleContainer : "@roleContainer",
         scopeParam : "@scopeParam"
     });
 });
 
 module.factory('ClientEvaluateNotGrantedRoles', function($resource) {
-    return $resource(authUrl + '/admin/realms/:realm/clients/:client/evaluate-scopes/scope-mappings/:roleContainerId/not-granted?scope=:scopeParam', {
+    return $resource(authUrl + '/admin/realms/:realm/clients/:client/evaluate-scopes/scope-mappings/:roleContainer/not-granted?scope=:scopeParam', {
         realm : '@realm',
         client : "@client",
-        roleContainerId : "@roleContainerId",
+        roleContainer : "@roleContainer",
         scopeParam : "@scopeParam"
     });
 });
