@@ -37,7 +37,8 @@ public class ClientScopesClientRegistrationPolicyFactory extends AbstractClientR
 
     private List<ProviderConfigProperty> configProperties;
 
-    public static final String PROVIDER_ID = "allowed-client-scopes";
+    // Keeping the name for backwards compatibility
+    public static final String PROVIDER_ID = "allowed-client-templates";
 
     public static final String ALLOWED_CLIENT_SCOPES = "allowed-client-scopes";
 

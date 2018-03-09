@@ -438,7 +438,7 @@ public class OAuthProofKeyForCodeExchangeTest extends AbstractKeycloakTest {
         assertEquals(findUserByUsername(adminClient.realm("test"), "test-user@localhost").getId(), token.getSubject());
         Assert.assertNotEquals("test-user@localhost", token.getSubject());
         assertEquals(sessionId, token.getSessionState());
-        assertEquals(1, token.getRealmAccess().getRoles().size());
+        assertEquals(2, token.getRealmAccess().getRoles().size());
         assertTrue(token.getRealmAccess().isUserInRole("user"));
         assertEquals(1, token.getResourceAccess(oauth.getClientId()).getRoles().size());
         assertTrue(token.getResourceAccess(oauth.getClientId()).isUserInRole("customer-user"));
@@ -485,7 +485,7 @@ public class OAuthProofKeyForCodeExchangeTest extends AbstractKeycloakTest {
         assertEquals(findUserByUsername(adminClient.realm("test"), "test-user@localhost").getId(), refreshedToken.getSubject());
         Assert.assertNotEquals("test-user@localhost", refreshedToken.getSubject());
 
-        assertEquals(1, refreshedToken.getRealmAccess().getRoles().size());
+        assertEquals(2, refreshedToken.getRealmAccess().getRoles().size());
         Assert.assertTrue(refreshedToken.getRealmAccess().isUserInRole("user"));
 
         assertEquals(1, refreshedToken.getResourceAccess(oauth.getClientId()).getRoles().size());

@@ -51,12 +51,14 @@ public abstract class AbstractLoginProtocolFactory implements LoginProtocolFacto
 
 
     @Override
-    public void createDefaultClientScopes(RealmModel newRealm) {
+    public void createDefaultClientScopes(RealmModel newRealm, boolean addScopesToExistingClients) {
         createDefaultClientScopesImpl(newRealm);
 
         // Create default client scopes for realm built-in clients too
-        for (ClientModel client : newRealm.getClients()) {
-            addDefaultClientScopes(newRealm, client);
+        if (addScopesToExistingClients) {
+            for (ClientModel client : newRealm.getClients()) {
+                addDefaultClientScopes(newRealm, client);
+            }
         }
     }
 

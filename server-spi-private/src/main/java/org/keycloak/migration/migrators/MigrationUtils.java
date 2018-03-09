@@ -17,18 +17,27 @@
 
 package org.keycloak.migration.migrators;
 
+import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Set;
+
 import org.keycloak.Config;
+import org.keycloak.OAuth2Constants;
+import org.keycloak.OAuthErrorException;
 import org.keycloak.models.AdminRoles;
 import org.keycloak.models.ClientModel;
+import org.keycloak.models.ClientScopeModel;
 import org.keycloak.models.Constants;
+import org.keycloak.models.KeycloakSession;
 import org.keycloak.models.ProtocolMapperContainerModel;
 import org.keycloak.models.ProtocolMapperModel;
 import org.keycloak.models.RealmModel;
 import org.keycloak.models.RequiredActionProviderModel;
 import org.keycloak.models.RoleModel;
+import org.keycloak.models.UserConsentModel;
 import org.keycloak.models.UserModel;
+import org.keycloak.models.utils.KeycloakModelUtils;
 
 /**
  * @author <a href="mailto:sthorger@redhat.com">Stian Thorgersen</a>
@@ -75,6 +84,35 @@ public class MigrationUtils {
         for (ProtocolMapperModel mapper : toUpdate) {
             client.updateProtocolMapper(mapper);
         }
+    }
+
+
+    // Called when offline token older than 4.0 (Offline token without clientScopeIds) is called
+    public static Set<String> migrateOldOfflineToken(KeycloakSession session, RealmModel realm, ClientModel client, UserModel user) throws OAuthErrorException {
+        Set<String> clientScopeIds = new HashSet<>();
+        clientScopeIds.add(client.getId());
+
+        ClientScopeModel offlineScope = KeycloakModelUtils.getClientScopeByName(realm, OAuth2Constants.OFFLINE_ACCESS);
+        if (offlineScope == null) {
+            throw new OAuthErrorException(OAuthErrorException.INVALID_GRANT, "Offline Access scope not found");
+        }
+
+        clientScopeIds.add(offlineScope.getId());
+
+        if (client.isConsentRequired()) {
+            // Automatically add consents for client and for offline_access. We know that both were defacto approved by user already and offlineSession is still valid
+            UserConsentModel consent = session.users().getConsentByClient(realm, user.getId(), client.getId());
+            if (consent != null) {
+                if (client.isDisplayOnConsentScreen()) {
+                    consent.addGrantedClientScope(client);
+                }
+                if (offlineScope.isDisplayOnConsentScreen()) {
+                    consent.addGrantedClientScope(offlineScope);
+                }
+            }
+        }
+
+        return clientScopeIds;
     }
 
 }

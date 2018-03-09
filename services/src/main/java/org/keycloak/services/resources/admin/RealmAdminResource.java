@@ -195,7 +195,18 @@ public class RealmAdminResource {
     }
 
     /**
-     * Base path for managing client templates under this realm.
+     * This endpoint is deprecated. It's here just because of backwards compatibility. Use {@link #getClientScopes()} instead
+     *
+     * @return
+     */
+    @Deprecated
+    @Path("client-templates")
+    public ClientScopesResource getClientTemplates() {
+        return getClientScopes();
+    }
+
+    /**
+     * Base path for managing client scopes under this realm.
      *
      * @return
      */

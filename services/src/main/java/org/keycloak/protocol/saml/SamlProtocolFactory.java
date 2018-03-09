@@ -18,6 +18,7 @@
 package org.keycloak.protocol.saml;
 
 import org.keycloak.Config;
+import org.keycloak.OAuth2Constants;
 import org.keycloak.events.EventBuilder;
 import org.keycloak.models.ClientModel;
 import org.keycloak.models.ClientScopeModel;
@@ -53,6 +54,9 @@ public class SamlProtocolFactory extends AbstractLoginProtocolFactory {
 
     private static final Pattern PROTOCOL_MAP_PATTERN = Pattern.compile("\\s*([a-zA-Z][a-zA-Z\\d+-.]*)\\s*=\\s*(\\d+)\\s*");
     private static final String[] DEFAULT_PROTOCOL_TO_PORT_MAP = new String[] { "http=80", "https=443" };
+
+    public static final String SCOPE_ROLE_LIST = "role_list";
+    private static final String ROLE_LIST_CONSENT_TEXT = "${samlRoleListScopeConsentText}";
 
     private final Map<Integer, String> knownPorts = new HashMap<>();
     private final Map<String, Integer> knownProtocols = new HashMap<>();
@@ -103,11 +107,6 @@ public class SamlProtocolFactory extends AbstractLoginProtocolFactory {
         return builtins;
     }
 
-    @Override
-    public List<ProtocolMapperModel> getDefaultBuiltinMappers() {
-        return defaultBuiltins;
-    }
-
     static Map<String, ProtocolMapperModel> builtins = new HashMap<>();
     static List<ProtocolMapperModel> defaultBuiltins = new ArrayList<>();
 
@@ -140,18 +139,20 @@ public class SamlProtocolFactory extends AbstractLoginProtocolFactory {
 
     }
 
-    // TODO:mposolda doublecheck this
+
     @Override
     protected void createDefaultClientScopesImpl(RealmModel newRealm) {
-
+        ClientScopeModel roleListScope = newRealm.addClientScope(SCOPE_ROLE_LIST);
+        roleListScope.setDescription("SAML role list");
+        roleListScope.setDisplayOnConsentScreen(true);
+        roleListScope.setConsentScreenText(ROLE_LIST_CONSENT_TEXT);
+        roleListScope.setProtocol(getId());
+        roleListScope.addProtocolMapper(builtins.get("role list"));
+        newRealm.addDefaultClientScope(roleListScope, true);
     }
 
     @Override
     protected void addDefaults(ClientModel client) {
-        for (ProtocolMapperModel model : defaultBuiltins) {
-            model.setProtocol(getId());
-            client.addProtocolMapper(model);
-        }
     }
 
     @Override
@@ -201,39 +202,4 @@ public class SamlProtocolFactory extends AbstractLoginProtocolFactory {
         }
     }
 
-    // TODO:mposolda doublecheck this
-    // @Override
-    public void setupTemplateDefaults(ClientScopeRepresentation clientRep, ClientScopeModel newClient) {
-        SamlRepresentationAttributes rep = new SamlRepresentationAttributes(clientRep.getAttributes());
-        SamlClientTemplate client = new SamlClientTemplate(newClient);
-        if (rep.getCanonicalizationMethod() == null) {
-            client.setCanonicalizationMethod(CanonicalizationMethod.EXCLUSIVE);
-        }
-        if (rep.getSignatureAlgorithm() == null) {
-            client.setSignatureAlgorithm(SignatureAlgorithm.RSA_SHA256);
-        }
-
-        if (rep.getNameIDFormat() == null) {
-            client.setNameIDFormat("username");
-        }
-
-        if (rep.getIncludeAuthnStatement() == null) {
-            client.setIncludeAuthnStatement(true);
-        }
-
-        if (rep.getForceNameIDFormat() == null) {
-            client.setForceNameIDFormat(false);
-        }
-
-        if (rep.getSamlServerSignature() == null) {
-            client.setRequiresRealmSignature(true);
-        }
-        if (rep.getForcePostBinding() == null) {
-            client.setForcePostBinding(true);
-        }
-
-        if (rep.getClientSignature() == null) {
-            client.setRequiresClientSignature(true);
-        }
-    }
 }

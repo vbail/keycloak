@@ -34,6 +34,7 @@ import org.keycloak.models.LDAPConstants;
 import org.keycloak.models.RealmModel;
 import org.keycloak.models.UserModel;
 import org.keycloak.models.utils.KeycloakModelUtils;
+import org.keycloak.protocol.oidc.OIDCLoginProtocol;
 import org.keycloak.protocol.oidc.OIDCLoginProtocolService;
 import org.keycloak.protocol.oidc.mappers.UserAttributeMapper;
 import org.keycloak.services.managers.RealmManager;
@@ -114,6 +115,7 @@ public class LDAPMultipleAttributesTest {
 
             // Create ldap-portal client
             ClientModel ldapClient = KeycloakModelUtils.createClient(appRealm, "ldap-portal");
+            ldapClient.setProtocol(OIDCLoginProtocol.LOGIN_PROTOCOL);
             ldapClient.addRedirectUri("/ldap-portal");
             ldapClient.addRedirectUri("/ldap-portal/*");
             ldapClient.setManagementUrl("/ldap-portal");

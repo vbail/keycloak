@@ -331,7 +331,7 @@ public class OAuthGrantTest extends AbstractKeycloakTest {
         String fooScopeId = ApiUtil.getCreatedId(response);
         response.close();
 
-        ProtocolMapperRepresentation protocolMapper = ProtocolMapperUtil.createAddressMapper(true, true);
+        ProtocolMapperRepresentation protocolMapper = ProtocolMapperUtil.createAddressMapper(true, true, true);
         response = appRealm.clientScopes().get(fooScopeId).getProtocolMappers().createMapper(protocolMapper);
         response.close();
 

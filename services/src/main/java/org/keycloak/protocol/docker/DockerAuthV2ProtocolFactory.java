@@ -35,7 +35,6 @@ public class DockerAuthV2ProtocolFactory extends AbstractLoginProtocolFactory im
         defaultBuiltins.add(addAllRequestedScopeMapper);
     }
 
-    // TODO:mposolda doublecheck this
     @Override
     protected void createDefaultClientScopesImpl(RealmModel newRealm) {
         // no-op
@@ -49,11 +48,6 @@ public class DockerAuthV2ProtocolFactory extends AbstractLoginProtocolFactory im
     @Override
     public Map<String, ProtocolMapperModel> getBuiltinMappers() {
         return builtins;
-    }
-
-    @Override
-    public List<ProtocolMapperModel> getDefaultBuiltinMappers() {
-        return defaultBuiltins;
     }
 
     @Override

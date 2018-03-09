@@ -22,6 +22,8 @@ import org.keycloak.models.KeycloakSession;
 import org.keycloak.models.ProtocolMapperModel;
 import org.keycloak.models.RealmModel;
 import org.keycloak.models.RoleModel;
+import org.keycloak.models.utils.KeycloakModelUtils;
+import org.keycloak.protocol.oidc.OIDCLoginProtocol;
 import org.keycloak.storage.StorageId;
 import org.keycloak.storage.client.AbstractReadOnlyClientStorageAdapter;
 import org.keycloak.storage.client.ClientLookupProvider;
@@ -216,7 +218,12 @@ public class HardcodedClientStorageProvider implements ClientStorageProvider, Cl
 
         @Override
         public Map<String, ClientScopeModel> getClientScopes(boolean defaultScope, boolean filterByProtocol) {
-            return Collections.EMPTY_MAP;
+            if (defaultScope) {
+                return Collections.emptyMap();
+            } else {
+                ClientScopeModel offlineScope = KeycloakModelUtils.getClientScopeByName(realm, "offline_access");
+                return Collections.singletonMap("offline_access", offlineScope);
+            }
         }
 
         @Override

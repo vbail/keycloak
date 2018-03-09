@@ -174,9 +174,7 @@ public class UserInfoEndpoint {
         AuthenticatedClientSessionModel clientSession = userSession.getAuthenticatedClientSessionByClient(clientModel.getId());
 
         // Retrieve by latest scope parameter
-        String scopeParam = clientSession.getNote(OAuth2Constants.SCOPE);
-        Set<ClientScopeModel> clientScopes = TokenManager.getRequestedClientScopes(scopeParam, clientModel);
-        ClientSessionContext clientSessionCtx = DefaultClientSessionContext.fromClientScopes(clientSession, clientScopes);
+        ClientSessionContext clientSessionCtx = DefaultClientSessionContext.fromClientSessionScopeParameter(clientSession);
 
         AccessToken userInfo = new AccessToken();
         tokenManager.transformUserInfoAccessToken(session, userInfo, userSession, clientSessionCtx);

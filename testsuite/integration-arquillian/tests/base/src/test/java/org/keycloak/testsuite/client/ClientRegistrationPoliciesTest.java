@@ -579,10 +579,7 @@ public class ClientRegistrationPoliciesTest extends AbstractClientRegistrationTe
         ClientRepresentation clientRep = createRep("test-app");
         ClientRepresentation registeredClient = reg.create(clientRep);
 
-        long usernamePropMappersCount = registeredClient.getProtocolMappers().stream().filter((ProtocolMapperRepresentation protocolMapper) -> {
-            return protocolMapper.getProtocolMapper().equals(UserPropertyMapper.PROVIDER_ID);
-        }).count();
-        Assert.assertTrue(usernamePropMappersCount == 0);
+        Assert.assertNull(registeredClient.getProtocolMappers());
 
         // Revert
         ApiUtil.findClientResourceByClientId(realmResource(), "test-app").remove();

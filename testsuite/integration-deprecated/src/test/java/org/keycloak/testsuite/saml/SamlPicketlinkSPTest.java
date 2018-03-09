@@ -34,9 +34,12 @@ import org.keycloak.dom.saml.v2.assertion.AttributeStatementType;
 import org.keycloak.dom.saml.v2.assertion.AttributeType;
 import org.keycloak.dom.saml.v2.protocol.ResponseType;
 import org.keycloak.models.ClientModel;
+import org.keycloak.models.ClientScopeModel;
 import org.keycloak.models.Constants;
 import org.keycloak.models.ProtocolMapperModel;
 import org.keycloak.models.RealmModel;
+import org.keycloak.models.utils.KeycloakModelUtils;
+import org.keycloak.protocol.saml.SamlProtocolFactory;
 import org.keycloak.protocol.saml.mappers.AttributeStatementHelper;
 import org.keycloak.protocol.saml.mappers.HardcodedAttributeMapper;
 import org.keycloak.protocol.saml.mappers.HardcodedRole;
@@ -62,6 +65,7 @@ import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriBuilder;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
+import java.util.HashMap;
 
 import static org.junit.Assert.assertEquals;
 
@@ -342,6 +346,11 @@ public class SamlPicketlinkSPTest {
             @Override
             public void config(RealmManager manager, RealmModel adminstrationRealm, RealmModel appRealm) {
                 ClientModel app = appRealm.getClientByClientId("http://localhost:8081/employee/");
+
+                // Remove builtin client scope
+                ClientScopeModel roleListScope = KeycloakModelUtils.getClientScopeByName(appRealm, SamlProtocolFactory.SCOPE_ROLE_LIST);
+                app.removeClientScope(roleListScope);
+
                 for (ProtocolMapperModel mapper : app.getProtocolMappers()) {
                     if (mapper.getName().equals("role-list")) {
                         app.removeProtocolMapper(mapper);

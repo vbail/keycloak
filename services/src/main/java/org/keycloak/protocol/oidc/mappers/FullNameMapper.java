@@ -83,7 +83,7 @@ public class FullNameMapper extends AbstractOIDCProtocolMapper implements OIDCAc
         }
     }
 
-    public static ProtocolMapperModel create(String name, boolean accessToken, boolean idToken) {
+    public static ProtocolMapperModel create(String name, boolean accessToken, boolean idToken, boolean userInfo) {
         ProtocolMapperModel mapper = new ProtocolMapperModel();
         mapper.setName(name);
         mapper.setProtocolMapper(PROVIDER_ID);
@@ -91,6 +91,7 @@ public class FullNameMapper extends AbstractOIDCProtocolMapper implements OIDCAc
         Map<String, String> config = new HashMap<String, String>();
         if (accessToken) config.put(OIDCAttributeMapperHelper.INCLUDE_IN_ACCESS_TOKEN, "true");
         if (idToken) config.put(OIDCAttributeMapperHelper.INCLUDE_IN_ID_TOKEN, "true");
+        if (userInfo) config.put(OIDCAttributeMapperHelper.INCLUDE_IN_USERINFO, "true");
         mapper.setConfig(config);
         return mapper;
     }

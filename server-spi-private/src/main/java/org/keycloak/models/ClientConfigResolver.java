@@ -18,63 +18,35 @@
 package org.keycloak.models;
 
 /**
- * TODO:mposolda remove this class entirely?
+ * TODO: remove this class entirely?
  *
  * @author <a href="mailto:bill@burkecentral.com">Bill Burke</a>
  * @version $Revision: 1 $
  */
 public class ClientConfigResolver {
     protected ClientModel client;
-    //protected ClientScopeModel clientTemplate;
 
     public ClientConfigResolver(ClientModel client) {
         this.client = client;
-        //this.clientTemplate = client.getClientTemplate();
     }
 
     public String resolveAttribute(String name) {
-        // TODO:mposolda remove commented part?
-//        if (clientTemplate != null && client.useTemplateConfig()) {
-//            return clientTemplate.getAttribute(name);
-//        } else {
-//            return client.getAttribute(name);
-//        }
         return client.getAttribute(name);
     }
 
     public boolean isFrontchannelLogout() {
-        // TODO:mposolda remove commented part?
-//        if (clientTemplate != null && client.useTemplateConfig()) {
-//            return clientTemplate.isFrontchannelLogout();
-//        }
-
         return client.isFrontchannelLogout();
     }
 
     boolean isConsentRequired() {
-        // TODO:mposolda remove commented part?
-//        if (clientTemplate != null && client.useTemplateConfig()) {
-//            return clientTemplate.isConsentRequired();
-//        }
-
         return client.isConsentRequired();
     }
 
     boolean isStandardFlowEnabled() {
-        // TODO:mposolda remove commented part?
-//        if (clientTemplate != null && client.useTemplateConfig()) {
-//            return clientTemplate.isStandardFlowEnabled();
-//        }
-
         return client.isStandardFlowEnabled();
     }
 
     boolean isServiceAccountsEnabled() {
-        // TODO:mposolda remove entirely?
-//        if (clientTemplate != null && client.useTemplateConfig()) {
-//            return clientTemplate.isServiceAccountsEnabled();
-//        }
-
         return client.isServiceAccountsEnabled();
     }
 }

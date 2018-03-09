@@ -132,7 +132,7 @@ public class OIDCProtocolMappersTest extends AbstractKeycloakTest {
 
             ClientResource app = findClientResourceByClientId(adminClient.realm("test"), "test-app");
 
-            ProtocolMapperRepresentation mapper = createAddressMapper(true, true);
+            ProtocolMapperRepresentation mapper = createAddressMapper(true, true, true);
             mapper.getConfig().put(AddressMapper.getModelPropertyName(AddressClaimSet.REGION), "region_some");
             mapper.getConfig().put(AddressMapper.getModelPropertyName(AddressClaimSet.COUNTRY), "country_some");
             mapper.getConfig().remove(AddressMapper.getModelPropertyName(AddressClaimSet.POSTAL_CODE)); // Even if we remove protocolMapper config property, it should still default to postal_code

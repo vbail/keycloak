@@ -1202,11 +1202,21 @@ public class RepresentationToModel {
         }
 
         if (resourceRep.getDefaultClientScopes() != null) {
+            // First remove all default/built in client scopes
+            for (ClientScopeModel clientScope : client.getClientScopes(true, false).values()) {
+                client.removeClientScope(clientScope);
+            }
+
             for (String clientScopeName : resourceRep.getDefaultClientScopes()) {
                 addClientScopeToClient(realm, client, clientScopeName, true);
             }
         }
         if (resourceRep.getOptionalClientScopes() != null) {
+            // First remove all default/built in client scopes
+            for (ClientScopeModel clientScope : client.getClientScopes(false, false).values()) {
+                client.removeClientScope(clientScope);
+            }
+
             for (String clientScopeName : resourceRep.getOptionalClientScopes()) {
                 addClientScopeToClient(realm, client, clientScopeName, false);
             }

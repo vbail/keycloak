@@ -47,7 +47,7 @@ public class UserConsentModel {
     }
 
     public boolean isClientScopeGranted(ClientScopeModel clientScope) {
-        // TODO:mposolda Will likely change it with adding support for client scopes inheritance
+        // TODO: May need to be changed with adding support for client scopes inheritance
         for (ClientScopeModel apprClientScope : clientScopes) {
             if (apprClientScope.getId().equals(clientScope.getId())) return true;
         }

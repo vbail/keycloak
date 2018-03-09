@@ -34,6 +34,7 @@ import javax.ws.rs.core.Response;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
 
 /**
  *
@@ -69,8 +70,9 @@ public class ClientProtocolMapperTest extends AbstractProtocolMapperTest {
 
     @Test
     public void testGetMappersList() {
-        assertFalse(oidcMappersRsc.getMappers().isEmpty());
-        assertFalse(samlMappersRsc.getMappers().isEmpty());
+        // Built-in protocol mappers are empty by default
+        assertTrue(oidcMappersRsc.getMappers().isEmpty());
+        assertTrue(samlMappersRsc.getMappers().isEmpty());
     }
 
     @Test

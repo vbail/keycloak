@@ -20,6 +20,8 @@ package org.keycloak.services.util;
 import java.util.HashSet;
 import java.util.Set;
 
+import org.jboss.logging.Logger;
+import org.keycloak.OAuth2Constants;
 import org.keycloak.models.AuthenticatedClientSessionModel;
 import org.keycloak.models.ClientModel;
 import org.keycloak.models.ClientScopeModel;
@@ -28,6 +30,8 @@ import org.keycloak.models.ProtocolMapperModel;
 import org.keycloak.models.RoleModel;
 import org.keycloak.models.UserModel;
 import org.keycloak.models.utils.KeycloakModelUtils;
+import org.keycloak.models.utils.RepresentationToModel;
+import org.keycloak.protocol.oidc.OIDCLoginProtocol;
 import org.keycloak.protocol.oidc.TokenManager;
 
 /**
@@ -36,6 +40,8 @@ import org.keycloak.protocol.oidc.TokenManager;
  * @author <a href="mailto:mposolda@redhat.com">Marek Posolda</a>
  */
 public class DefaultClientSessionContext implements ClientSessionContext {
+
+    private static Logger logger = Logger.getLogger(DefaultClientSessionContext.class);
 
     private final AuthenticatedClientSessionModel clientSession;
     private final Set<String> clientScopeIds;
@@ -50,12 +56,21 @@ public class DefaultClientSessionContext implements ClientSessionContext {
     }
 
 
-    public static DefaultClientSessionContext fromClientScopeIds(AuthenticatedClientSessionModel clientSession, Set<String> clientScopeIds) {
+    /**
+     * Useful if we want to "re-compute" client scopes based on the scope parameter
+     */
+    public static DefaultClientSessionContext fromClientSessionScopeParameter(AuthenticatedClientSessionModel clientSession) {
+        Set<ClientScopeModel> requestedClientScopes = TokenManager.getRequestedClientScopes(clientSession.getNote(OAuth2Constants.SCOPE), clientSession.getClient());
+        return fromClientSessionAndClientScopes(clientSession, requestedClientScopes);
+    }
+
+
+    public static DefaultClientSessionContext fromClientSessionAndClientScopeIds(AuthenticatedClientSessionModel clientSession, Set<String> clientScopeIds) {
         return new DefaultClientSessionContext(clientSession, clientScopeIds);
     }
 
 
-    public static DefaultClientSessionContext fromClientScopes(AuthenticatedClientSessionModel clientSession, Set<ClientScopeModel> clientScopes) {
+    public static DefaultClientSessionContext fromClientSessionAndClientScopes(AuthenticatedClientSessionModel clientSession, Set<ClientScopeModel> clientScopes) {
         Set<String> clientScopeIds = new HashSet<>();
         for (ClientScopeModel clientScope : clientScopes) {
             clientScopeIds.add(clientScope.getId());
@@ -131,6 +146,12 @@ public class DefaultClientSessionContext implements ClientSessionContext {
     private Set<ProtocolMapperModel> loadProtocolMappers() {
         Set<ClientScopeModel> clientScopes = getClientScopes();
         String protocol = clientSession.getClient().getProtocol();
+
+        // Being rather defensive. But protocol should normally always be there
+        if (protocol == null) {
+            logger.warnf("Client '%s' doesn't have protocol set. Fallback to openid-connect. Please fix client configuration", clientSession.getClient().getClientId());
+            protocol = OIDCLoginProtocol.LOGIN_PROTOCOL;
+        }
 
         Set<ProtocolMapperModel> protocolMappers = new HashSet<>();
         for (ClientScopeModel clientScope : clientScopes) {

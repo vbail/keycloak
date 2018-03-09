@@ -31,6 +31,7 @@ import org.keycloak.jose.jws.JWSInput;
 import org.keycloak.jose.jws.JWSInputException;
 import org.keycloak.jose.jws.crypto.HashProvider;
 import org.keycloak.jose.jws.crypto.RSAProvider;
+import org.keycloak.migration.migrators.MigrationUtils;
 import org.keycloak.models.AuthenticatedClientSessionModel;
 import org.keycloak.models.ClientModel;
 import org.keycloak.models.ClientScopeModel;
@@ -74,7 +75,6 @@ import javax.ws.rs.core.UriInfo;
 import java.security.PublicKey;
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
@@ -188,8 +188,14 @@ public class TokenManager {
 
         // Setup clientScopes from refresh token to the context
         Set<String> clientScopeIds = oldToken.getClientScopes();
-        // TODO:mposolda for migration of offline token from older version, the "getClientScopes" will be null. Need to cover that (Likely include just defaultScopes)
-        ClientSessionContext clientSessionCtx = DefaultClientSessionContext.fromClientScopeIds(clientSession, clientScopeIds);
+
+        // Case when offline token is migrated from previous version
+        if (clientScopeIds == null && userSession.isOffline()) {
+            logger.debugf("Migrating offline token of user '%s' for client '%s' of realm '%s'", user.getUsername(), client.getClientId(), realm.getName());
+            clientScopeIds = MigrationUtils.migrateOldOfflineToken(session, realm, client, user);
+        }
+
+        ClientSessionContext clientSessionCtx = DefaultClientSessionContext.fromClientSessionAndClientScopeIds(clientSession, clientScopeIds);
 
         // Check user didn't revoke granted consent
         if (!verifyConsentStillAvailable(session, user, client, clientSessionCtx.getClientScopes())) {
@@ -439,7 +445,7 @@ public class TokenManager {
         // Remove authentication session now
         new AuthenticationSessionManager(session).removeAuthenticationSession(userSession.getRealm(), authSession, true);
 
-        return DefaultClientSessionContext.fromClientScopeIds(clientSession, clientScopeIds);
+        return DefaultClientSessionContext.fromClientSessionAndClientScopeIds(clientSession, clientScopeIds);
     }
 
 
@@ -476,8 +482,9 @@ public class TokenManager {
         }
 
         if (client.isFullScopeAllowed()) {
-            // TODO:mposolda trace
-            logger.infof("Using full scope for client %s", client.getClientId());
+            if (logger.isTraceEnabled()) {
+                logger.tracef("Using full scope for client %s", client.getClientId());
+            }
             requestedRoles = roleMappings;
         } else {
             Set<RoleModel> scopeMappings = new HashSet<>();
@@ -487,8 +494,9 @@ public class TokenManager {
 
             // 2 - Role mappings of client itself + default client scopes + optional client scopes requested by scope parameter (if applyScopeParam is true)
             for (ClientScopeModel clientScope : clientScopes) {
-                // TODO:mposolda trace
-                logger.infof("Adding client scope role mappings of client scope '%s' to client '%s'", clientScope.getName(), client.getClientId());
+                if (logger.isTraceEnabled()) {
+                    logger.tracef("Adding client scope role mappings of client scope '%s' to client '%s'", clientScope.getName(), client.getClientId());
+                }
                 scopeMappings.addAll(clientScope.getScopeMappings());
             }
 
@@ -544,8 +552,7 @@ public class TokenManager {
             }
 
             if (!grantedConsent.getGrantedClientScopes().contains(requestedScope)) {
-                // TODO:mposolda debug
-                logger.infof("Client '%s' no longer has requested consent from user '%s' for client scope '%s'",
+                logger.debugf("Client '%s' no longer has requested consent from user '%s' for client scope '%s'",
                         client.getClientId(), user.getUsername(), requestedScope.getName());
                 return false;
             }
@@ -554,7 +561,7 @@ public class TokenManager {
         return true;
     }
 
-    // TODO: Remove this check entirely? It should be sufficient to check granted consent (client scopes) during refresh token
+    // TODO: Remove this check entirely? It should be sufficient to check granted consents (client scopes) during refresh token
     private void verifyAccess(AccessToken token, AccessToken newToken) throws OAuthErrorException {
         if (token.getRealmAccess() != null) {
             if (newToken.getRealmAccess() == null) throw new OAuthErrorException(OAuthErrorException.INVALID_SCOPE, "User no long has permission for realm roles");
@@ -908,19 +915,19 @@ public class TokenManager {
         private String getScopeParameterValue() {
             StringBuilder builder = new StringBuilder();
 
-            Collection<ClientScopeModel> optionalScopes = client.getClientScopes(false, true).values();
-
-            // Add just optional scopes to scope parameter
+            // Add both default and optional scopes to scope parameter. Don't add client itself
             boolean first = true;
             for (ClientScopeModel clientScope : clientSessionCtx.getClientScopes()) {
-                if (optionalScopes.contains(clientScope)) {
-                    if (first) {
-                        first = false;
-                    } else {
-                        builder.append(" ");
-                    }
-                    builder.append(clientScope.getName());
+                if (clientScope instanceof ClientModel) {
+                    continue;
                 }
+
+                if (first) {
+                    first = false;
+                } else {
+                    builder.append(" ");
+                }
+                builder.append(clientScope.getName());
             }
 
             String scopeParam = builder.toString();

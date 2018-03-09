@@ -19,14 +19,10 @@ package org.keycloak.protocol;
 
 import org.keycloak.events.EventBuilder;
 import org.keycloak.models.ClientModel;
-import org.keycloak.models.ClientScopeModel;
 import org.keycloak.models.ProtocolMapperModel;
 import org.keycloak.models.RealmModel;
 import org.keycloak.provider.ProviderFactory;
 import org.keycloak.representations.idm.ClientRepresentation;
-import org.keycloak.representations.idm.ClientScopeRepresentation;
-
-import java.util.List;
 import java.util.Map;
 
 /**
@@ -41,11 +37,6 @@ public interface LoginProtocolFactory extends ProviderFactory<LoginProtocol> {
      */
     Map<String, ProtocolMapperModel> getBuiltinMappers();
 
-    /**
-     * List of mappers, which are added to new clients by default
-     * @return
-     */
-    List<ProtocolMapperModel> getDefaultBuiltinMappers();
 
     Object createProtocolEndpoint(RealmModel realm, EventBuilder event);
 
@@ -54,8 +45,9 @@ public interface LoginProtocolFactory extends ProviderFactory<LoginProtocol> {
      * Called when new realm is created
      *
      * @param newRealm
+     * @param addScopesToExistingClients If true, then existing realm clients will be updated (created realm default scopes will be added to them)
      */
-    void createDefaultClientScopes(RealmModel newRealm);
+    void createDefaultClientScopes(RealmModel newRealm, boolean addScopesToExistingClients);
 
 
     /**

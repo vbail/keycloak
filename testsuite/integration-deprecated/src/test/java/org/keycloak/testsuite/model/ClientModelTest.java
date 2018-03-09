@@ -29,6 +29,7 @@ import org.keycloak.models.utils.ModelToRepresentation;
 import org.keycloak.models.utils.RepresentationToModel;
 import org.keycloak.protocol.oidc.OIDCLoginProtocol;
 import org.keycloak.protocol.oidc.OIDCLoginProtocolFactory;
+import org.keycloak.protocol.oidc.mappers.AddressMapper;
 import org.keycloak.representations.idm.ClientRepresentation;
 import org.keycloak.representations.idm.ProtocolMapperRepresentation;
 import org.keycloak.services.managers.ClientManager;
@@ -57,6 +58,7 @@ public class ClientModelTest extends AbstractModelTest {
         client.setBaseUrl("http://base");
         client.setManagementUrl("http://management");
         client.setClientId("app-name");
+        client.setProtocol("openid-connect");
         client.addRole("role-1");
         client.addRole("role-2");
         client.addRole("role-3");
@@ -71,6 +73,8 @@ public class ClientModelTest extends AbstractModelTest {
 
         client.registerNode("node1", 10);
         client.registerNode("10.20.30.40", 50);
+
+        client.addProtocolMapper(AddressMapper.createAddressMapper());
 
         client.updateClient();
     }

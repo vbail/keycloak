@@ -46,8 +46,8 @@ public class ProtocolMapperUtil {
      * @param accessToken
      * @return
      */
-    public static ProtocolMapperRepresentation createAddressMapper(boolean idToken, boolean accessToken) {
-        return ModelToRepresentation.toRepresentation(AddressMapper.createAddressMapper(idToken, accessToken));
+    public static ProtocolMapperRepresentation createAddressMapper(boolean idToken, boolean accessToken, boolean userInfo) {
+        return ModelToRepresentation.toRepresentation(AddressMapper.createAddressMapper(idToken, accessToken, userInfo));
     }
 
     /**

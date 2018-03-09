@@ -121,7 +121,7 @@ public class ClientScopeEvaluateResource {
 
         Set<ClientScopeModel> clientScopes = TokenManager.getRequestedClientScopes(scopeParam, client);
 
-        for (ProtocolMapperContainerModel mapperContainer : clientScopes) {
+        for (ClientScopeModel mapperContainer : clientScopes) {
             Set<ProtocolMapperModel> currentMappers = mapperContainer.getProtocolMappers();
             for (ProtocolMapperModel current : currentMappers) {
                 if (current.getProtocol().equals(client.getProtocol())) {
@@ -130,17 +130,16 @@ public class ClientScopeEvaluateResource {
                     rep.setMapperName(current.getName());
                     rep.setProtocolMapper(current.getProtocolMapper());
 
-                    // Hopefully this can be improved if client itself has dedicated clientScope
-                    if (mapperContainer instanceof ClientScopeModel) {
-                        ClientScopeModel clientScope = (ClientScopeModel) mapperContainer;
-                        rep.setContainerId(clientScope.getId());
-                        rep.setContainerName(clientScope.getName());
-                        rep.setContainerType("client-scope");
-                    } else {
+                    if (mapperContainer.getId().equals(client.getId())) {
                         // Must be this client
                         rep.setContainerId(client.getId());
                         rep.setContainerName("");
                         rep.setContainerType("client");
+                    } else {
+                        ClientScopeModel clientScope = (ClientScopeModel) mapperContainer;
+                        rep.setContainerId(clientScope.getId());
+                        rep.setContainerName(clientScope.getName());
+                        rep.setContainerType("client-scope");
                     }
 
                     protocolMappers.add(rep);
@@ -174,21 +173,20 @@ public class ClientScopeEvaluateResource {
             throw new NotFoundException("No user found");
         }
 
-        // TODO:mposolda debug
-        logger.infof("generateExampleAccessToken invoked. User: %s, Scope param: %s", user.getUsername(), scopeParam);
+        logger.debugf("generateExampleAccessToken invoked. User: %s, Scope param: %s", user.getUsername(), scopeParam);
 
         AccessToken token = generateToken(user, scopeParam);
         return token;
     }
 
 
-    // TODO:mposolda needs refactoring to avoid some duplicated code from TokenEndpoint
     private AccessToken generateToken(UserModel user, String scopeParam) {
         AuthenticationSessionModel authSession = null;
         UserSessionModel userSession = null;
+        AuthenticationSessionManager authSessionManager = new AuthenticationSessionManager(session);
 
         try {
-            RootAuthenticationSessionModel rootAuthSession = new AuthenticationSessionManager(session).createAuthenticationSession(realm, false);
+            RootAuthenticationSessionModel rootAuthSession = authSessionManager.createAuthenticationSession(realm, false);
             authSession = rootAuthSession.createAuthenticationSession(client);
 
             authSession.setAuthenticatedUser(user);
@@ -211,7 +209,7 @@ public class ClientScopeEvaluateResource {
 
         } finally {
             if (authSession != null) {
-                new AuthenticationSessionManager(session).removeAuthenticationSession(realm, authSession, false);
+                authSessionManager.removeAuthenticationSession(realm, authSession, false);
             }
             if (userSession != null) {
                 session.sessions().removeUserSession(realm, userSession);

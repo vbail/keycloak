@@ -303,12 +303,16 @@ public final class KeycloakModelUtils {
         return str==null ? null : str.toLowerCase();
     }
 
-    public static void setupOfflineTokens(RealmModel realm) {
-        if (realm.getRole(Constants.OFFLINE_ACCESS_ROLE) == null) {
-            RoleModel role = realm.addRole(Constants.OFFLINE_ACCESS_ROLE);
-            role.setDescription("${role_offline-access}");
+    public static RoleModel setupOfflineRole(RealmModel realm) {
+        RoleModel offlineRole = realm.getRole(Constants.OFFLINE_ACCESS_ROLE);
+
+        if (offlineRole == null) {
+            offlineRole = realm.addRole(Constants.OFFLINE_ACCESS_ROLE);
+            offlineRole.setDescription("${role_offline-access}");
             realm.addDefaultRole(Constants.OFFLINE_ACCESS_ROLE);
         }
+
+        return offlineRole;
     }
 
 

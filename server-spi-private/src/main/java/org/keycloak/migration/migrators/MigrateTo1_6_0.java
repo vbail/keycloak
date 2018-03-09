@@ -74,7 +74,7 @@ public class MigrateTo1_6_0 implements Migration {
         realm.setOfflineSessionIdleTimeout(Constants.DEFAULT_OFFLINE_SESSION_IDLE_TIMEOUT);
 
         if (realm.getRole(Constants.OFFLINE_ACCESS_ROLE) == null) {
-            KeycloakModelUtils.setupOfflineTokens(realm);
+            KeycloakModelUtils.setupOfflineRole(realm);
             RoleModel role = realm.getRole(Constants.OFFLINE_ACCESS_ROLE);
 
             // Bulk grant of offline_access role to all users

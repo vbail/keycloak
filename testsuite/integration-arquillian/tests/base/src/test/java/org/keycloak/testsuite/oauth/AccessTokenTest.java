@@ -725,7 +725,7 @@ public class AccessTokenTest extends AbstractKeycloakTest {
 
         ClientScopeRepresentation rep = new ClientScopeRepresentation();
         rep.setName("template");
-        rep.setProtocol("oidc");
+        rep.setProtocol("openid-connect");
         Response response = realm.clientScopes().create(rep);
         assertEquals(201, response.getStatus());
         URI templateUri = response.getLocation();

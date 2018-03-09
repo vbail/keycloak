@@ -23,10 +23,13 @@ import org.keycloak.common.util.UriUtils;
 import org.keycloak.events.EventBuilder;
 import org.keycloak.models.ClientModel;
 import org.keycloak.models.ClientScopeModel;
+import org.keycloak.models.Constants;
 import org.keycloak.models.KeycloakSession;
 import org.keycloak.models.ProtocolMapperModel;
 import org.keycloak.models.RealmModel;
 import org.keycloak.models.RoleModel;
+import org.keycloak.models.utils.DefaultClientScopes;
+import org.keycloak.models.utils.KeycloakModelUtils;
 import org.keycloak.protocol.AbstractLoginProtocolFactory;
 import org.keycloak.protocol.LoginProtocol;
 import org.keycloak.protocol.oidc.mappers.AddressMapper;
@@ -80,7 +83,7 @@ public class OIDCLoginProtocolFactory extends AbstractLoginProtocolFactory {
     public static final String EMAIL_SCOPE_CONSENT_TEXT = "${emailScopeConsentText}";
     public static final String ADDRESS_SCOPE_CONSENT_TEXT = "${addressScopeConsentText}";
     public static final String PHONE_SCOPE_CONSENT_TEXT = "${phoneScopeConsentText}";
-    public static final String OFFLINE_ACCESS_SCOPE_CONSENT_TEXT = "${offlineAccessScopeConsentText}";
+    public static final String OFFLINE_ACCESS_SCOPE_CONSENT_TEXT = Constants.OFFLINE_ACCESS_SCOPE_CONSENT_TEXT;
 
 
     @Override
@@ -91,11 +94,6 @@ public class OIDCLoginProtocolFactory extends AbstractLoginProtocolFactory {
     @Override
     public Map<String, ProtocolMapperModel> getBuiltinMappers() {
         return builtins;
-    }
-
-    @Override
-    public List<ProtocolMapperModel> getDefaultBuiltinMappers() {
-        return Collections.emptyList();
     }
 
     static Map<String, ProtocolMapperModel> builtins = new HashMap<>();
@@ -146,14 +144,7 @@ public class OIDCLoginProtocolFactory extends AbstractLoginProtocolFactory {
                 true, true);
         builtins.put(EMAIL_VERIFIED, model);
 
-        ProtocolMapperModel fullName = new ProtocolMapperModel();
-        fullName.setName(FULL_NAME);
-        fullName.setProtocolMapper(FullNameMapper.PROVIDER_ID);
-        fullName.setProtocol(OIDCLoginProtocol.LOGIN_PROTOCOL);
-        Map<String, String> config = new HashMap<String, String>();
-        config.put(OIDCAttributeMapperHelper.INCLUDE_IN_ACCESS_TOKEN, "true");
-        config.put(OIDCAttributeMapperHelper.INCLUDE_IN_ID_TOKEN, "true");
-        fullName.setConfig(config);
+        ProtocolMapperModel fullName = FullNameMapper.create(FULL_NAME, true, true, true);
         builtins.put(FULL_NAME, fullName);
 
         ProtocolMapperModel address = AddressMapper.createAddressMapper();
@@ -228,15 +219,10 @@ public class OIDCLoginProtocolFactory extends AbstractLoginProtocolFactory {
 
         RoleModel offlineRole = newRealm.getRole(OAuth2Constants.OFFLINE_ACCESS);
         if (offlineRole != null) {
-            ClientScopeModel offlineAccessScope = newRealm.addClientScope(OAuth2Constants.OFFLINE_ACCESS);
-            offlineAccessScope.setDescription("OpenID Connect built-in scope: offline_access");
-            offlineAccessScope.setDisplayOnConsentScreen(true);
-            offlineAccessScope.setConsentScreenText(OFFLINE_ACCESS_SCOPE_CONSENT_TEXT);
-            offlineAccessScope.setProtocol(getId());
-            offlineAccessScope.addScopeMapping(offlineRole);
-
-            // Optional scope. Needs to be requested by scope parameter
-            newRealm.addDefaultClientScope(offlineAccessScope, false);
+            ClientScopeModel offlineAccessScope = KeycloakModelUtils.getClientScopeByName(newRealm, OAuth2Constants.OFFLINE_ACCESS);
+            if (offlineAccessScope == null) {
+                DefaultClientScopes.createOfflineAccessClientScope(newRealm, offlineRole);
+            }
         }
     }
 
