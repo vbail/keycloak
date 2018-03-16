@@ -67,10 +67,6 @@ public class ApplicationsBean {
                 allClientScopes.add(client);
 
                 availableRoles = TokenManager.getAccess(user, client, allClientScopes);
-                // Don't show applications, which user doesn't have access into (any available roles)
-                if (availableRoles.isEmpty()) {
-                    continue;
-                }
             }
             List<RoleModel> realmRolesAvailable = new LinkedList<RoleModel>();
             MultivaluedHashMap<String, ClientRoleEntry> resourceRolesAvailable = new MultivaluedHashMap<String, ClientRoleEntry>();

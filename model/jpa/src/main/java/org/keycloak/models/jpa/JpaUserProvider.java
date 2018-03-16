@@ -298,7 +298,7 @@ public class JpaUserProvider implements UserProvider, UserCredentialStore {
         Collection<UserConsentClientScopeEntity> grantedClientScopeEntities = entity.getGrantedClientScopes();
         if (grantedClientScopeEntities != null) {
             for (UserConsentClientScopeEntity grantedClientScope : grantedClientScopeEntities) {
-                ClientScopeModel grantedClientScopeModel = realm.getClientScopeById(grantedClientScope.getScopeId());
+                ClientScopeModel grantedClientScopeModel = KeycloakModelUtils.findClientScopeById(realm, grantedClientScope.getScopeId());
                 if (grantedClientScopeModel != null) {
                     model.addGrantedClientScope(grantedClientScopeModel);
                 }
