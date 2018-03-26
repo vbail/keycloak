@@ -105,6 +105,20 @@
         <dropForeignKeyConstraint baseTableName="CLIENT_TEMPLATE" constraintName="FK_REALM_CLI_TMPLT" />
         <dropUniqueConstraint constraintName="UK_CLI_TEMPLATE" tableName="CLIENT_TEMPLATE"/>
 
+        <dropDefaultValue tableName="CLIENT_TEMPLATE" columnName="FULL_SCOPE_ALLOWED" />
+        <dropDefaultValue tableName="CLIENT_TEMPLATE" columnName="CONSENT_REQUIRED" />
+        <dropDefaultValue tableName="CLIENT_TEMPLATE" columnName="STANDARD_FLOW_ENABLED" />
+        <dropDefaultValue tableName="CLIENT_TEMPLATE" columnName="IMPLICIT_FLOW_ENABLED" />
+        <dropDefaultValue tableName="CLIENT_TEMPLATE" columnName="DIRECT_ACCESS_GRANTS_ENABLED" />
+        <dropDefaultValue tableName="CLIENT_TEMPLATE" columnName="SERVICE_ACCOUNTS_ENABLED" />
+        <dropDefaultValue tableName="CLIENT_TEMPLATE" columnName="FRONTCHANNEL_LOGOUT" />
+        <dropDefaultValue tableName="CLIENT_TEMPLATE" columnName="BEARER_ONLY" />
+        <dropDefaultValue tableName="CLIENT_TEMPLATE" columnName="PUBLIC_CLIENT" />
+        
+        <dropIndex tableName="CLIENT_SCOPE_ROLE_MAPPING" indexName="IDX_TEMPL_SCOPE_MAPP_ROLE" />
+        <dropIndex tableName="PROTOCOL_MAPPER" indexName="IDX_PROTO_MAPP_CLIENT_TEMPL" />
+        <dropIndex tableName="CLIENT" indexName="IDX_CLIENT_CLIENT_TEMPL_ID" />
+
         <dropColumn tableName="CLIENT_TEMPLATE" columnName="FULL_SCOPE_ALLOWED" />
         <dropColumn tableName="CLIENT_TEMPLATE" columnName="CONSENT_REQUIRED" />
         <dropColumn tableName="CLIENT_TEMPLATE" columnName="STANDARD_FLOW_ENABLED" />
@@ -135,6 +149,9 @@
         <!-- 2 - Client binding to more clientScopes -->
         <!-- Foreign key dropped above TODO:mposolda migration existing clientTemplate to default clientScope -->
         <dropColumn tableName="CLIENT" columnName="CLIENT_TEMPLATE_ID" />
+        <dropDefaultValue tableName="CLIENT" columnName="USE_TEMPLATE_CONFIG"/>
+        <dropDefaultValue tableName="CLIENT" columnName="USE_TEMPLATE_SCOPE" />
+        <dropDefaultValue tableName="CLIENT" columnName="USE_TEMPLATE_MAPPERS" />
         <dropColumn tableName="CLIENT" columnName="USE_TEMPLATE_CONFIG" />
         <dropColumn tableName="CLIENT" columnName="USE_TEMPLATE_SCOPE" />
         <dropColumn tableName="CLIENT" columnName="USE_TEMPLATE_MAPPERS" />
@@ -171,9 +188,11 @@
         <addForeignKeyConstraint baseColumnNames="SCOPE_ID" baseTableName="DEFAULT_CLIENT_SCOPE" constraintName="FK_R_DEF_CLI_SCOPE_SCOPE" referencedColumnNames="ID" referencedTableName="CLIENT_SCOPE"/>
 
         <!-- Remove scopeParamRequired -->
+        <dropDefaultValue tableName="KEYCLOAK_ROLE" columnName="SCOPE_PARAM_REQUIRED" />
         <dropColumn tableName="KEYCLOAK_ROLE" columnName="SCOPE_PARAM_REQUIRED" />
 
         <!-- Drop consent stuff from protocolMappers table -->
+        <dropDefaultValue tableName="PROTOCOL_MAPPER" columnName="CONSENT_REQUIRED" />
         <dropColumn tableName="PROTOCOL_MAPPER" columnName="CONSENT_REQUIRED" />
         <dropColumn tableName="PROTOCOL_MAPPER" columnName="CONSENT_TEXT" />
 

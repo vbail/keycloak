@@ -363,41 +363,41 @@ public class ClientRegistrationPoliciesTest extends AbstractClientRegistrationTe
         availableMappers.containsAll(someExpectedMappers);
 
         // test that clientScope provider contains just the default client scopes
-        ComponentTypeRepresentation clientTemplateRep = providersMap.get(ClientScopesClientRegistrationPolicyFactory.PROVIDER_ID);
-        List<String> clientTemplates = getProviderConfigProperty(clientTemplateRep, ClientScopesClientRegistrationPolicyFactory.ALLOWED_CLIENT_SCOPES);
-        Assert.assertFalse(clientTemplates.isEmpty());
-        Assert.assertTrue(clientTemplates.contains(OAuth2Constants.SCOPE_PROFILE));
-        Assert.assertFalse(clientTemplates.contains("foo"));
-        Assert.assertFalse(clientTemplates.contains("bar"));
+        ComponentTypeRepresentation clientScopeRep = providersMap.get(ClientScopesClientRegistrationPolicyFactory.PROVIDER_ID);
+        List<String> clientScopes = getProviderConfigProperty(clientScopeRep, ClientScopesClientRegistrationPolicyFactory.ALLOWED_CLIENT_SCOPES);
+        Assert.assertFalse(clientScopes.isEmpty());
+        Assert.assertTrue(clientScopes.contains(OAuth2Constants.SCOPE_PROFILE));
+        Assert.assertFalse(clientScopes.contains("foo"));
+        Assert.assertFalse(clientScopes.contains("bar"));
 
         // Add some clientScopes
-        ClientScopeRepresentation clientTemplate = new ClientScopeRepresentation();
-        clientTemplate.setName("foo");
-        Response response = realmResource().clientScopes().create(clientTemplate);
-        String fooTemplateId = ApiUtil.getCreatedId(response);
+        ClientScopeRepresentation clientScope = new ClientScopeRepresentation();
+        clientScope.setName("foo");
+        Response response = realmResource().clientScopes().create(clientScope);
+        String fooScopeId = ApiUtil.getCreatedId(response);
         response.close();
 
-        clientTemplate = new ClientScopeRepresentation();
-        clientTemplate.setName("bar");
-        response = realmResource().clientScopes().create(clientTemplate);
-        String barTemplateId = ApiUtil.getCreatedId(response);
+        clientScope = new ClientScopeRepresentation();
+        clientScope.setName("bar");
+        response = realmResource().clientScopes().create(clientScope);
+        String barScopeId = ApiUtil.getCreatedId(response);
         response.close();
 
-        // send request again and test that clientScope provider contains added client templates
+        // send request again and test that clientScope provider contains added client scopes
         reps = realmResource().clientRegistrationPolicy().getProviders();
-        clientTemplateRep = reps.stream().filter((ComponentTypeRepresentation rep1) -> {
+        clientScopeRep = reps.stream().filter((ComponentTypeRepresentation rep1) -> {
 
             return rep1.getId().equals(ClientScopesClientRegistrationPolicyFactory.PROVIDER_ID);
 
         }).findFirst().get();
 
-        clientTemplates = getProviderConfigProperty(clientTemplateRep, ClientScopesClientRegistrationPolicyFactory.ALLOWED_CLIENT_SCOPES);
-        Assert.assertTrue(clientTemplates.contains("foo"));
-        Assert.assertTrue(clientTemplates.contains("bar"));
+        clientScopes = getProviderConfigProperty(clientScopeRep, ClientScopesClientRegistrationPolicyFactory.ALLOWED_CLIENT_SCOPES);
+        Assert.assertTrue(clientScopes.contains("foo"));
+        Assert.assertTrue(clientScopes.contains("bar"));
 
-        // Revert client templates
-        realmResource().clientScopes().get(fooTemplateId).remove();
-        realmResource().clientScopes().get(barTemplateId).remove();
+        // Revert client scopes
+        realmResource().clientScopes().get(fooScopeId).remove();
+        realmResource().clientScopes().get(barScopeId).remove();
     }
 
     private List<String> getProviderConfigProperty(ComponentTypeRepresentation provider, String expectedConfigPropName) {
@@ -424,23 +424,23 @@ public class ClientRegistrationPoliciesTest extends AbstractClientRegistrationTe
         setTrustedHost("localhost");
 
         // Add some clientScope through Admin REST
-        ClientScopeRepresentation clientTemplate = new ClientScopeRepresentation();
-        clientTemplate.setName("foo");
-        Response response = realmResource().clientScopes().create(clientTemplate);
+        ClientScopeRepresentation clientScope = new ClientScopeRepresentation();
+        clientScope.setName("foo");
+        Response response = realmResource().clientScopes().create(clientScope);
         String clientScopeId = ApiUtil.getCreatedId(response);
         response.close();
 
-        // I can't register new client with this template
+        // I can't register new client with this scope
         ClientRepresentation clientRep = createRep("test-app");
         clientRep.setDefaultClientScopes(Collections.singletonList("foo"));
         assertFail(ClientRegOp.CREATE, clientRep, 403, "Not permitted to use specified clientScope");
 
-        // Register client without template - should success
+        // Register client without scope - should success
         clientRep.setDefaultClientScopes(null);
         ClientRepresentation registeredClient = reg.create(clientRep);
         reg.auth(Auth.token(registeredClient));
 
-        // Try to update client with template - should fail
+        // Try to update client with scope - should fail
         registeredClient.setDefaultClientScopes(Collections.singletonList("foo"));
         assertFail(ClientRegOp.UPDATE, registeredClient, 403, "Not permitted to use specified clientScope");
 
@@ -448,7 +448,7 @@ public class ClientRegistrationPoliciesTest extends AbstractClientRegistrationTe
         ClientResource client = ApiUtil.findClientByClientId(realmResource(), "test-app");
         client.addDefaultClientScope(clientScopeId);
 
-        // Now the update via clientRegistration is permitted too as template was already set
+        // Now the update via clientRegistration is permitted too as scope was already set
         reg.update(registeredClient);
 
         // Revert client scope
@@ -462,29 +462,29 @@ public class ClientRegistrationPoliciesTest extends AbstractClientRegistrationTe
         setTrustedHost("localhost");
 
         // Add some clientScope through Admin REST
-        ClientScopeRepresentation clientTemplate = new ClientScopeRepresentation();
-        clientTemplate.setName("foo");
-        Response response = realmResource().clientScopes().create(clientTemplate);
-        String clientTemplateId = ApiUtil.getCreatedId(response);
+        ClientScopeRepresentation clientScope = new ClientScopeRepresentation();
+        clientScope.setName("foo");
+        Response response = realmResource().clientScopes().create(clientScope);
+        String clientScopeId = ApiUtil.getCreatedId(response);
         response.close();
 
-        // I can't register new client with this template
+        // I can't register new client with this scope
         ClientRepresentation clientRep = createRep("test-app");
         clientRep.setDefaultClientScopes(Collections.singletonList("foo"));
         assertFail(ClientRegOp.CREATE, clientRep, 403, "Not permitted to use specified clientScope");
 
-        // Update the policy to allow the "foo" template
-        ComponentRepresentation clientTemplatesPolicyRep = findPolicyByProviderAndAuth(ClientScopesClientRegistrationPolicyFactory.PROVIDER_ID, getPolicyAnon());
-        clientTemplatesPolicyRep.getConfig().putSingle(ClientScopesClientRegistrationPolicyFactory.ALLOWED_CLIENT_SCOPES, "foo");
-        realmResource().components().component(clientTemplatesPolicyRep.getId()).update(clientTemplatesPolicyRep);
+        // Update the policy to allow the "foo" scope
+        ComponentRepresentation clientScopesPolicyRep = findPolicyByProviderAndAuth(ClientScopesClientRegistrationPolicyFactory.PROVIDER_ID, getPolicyAnon());
+        clientScopesPolicyRep.getConfig().putSingle(ClientScopesClientRegistrationPolicyFactory.ALLOWED_CLIENT_SCOPES, "foo");
+        realmResource().components().component(clientScopesPolicyRep.getId()).update(clientScopesPolicyRep);
 
         // Check that I can register client now
         ClientRepresentation registeredClient = reg.create(clientRep);
         Assert.assertNotNull(registeredClient.getRegistrationAccessToken());
 
-        // Revert client template
+        // Revert client scope
         ApiUtil.findClientResourceByClientId(realmResource(), "test-app").remove();
-        realmResource().clientScopes().get(clientTemplateId).remove();
+        realmResource().clientScopes().get(clientScopeId).remove();
     }
 
 

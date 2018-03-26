@@ -62,25 +62,25 @@ public class ClientScopeTest extends AbstractClientTest {
 
     @Test
     public void testAddDuplicatedClientScope() {
-        ClientScopeRepresentation templateRep = new ClientScopeRepresentation();
-        templateRep.setName("scope1");
-        String templateId = createClientScope(templateRep);
+        ClientScopeRepresentation scopeRep = new ClientScopeRepresentation();
+        scopeRep.setName("scope1");
+        String scopeId = createClientScope(scopeRep);
 
-        templateRep = new ClientScopeRepresentation();
-        templateRep.setName("scope1");
-        Response response = clientScopes().create(templateRep);
+        scopeRep = new ClientScopeRepresentation();
+        scopeRep.setName("scope1");
+        Response response = clientScopes().create(scopeRep);
         assertEquals(409, response.getStatus());
 
         ErrorRepresentation error = response.readEntity(ErrorRepresentation.class);
         Assert.assertEquals("Client Scope scope1 already exists", error.getErrorMessage());
 
         // Cleanup
-        removeClientScope(templateId);
+        removeClientScope(scopeId);
     }
 
 
     @Test (expected = NotFoundException.class)
-    public void testGetUnknownTemplate() {
+    public void testGetUnknownScope() {
         clientScopes().get("unknown-id").toRepresentation();
     }
 
@@ -96,23 +96,23 @@ public class ClientScopeTest extends AbstractClientTest {
     @Test
     public void testRemoveClientScope() {
         // Create scope1
-        ClientScopeRepresentation templateRep = new ClientScopeRepresentation();
-        templateRep.setName("scope1");
-        String template1Id = createClientScope(templateRep);
+        ClientScopeRepresentation scopeRep = new ClientScopeRepresentation();
+        scopeRep.setName("scope1");
+        String scope1Id = createClientScope(scopeRep);
 
         List<ClientScopeRepresentation> clientScopes = clientScopes().findAll();
         Assert.assertTrue(getClientScopeNames(clientScopes).contains("scope1"));
 
         // Create scope2
-        templateRep = new ClientScopeRepresentation();
-        templateRep.setName("scope2");
-        String template2Id = createClientScope(templateRep);
+        scopeRep = new ClientScopeRepresentation();
+        scopeRep.setName("scope2");
+        String scope2Id = createClientScope(scopeRep);
 
         clientScopes = clientScopes().findAll();
         Assert.assertTrue(getClientScopeNames(clientScopes).contains("scope2"));
 
         // Remove scope1
-        removeClientScope(template1Id);
+        removeClientScope(scope1Id);
 
         clientScopes = clientScopes().findAll();
         Assert.assertFalse(getClientScopeNames(clientScopes).contains("scope1"));
@@ -120,7 +120,7 @@ public class ClientScopeTest extends AbstractClientTest {
 
 
         // Remove scope2
-        removeClientScope(template2Id);
+        removeClientScope(scope2Id);
 
         clientScopes = clientScopes().findAll();
         Assert.assertFalse(getClientScopeNames(clientScopes).contains("scope1"));
@@ -129,61 +129,61 @@ public class ClientScopeTest extends AbstractClientTest {
 
 
     @Test
-    public void testUpdateTemplate() {
+    public void testUpdateScopeScope() {
         // Test creating
-        ClientScopeRepresentation templateRep = new ClientScopeRepresentation();
-        templateRep.setName("scope1");
-        templateRep.setDescription("scope1-desc");
-        templateRep.setProtocol(OIDCLoginProtocol.LOGIN_PROTOCOL);
-        String template1Id = createClientScope(templateRep);
+        ClientScopeRepresentation scopeRep = new ClientScopeRepresentation();
+        scopeRep.setName("scope1");
+        scopeRep.setDescription("scope1-desc");
+        scopeRep.setProtocol(OIDCLoginProtocol.LOGIN_PROTOCOL);
+        String scope1Id = createClientScope(scopeRep);
 
         // Assert created attributes
-        templateRep = clientScopes().get(template1Id).toRepresentation();
-        Assert.assertEquals("scope1", templateRep.getName());
-        Assert.assertEquals("scope1-desc", templateRep.getDescription());
-        Assert.assertEquals(OIDCLoginProtocol.LOGIN_PROTOCOL, templateRep.getProtocol());
+        scopeRep = clientScopes().get(scope1Id).toRepresentation();
+        Assert.assertEquals("scope1", scopeRep.getName());
+        Assert.assertEquals("scope1-desc", scopeRep.getDescription());
+        Assert.assertEquals(OIDCLoginProtocol.LOGIN_PROTOCOL, scopeRep.getProtocol());
 
 
         // Test updating
-        templateRep.setName("scope1-updated");
-        templateRep.setDescription("scope1-desc-updated");
-        templateRep.setProtocol(SamlProtocol.LOGIN_PROTOCOL);
+        scopeRep.setName("scope1-updated");
+        scopeRep.setDescription("scope1-desc-updated");
+        scopeRep.setProtocol(SamlProtocol.LOGIN_PROTOCOL);
 
-        clientScopes().get(template1Id).update(templateRep);
+        clientScopes().get(scope1Id).update(scopeRep);
 
-        assertAdminEvents.assertEvent(getRealmId(), OperationType.UPDATE, AdminEventPaths.clientScopeResourcePath(template1Id), templateRep, ResourceType.CLIENT_SCOPE);
+        assertAdminEvents.assertEvent(getRealmId(), OperationType.UPDATE, AdminEventPaths.clientScopeResourcePath(scope1Id), scopeRep, ResourceType.CLIENT_SCOPE);
 
         // Assert updated attributes
-        templateRep = clientScopes().get(template1Id).toRepresentation();
-        Assert.assertEquals("scope1-updated", templateRep.getName());
-        Assert.assertEquals("scope1-desc-updated", templateRep.getDescription());
-        Assert.assertEquals(SamlProtocol.LOGIN_PROTOCOL, templateRep.getProtocol());
+        scopeRep = clientScopes().get(scope1Id).toRepresentation();
+        Assert.assertEquals("scope1-updated", scopeRep.getName());
+        Assert.assertEquals("scope1-desc-updated", scopeRep.getDescription());
+        Assert.assertEquals(SamlProtocol.LOGIN_PROTOCOL, scopeRep.getProtocol());
 
-        // Remove template1
-        clientScopes().get(template1Id).remove();
+        // Remove scope1
+        clientScopes().get(scope1Id).remove();
     }
 
 
     @Test
-    public void testRenameTemplate() {
-        // Create two templates
-        ClientScopeRepresentation template1Rep = new ClientScopeRepresentation();
-        template1Rep.setName("template1");
-        template1Rep.setDescription("template1-desc");
-        template1Rep.setProtocol(OIDCLoginProtocol.LOGIN_PROTOCOL);
-        createClientScope(template1Rep);
+    public void testRenameScope() {
+        // Create two scopes
+        ClientScopeRepresentation scope1Rep = new ClientScopeRepresentation();
+        scope1Rep.setName("scope1");
+        scope1Rep.setDescription("scope1-desc");
+        scope1Rep.setProtocol(OIDCLoginProtocol.LOGIN_PROTOCOL);
+        createClientScope(scope1Rep);
 
-        ClientScopeRepresentation template2Rep = new ClientScopeRepresentation();
-        template2Rep.setName("template2");
-        template2Rep.setDescription("template2-desc");
-        template2Rep.setProtocol(OIDCLoginProtocol.LOGIN_PROTOCOL);
-        String template2Id = createClientScope(template2Rep);
+        ClientScopeRepresentation scope2Rep = new ClientScopeRepresentation();
+        scope2Rep.setName("scope2");
+        scope2Rep.setDescription("scope2-desc");
+        scope2Rep.setProtocol(OIDCLoginProtocol.LOGIN_PROTOCOL);
+        String scope2Id = createClientScope(scope2Rep);
 
         // Test updating
-        template2Rep.setName("template1");
+        scope2Rep.setName("scope1");
 
         try {
-            clientScopes().get(template2Id).update(template2Rep);
+            clientScopes().get(scope2Id).update(scope2Rep);
         } catch (ClientErrorException ex) {
             assertThat(ex.getResponse(), Matchers.statusCodeIs(Status.CONFLICT));
         }
@@ -202,21 +202,21 @@ public class ClientScopeTest extends AbstractClientTest {
         testRealmResource().roles().get("role1").addComposites(Collections.singletonList(roleRep2));
         assertAdminEvents.assertEvent(getRealmId(), OperationType.CREATE, AdminEventPaths.roleResourceCompositesPath("role1"), Collections.singletonList(roleRep2), ResourceType.REALM_ROLE);
 
-        // create client template
-        ClientScopeRepresentation templateRep = new ClientScopeRepresentation();
-        templateRep.setName("bar-template");
-        String templateId = createClientScope(templateRep);
+        // create client scope
+        ClientScopeRepresentation scopeRep = new ClientScopeRepresentation();
+        scopeRep.setName("bar-scope");
+        String scopeId = createClientScope(scopeRep);
 
         // update with some scopes
         String accountMgmtId = testRealmResource().clients().findByClientId(Constants.ACCOUNT_MANAGEMENT_CLIENT_ID).get(0).getId();
         RoleRepresentation viewAccountRoleRep = testRealmResource().clients().get(accountMgmtId).roles().get(AccountRoles.VIEW_PROFILE).toRepresentation();
-        RoleMappingResource scopesResource = clientScopes().get(templateId).getScopeMappings();
+        RoleMappingResource scopesResource = clientScopes().get(scopeId).getScopeMappings();
 
         scopesResource.realmLevel().add(Collections.singletonList(roleRep1));
-        assertAdminEvents.assertEvent(getRealmId(), OperationType.CREATE, AdminEventPaths.clientScopeRoleMappingsRealmLevelPath(templateId), Collections.singletonList(roleRep1), ResourceType.REALM_SCOPE_MAPPING);
+        assertAdminEvents.assertEvent(getRealmId(), OperationType.CREATE, AdminEventPaths.clientScopeRoleMappingsRealmLevelPath(scopeId), Collections.singletonList(roleRep1), ResourceType.REALM_SCOPE_MAPPING);
 
         scopesResource.clientLevel(accountMgmtId).add(Collections.singletonList(viewAccountRoleRep));
-        assertAdminEvents.assertEvent(getRealmId(), OperationType.CREATE, AdminEventPaths.clientScopeRoleMappingsClientLevelPath(templateId, accountMgmtId), Collections.singletonList(viewAccountRoleRep), ResourceType.CLIENT_SCOPE_MAPPING);
+        assertAdminEvents.assertEvent(getRealmId(), OperationType.CREATE, AdminEventPaths.clientScopeRoleMappingsClientLevelPath(scopeId, accountMgmtId), Collections.singletonList(viewAccountRoleRep), ResourceType.CLIENT_SCOPE_MAPPING);
 
         // test that scopes are available (also through composite role)
         List<RoleRepresentation> allRealm = scopesResource.realmLevel().listAll();
@@ -228,17 +228,17 @@ public class ClientScopeTest extends AbstractClientTest {
         assertRolesNotPresent(availableRealm, "role1", "role2");
         assertRolesPresent(effectiveRealm, "role1", "role2");
         assertRolesPresent(accountRoles, AccountRoles.VIEW_PROFILE);
-        MappingsRepresentation mappingsRep = clientScopes().get(templateId).getScopeMappings().getAll();
+        MappingsRepresentation mappingsRep = clientScopes().get(scopeId).getScopeMappings().getAll();
         assertRolesPresent(mappingsRep.getRealmMappings(), "role1");
         assertRolesPresent(mappingsRep.getClientMappings().get(Constants.ACCOUNT_MANAGEMENT_CLIENT_ID).getMappings(), AccountRoles.VIEW_PROFILE);
 
 
         // remove scopes
         scopesResource.realmLevel().remove(Collections.singletonList(roleRep1));
-        assertAdminEvents.assertEvent(getRealmId(), OperationType.DELETE, AdminEventPaths.clientScopeRoleMappingsRealmLevelPath(templateId), Collections.singletonList(roleRep1), ResourceType.REALM_SCOPE_MAPPING);
+        assertAdminEvents.assertEvent(getRealmId(), OperationType.DELETE, AdminEventPaths.clientScopeRoleMappingsRealmLevelPath(scopeId), Collections.singletonList(roleRep1), ResourceType.REALM_SCOPE_MAPPING);
 
         scopesResource.clientLevel(accountMgmtId).remove(Collections.singletonList(viewAccountRoleRep));
-        assertAdminEvents.assertEvent(getRealmId(), OperationType.DELETE, AdminEventPaths.clientScopeRoleMappingsClientLevelPath(templateId, accountMgmtId), Collections.singletonList(viewAccountRoleRep), ResourceType.CLIENT_SCOPE_MAPPING);
+        assertAdminEvents.assertEvent(getRealmId(), OperationType.DELETE, AdminEventPaths.clientScopeRoleMappingsClientLevelPath(scopeId, accountMgmtId), Collections.singletonList(viewAccountRoleRep), ResourceType.CLIENT_SCOPE_MAPPING);
 
         // assert scopes are removed
         allRealm = scopesResource.realmLevel().listAll();
@@ -250,8 +250,8 @@ public class ClientScopeTest extends AbstractClientTest {
         assertRolesNotPresent(effectiveRealm, "role1", "role2");
         assertRolesNotPresent(accountRoles, AccountRoles.VIEW_PROFILE);
 
-        // remove template
-        removeClientScope(templateId);
+        // remove scope
+        removeClientScope(scopeId);
     }
 
     private void assertRolesPresent(List<RoleRepresentation> roles, String... expectedRoleNames) {
@@ -285,16 +285,16 @@ public class ClientScopeTest extends AbstractClientTest {
         // Add realm role
         RoleRepresentation roleRep = createRealmRole("foo-role");
 
-        // Add client template
-        ClientScopeRepresentation templateRep = new ClientScopeRepresentation();
-        templateRep.setName("bar-template");
-        String templateId = createClientScope(templateRep);
+        // Add client scope
+        ClientScopeRepresentation scopeRep = new ClientScopeRepresentation();
+        scopeRep.setName("bar-scope");
+        String scopeId = createClientScope(scopeRep);
 
-        // Add realm role to scopes of clientTemplate
-        clientScopes().get(templateId).getScopeMappings().realmLevel().add(Collections.singletonList(roleRep));
-        assertAdminEvents.assertEvent(getRealmId(), OperationType.CREATE, AdminEventPaths.clientScopeRoleMappingsRealmLevelPath(templateId), Collections.singletonList(roleRep), ResourceType.REALM_SCOPE_MAPPING);
+        // Add realm role to scopes of clientScope
+        clientScopes().get(scopeId).getScopeMappings().realmLevel().add(Collections.singletonList(roleRep));
+        assertAdminEvents.assertEvent(getRealmId(), OperationType.CREATE, AdminEventPaths.clientScopeRoleMappingsRealmLevelPath(scopeId), Collections.singletonList(roleRep), ResourceType.REALM_SCOPE_MAPPING);
 
-        List<RoleRepresentation> roleReps = clientScopes().get(templateId).getScopeMappings().realmLevel().listAll();
+        List<RoleRepresentation> roleReps = clientScopes().get(scopeId).getScopeMappings().realmLevel().listAll();
         Assert.assertEquals(1, roleReps.size());
         Assert.assertEquals("foo-role", roleReps.get(0).getName());
 
@@ -303,11 +303,11 @@ public class ClientScopeTest extends AbstractClientTest {
         assertAdminEvents.assertEvent(getRealmId(), OperationType.DELETE, AdminEventPaths.roleResourcePath("foo-role"), ResourceType.REALM_ROLE);
 
         // Get scope mappings
-        roleReps = clientScopes().get(templateId).getScopeMappings().realmLevel().listAll();
+        roleReps = clientScopes().get(scopeId).getScopeMappings().realmLevel().listAll();
         Assert.assertEquals(0, roleReps.size());
 
         // Cleanup
-        removeClientScope(templateId);
+        removeClientScope(scopeId);
     }
 
     private RoleRepresentation createRealmRole(String roleName) {
@@ -322,24 +322,24 @@ public class ClientScopeTest extends AbstractClientTest {
 
     // KEYCLOAK-2844
     @Test
-    public void testRemoveTemplateInUse() {
-        // Add client template
-        ClientScopeRepresentation templateRep = new ClientScopeRepresentation();
-        templateRep.setName("foo-template");
-        String templateId = createClientScope(templateRep);
+    public void testRemoveClientScopeInUse() {
+        // Add client scope
+        ClientScopeRepresentation scopeRep = new ClientScopeRepresentation();
+        scopeRep.setName("foo-scope");
+        String scopeId = createClientScope(scopeRep);
 
-        // Add client with the clientTemplate
+        // Add client with the clientScope
         ClientRepresentation clientRep = new ClientRepresentation();
         clientRep.setClientId("bar-client");
         clientRep.setName("bar-client");
         clientRep.setRootUrl("foo");
         clientRep.setProtocol("openid-connect");
-        clientRep.setDefaultClientScopes(Collections.singletonList("foo-template"));
+        clientRep.setDefaultClientScopes(Collections.singletonList("foo-scope"));
         String clientDbId = createClient(clientRep);
 
-        // Can't remove clientTemplate
+        // Can't remove clientScope
         try {
-            clientScopes().get(templateId).remove();
+            clientScopes().get(scopeId).remove();
             Assert.fail("Not expected to successfully remove clientScope in use");
         } catch (BadRequestException bre) {
             ErrorRepresentation error = bre.getResponse().readEntity(ErrorRepresentation.class);
@@ -350,24 +350,24 @@ public class ClientScopeTest extends AbstractClientTest {
         // Remove client
         removeClient(clientDbId);
 
-        // Can remove clientTemplate now
-        removeClientScope(templateId);
+        // Can remove clientScope now
+        removeClientScope(scopeId);
     }
 
 
     @Test
     public void testRealmDefaultClientScopes() {
         // Create 2 client scopes
-        ClientScopeRepresentation templateRep = new ClientScopeRepresentation();
-        templateRep.setName("scope-def");
-        templateRep.setProtocol("openid-connect");
-        String scopeDefId = createClientScope(templateRep);
+        ClientScopeRepresentation scopeRep = new ClientScopeRepresentation();
+        scopeRep.setName("scope-def");
+        scopeRep.setProtocol("openid-connect");
+        String scopeDefId = createClientScope(scopeRep);
         getCleanup().addClientScopeId(scopeDefId);
 
-        templateRep = new ClientScopeRepresentation();
-        templateRep.setName("scope-opt");
-        templateRep.setProtocol("openid-connect");
-        String scopeOptId = createClientScope(templateRep);
+        scopeRep = new ClientScopeRepresentation();
+        scopeRep.setName("scope-opt");
+        scopeRep.setProtocol("openid-connect");
+        String scopeOptId = createClientScope(scopeRep);
         getCleanup().addClientScopeId(scopeOptId);
 
         // Add scope-def as default and scope-opt as optional client scope
@@ -430,12 +430,12 @@ public class ClientScopeTest extends AbstractClientTest {
     // KEYCLOAK-5863
     @Test
     public void testUpdateProtocolMappers() {
-        ClientScopeRepresentation templateRep = new ClientScopeRepresentation();
-        templateRep.setName("testUpdateProtocolMappers");
-        templateRep.setProtocol("openid-connect");
+        ClientScopeRepresentation scopeRep = new ClientScopeRepresentation();
+        scopeRep.setName("testUpdateProtocolMappers");
+        scopeRep.setProtocol("openid-connect");
 
 
-        String templateId = createClientScope(templateRep);
+        String scopeId = createClientScope(scopeRep);
 
         ProtocolMapperRepresentation mapper = new ProtocolMapperRepresentation();
         mapper.setName("test");
@@ -449,7 +449,7 @@ public class ClientScopeTest extends AbstractClientTest {
 
         mapper.setConfig(m);
 
-        ProtocolMappersResource protocolMappers = clientScopes().get(templateId).getProtocolMappers();
+        ProtocolMappersResource protocolMappers = clientScopes().get(scopeId).getProtocolMappers();
 
         Response response = protocolMappers.createMapper(mapper);
         String mapperId = ApiUtil.getCreatedId(response);
@@ -466,7 +466,7 @@ public class ClientScopeTest extends AbstractClientTest {
         assertEquals("test", mappers.get(0).getConfig().get("user.attribute"));
         assertEquals("claim", mappers.get(0).getConfig().get("claim.name"));
 
-        clientScopes().get(templateId).remove();
+        clientScopes().get(scopeId).remove();
     }
 
 

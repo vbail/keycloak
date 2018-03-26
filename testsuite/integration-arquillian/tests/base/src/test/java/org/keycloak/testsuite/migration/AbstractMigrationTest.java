@@ -397,10 +397,10 @@ public abstract class AbstractMigrationTest extends AbstractKeycloakTest {
                     }
                 }
             }
-            for (ClientScopeRepresentation clientTemplate : realm.clientScopes().findAll()) {
-                if (clientTemplate.getProtocolMappers() != null) {
-                    for (ProtocolMapperRepresentation protocolMapper : clientTemplate.getProtocolMappers()) {
-                        testUpdateProtocolMapper(protocolMapper, clientTemplate.getName());
+            for (ClientScopeRepresentation clientScope : realm.clientScopes().findAll()) {
+                if (clientScope.getProtocolMappers() != null) {
+                    for (ProtocolMapperRepresentation protocolMapper : clientScope.getProtocolMappers()) {
+                        testUpdateProtocolMapper(protocolMapper, clientScope.getName());
                     }
                 }
             }

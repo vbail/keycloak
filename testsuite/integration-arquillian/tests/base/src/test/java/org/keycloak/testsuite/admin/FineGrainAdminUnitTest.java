@@ -115,7 +115,7 @@ public class FineGrainAdminUnitTest extends AbstractKeycloakTest {
         RoleModel realmRole = realm.addRole("realm-role");
         RoleModel realmRole2 = realm.addRole("realm-role2");
         ClientModel client1 = realm.addClient(CLIENT_NAME);
-        ClientScopeModel template = realm.addClientScope("template");
+        realm.addClientScope("scope");
         client1.setFullScopeAllowed(false);
         RoleModel client1Role = client1.addRole("client-role");
         GroupModel group = realm.createGroup("top");
@@ -419,7 +419,7 @@ public class FineGrainAdminUnitTest extends AbstractKeycloakTest {
         List<RoleRepresentation> realmRole2Set = new LinkedList<>();
         realmRole2Set.add(realmRole2);
         ClientRepresentation client = adminClient.realm(TEST).clients().findByClientId(CLIENT_NAME).get(0);
-        ClientScopeRepresentation template = adminClient.realm(TEST).clientScopes().findAll().get(0);
+        ClientScopeRepresentation scope = adminClient.realm(TEST).clientScopes().findAll().get(0);
         RoleRepresentation clientRole = adminClient.realm(TEST).clients().get(client.getId()).roles().get("client-role").toRepresentation();
         List<RoleRepresentation> clientRoleSet = new LinkedList<>();
         clientRoleSet.add(clientRole);
@@ -442,7 +442,7 @@ public class FineGrainAdminUnitTest extends AbstractKeycloakTest {
             realmClient.realm(TEST).clients().get(client.getId()).update(client);
 
             try {
-                realmClient.realm(TEST).clients().get(client.getId()).addDefaultClientScope(template.getId());
+                realmClient.realm(TEST).clients().get(client.getId()).addDefaultClientScope(scope.getId());
                 Assert.fail("should fail with forbidden exception");
             } catch (ClientErrorException e) {
                 Assert.assertEquals(403, e.getResponse().getStatus());

@@ -724,14 +724,14 @@ public class AccessTokenTest extends AbstractKeycloakTest {
         realm.users().get(user.getId()).roles().realmLevel().add(addRoles);
 
         ClientScopeRepresentation rep = new ClientScopeRepresentation();
-        rep.setName("template");
+        rep.setName("scope");
         rep.setProtocol("openid-connect");
         Response response = realm.clientScopes().create(rep);
         assertEquals(201, response.getStatus());
-        URI templateUri = response.getLocation();
+        URI scopeUri = response.getLocation();
         String clientScopeId = ApiUtil.getCreatedId(response);
         response.close();
-        ClientScopeResource clientScopeResource = adminClient.proxy(ClientScopeResource.class, templateUri);
+        ClientScopeResource clientScopeResource = adminClient.proxy(ClientScopeResource.class, scopeUri);
         ProtocolMapperModel hard = HardcodedClaim.create("hard", "hard", "coded", "String", true, true);
         ProtocolMapperRepresentation mapper = ModelToRepresentation.toRepresentation(hard);
         response = clientScopeResource.getProtocolMappers().createMapper(mapper);
@@ -758,7 +758,7 @@ public class AccessTokenTest extends AbstractKeycloakTest {
             AccessToken accessToken = getAccessToken(tokenResponse);
             assertEquals("coded", accessToken.getOtherClaims().get("hard"));
 
-            // check zero scope for template
+            // check zero scope for client scope
             Assert.assertFalse(accessToken.getRealmAccess().getRoles().contains(realmRole.getName()));
             Assert.assertFalse(accessToken.getRealmAccess().getRoles().contains(realmRole2.getName()));
 
@@ -782,7 +782,7 @@ public class AccessTokenTest extends AbstractKeycloakTest {
             assertEquals(200, response.getStatus());
             org.keycloak.representations.AccessTokenResponse tokenResponse = response.readEntity(org.keycloak.representations.AccessTokenResponse.class);
             AccessToken accessToken = getAccessToken(tokenResponse);
-            // check single role in scope for template
+            // check single role in scope for client scope
             assertNotNull(accessToken.getRealmAccess());
             assertTrue(accessToken.getRealmAccess().getRoles().contains(realmRole.getName()));
             Assert.assertFalse(accessToken.getRealmAccess().getRoles().contains(realmRole2.getName()));
@@ -809,7 +809,7 @@ public class AccessTokenTest extends AbstractKeycloakTest {
 
             AccessToken accessToken = getAccessToken(tokenResponse);
 
-            // check zero scope for template
+            // check zero scope for client scope
             assertNotNull(accessToken.getRealmAccess());
             assertTrue(accessToken.getRealmAccess().getRoles().contains(realmRole.getName()));
             assertTrue(accessToken.getRealmAccess().getRoles().contains(realmRole2.getName()));
@@ -842,7 +842,7 @@ public class AccessTokenTest extends AbstractKeycloakTest {
             client.close();
         }
 
-        // test don't use template scope. Add roles back to the clientScope, but they won't be available
+        // test don't use client scope scope. Add roles back to the clientScope, but they won't be available
         realm.clients().get(clientRep.getId()).removeDefaultClientScope(clientScopeId);
         clientScopeResource.getScopeMappings().realmLevel().add(addRole1);
         clientScopeResource.getScopeMappings().realmLevel().add(addRole2);

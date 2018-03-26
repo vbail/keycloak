@@ -190,9 +190,9 @@ public class ClusterInvalidationTest {
         assertInvalidations(listener1realms.getInvalidationsAndClear(), 1, 1, "test.top.groups");
         assertInvalidations(listener2realms.getInvalidationsAndClear(), 1, 1, "test.top.groups");
 
-        logger.info("CREATE CLIENT TEMPLATE");
+        logger.info("CREATE CLIENT SCOPE");
         realm = session1.realms().getRealmByName(REALM_NAME);
-        realm.addClientScope("foo-template");
+        realm.addClientScope("foo-scope");
         session1 = commit(server1, session1, true);
 
         assertInvalidations(listener1realms.getInvalidationsAndClear(), 2, 3, realm.getId());
@@ -229,21 +229,21 @@ public class ClusterInvalidationTest {
         assertInvalidations(listener1realms.getInvalidationsAndClear(), 2, 3, testApp.getId());
         assertInvalidations(listener2realms.getInvalidationsAndClear(), 2, 3, testApp.getId());
 
-        // Cache client template on server2
+        // Cache client scope on server2
         KeycloakSession session2 = server2.startSession();
         realm = session2.realms().getRealmByName(REALM_NAME);
         realm.getClientScopes().get(0);
 
 
-        logger.info("UPDATE CLIENT TEMPLATE");
+        logger.info("UPDATE CLIENT SCOPE");
         realm = session1.realms().getRealmByName(REALM_NAME);
-        ClientScopeModel clientTemplate = realm.getClientScopes().get(0);
-        clientTemplate.setDescription("bar");
+        ClientScopeModel clientScope = realm.getClientScopes().get(0);
+        clientScope.setDescription("bar");
 
         session1 = commit(server1, session1, true);
 
-        assertInvalidations(listener1realms.getInvalidationsAndClear(), 1, 1, clientTemplate.getId());
-        assertInvalidations(listener2realms.getInvalidationsAndClear(), 1, 1, clientTemplate.getId());
+        assertInvalidations(listener1realms.getInvalidationsAndClear(), 1, 1, clientScope.getId());
+        assertInvalidations(listener2realms.getInvalidationsAndClear(), 1, 1, clientScope.getId());
 
         // Nothing yet invalidated in user cache
         assertInvalidations(listener1users.getInvalidationsAndClear(), 0, 0);
@@ -283,13 +283,13 @@ public class ClusterInvalidationTest {
 
         cacheEverything();
 
-        logger.info("REMOVE CLIENT TEMPLATE");
+        logger.info("REMOVE CLIENT SCOPE");
         realm = session1.realms().getRealmByName(REALM_NAME);
-        realm.removeClientScope(clientTemplate.getId());
+        realm.removeClientScope(clientScope.getId());
         session1 = commit(server1, session1, true);
 
-        assertInvalidations(listener1realms.getInvalidationsAndClear(), 2, 5, realm.getId(), clientTemplate.getId());
-        assertInvalidations(listener2realms.getInvalidationsAndClear(), 2, 5, realm.getId(), clientTemplate.getId());
+        assertInvalidations(listener1realms.getInvalidationsAndClear(), 2, 5, realm.getId(), clientScope.getId());
+        assertInvalidations(listener2realms.getInvalidationsAndClear(), 2, 5, realm.getId(), clientScope.getId());
 
         cacheEverything();
 

@@ -322,37 +322,37 @@ public class ExportImportUtil {
         assertGssProtocolMapper(gssCredentialMapper);
 
         // Test clientScopes
-        List<ClientScopeRepresentation> clientTemplates = realmRsc.clientScopes().findAll();
-        ClientScopeRepresentation clientTemplate = clientTemplates.stream().filter((ClientScopeRepresentation clientScope) -> {
+        List<ClientScopeRepresentation> clientScopes = realmRsc.clientScopes().findAll();
+        ClientScopeRepresentation clientScope = clientScopes.stream().filter((ClientScopeRepresentation clientScope1) -> {
 
-            return "foo_template".equals(clientScope.getName());
+            return "foo_scope".equals(clientScope1.getName());
 
         }).findFirst().get();
-        Assert.assertEquals("foo_template", clientTemplate.getName());
-        Assert.assertEquals("foo template-desc", clientTemplate.getDescription());
-        Assert.assertEquals(OIDCLoginProtocol.LOGIN_PROTOCOL, clientTemplate.getProtocol());
-        Assert.assertEquals(1, clientTemplate.getProtocolMappers().size());
-        List<ProtocolMapperRepresentation> clientTemplateMappers = clientTemplate.getProtocolMappers();
-        ProtocolMapperRepresentation templateGssCredentialMapper = findMapperByName(clientTemplateMappers, OIDCLoginProtocol.LOGIN_PROTOCOL, KerberosConstants.GSS_DELEGATION_CREDENTIAL_DISPLAY_NAME);
-        assertGssProtocolMapper(templateGssCredentialMapper);
+        Assert.assertEquals("foo_scope", clientScope.getName());
+        Assert.assertEquals("foo scope-desc", clientScope.getDescription());
+        Assert.assertEquals(OIDCLoginProtocol.LOGIN_PROTOCOL, clientScope.getProtocol());
+        Assert.assertEquals(1, clientScope.getProtocolMappers().size());
+        List<ProtocolMapperRepresentation> clientScopeMappers = clientScope.getProtocolMappers();
+        ProtocolMapperRepresentation scopeGssCredentialMapper = findMapperByName(clientScopeMappers, OIDCLoginProtocol.LOGIN_PROTOCOL, KerberosConstants.GSS_DELEGATION_CREDENTIAL_DISPLAY_NAME);
+        assertGssProtocolMapper(scopeGssCredentialMapper);
 
-        // Test client template scopes
-        Set<RoleRepresentation> allClientTemplateScopes = allScopeMappings(realmRsc.clientScopes().get(clientTemplate.getId()));
-        Assert.assertEquals(3, allClientTemplateScopes.size());
-        Assert.assertTrue(containsRole(allClientTemplateScopes, findRealmRole(realmRsc, "admin")));//allClientTemplateScopes.contains(realm.getRole("admin")));
-        Assert.assertTrue(containsRole(allClientTemplateScopes, findClientRole(realmRsc, application.getId(), "app-user")));//allClientTemplateScopes.contains(application.getRole("app-user")));
-        Assert.assertTrue(containsRole(allClientTemplateScopes, findClientRole(realmRsc, application.getId(), "app-admin")));//allClientTemplateScopes.contains(application.getRole("app-admin")));
+        // Test client scope - scopes
+        Set<RoleRepresentation> allClientScopeScopes = allScopeMappings(realmRsc.clientScopes().get(clientScope.getId()));
+        Assert.assertEquals(3, allClientScopeScopes.size());
+        Assert.assertTrue(containsRole(allClientScopeScopes, findRealmRole(realmRsc, "admin")));
+        Assert.assertTrue(containsRole(allClientScopeScopes, findClientRole(realmRsc, application.getId(), "app-user")));
+        Assert.assertTrue(containsRole(allClientScopeScopes, findClientRole(realmRsc, application.getId(), "app-admin")));
 
-        List<RoleRepresentation> clientTemplateRealmScopes = realmScopeMappings(realmRsc.clientScopes().get(clientTemplate.getId()));
-        Assert.assertTrue(containsRole(clientTemplateRealmScopes, findRealmRole(realmRsc, "admin")));//clientTemplateRealmScopes.contains(realm.getRole("admin")));
+        List<RoleRepresentation> clientScopeRealmScopes = realmScopeMappings(realmRsc.clientScopes().get(clientScope.getId()));
+        Assert.assertTrue(containsRole(clientScopeRealmScopes, findRealmRole(realmRsc, "admin")));
 
-        List<RoleRepresentation> clientTemplateAppScopes = clientScopeMappings(realmRsc.clientScopes().get(clientTemplate.getId()));//application.getClientScopeMappings(oauthClient);
-        Assert.assertTrue(containsRole(clientTemplateAppScopes, findClientRole(realmRsc, application.getId(), "app-user")));//clientTemplateAppScopes.contains(application.getRole("app-user")));
-        Assert.assertTrue(containsRole(clientTemplateAppScopes, findClientRole(realmRsc, application.getId(), "app-admin")));//clientTemplateAppScopes.contains(application.getRole("app-admin")));
+        List<RoleRepresentation> clientScopeAppScopes = clientScopeMappings(realmRsc.clientScopes().get(clientScope.getId()));
+        Assert.assertTrue(containsRole(clientScopeAppScopes, findClientRole(realmRsc, application.getId(), "app-user")));
+        Assert.assertTrue(containsRole(clientScopeAppScopes, findClientRole(realmRsc, application.getId(), "app-admin")));
 
         // Test client scopes assignment
-        Assert.assertTrue(otherApp.getDefaultClientScopes().contains("foo_template"));
-        Assert.assertFalse(application.getDefaultClientScopes().contains("foo_template"));
+        Assert.assertTrue(otherApp.getDefaultClientScopes().contains("foo_scope"));
+        Assert.assertFalse(application.getDefaultClientScopes().contains("foo_scope"));
 
         // Test builtin client scopes
         testRealmDefaultClientScopes(realmRsc);

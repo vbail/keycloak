@@ -223,11 +223,11 @@ public class ClientScopeProtocolMapperTest extends AbstractProtocolMapperTest {
         Response resp = clientScopes().create(rep);
         Assert.assertEquals(201, resp.getStatus());
         resp.close();
-        String templateId = ApiUtil.getCreatedId(resp);
+        String scopeId = ApiUtil.getCreatedId(resp);
 
-        assertAdminEvents.assertEvent(getRealmId(), OperationType.CREATE, AdminEventPaths.clientScopeResourcePath(templateId), rep, ResourceType.CLIENT_SCOPE);
+        assertAdminEvents.assertEvent(getRealmId(), OperationType.CREATE, AdminEventPaths.clientScopeResourcePath(scopeId), rep, ResourceType.CLIENT_SCOPE);
 
-        return templateId;
+        return scopeId;
     }
 
     private void removeClientScope(String clientScopeId) {

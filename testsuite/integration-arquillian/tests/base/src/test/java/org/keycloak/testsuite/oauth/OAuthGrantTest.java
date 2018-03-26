@@ -321,7 +321,7 @@ public class OAuthGrantTest extends AbstractKeycloakTest {
     // KEYCLOAK-4326
     @Test
     public void oauthGrantClientScopeMappers() throws Exception {
-        // Add client template with some protocol mapper
+        // Add client scope with some protocol mapper
         RealmResource appRealm = adminClient.realm(REALM_NAME);
 
         ClientScopeRepresentation scope1 = new ClientScopeRepresentation();
