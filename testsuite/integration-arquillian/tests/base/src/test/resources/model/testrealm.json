@@ -230,7 +230,7 @@
             "clientId": "OtherApp",
             "name": "Other Application",
             "enabled": true,
-            "clientTemplate": "foo template",
+            "clientTemplate": "foo scope",
             "standardFlowEnabled": false,
             "directAccessGrantsEnabled": false,
             "serviceAccountsEnabled": true,
@@ -456,8 +456,8 @@
     ],
     "clientTemplates" : [
         {
-            "name" : "foo template",
-            "description" : "foo template-desc",
+            "name" : "foo scope",
+            "description" : "foo scope-desc",
             "protocol" : "openid-connect",
             "protocolMappers" : [
                 {
@@ -514,7 +514,7 @@
             "roles": ["admin"]
         },
         {
-            "clientTemplate": "foo template",
+            "clientTemplate": "foo scope",
             "roles": ["admin"]
         }
     ],
@@ -525,7 +525,7 @@
                 "roles": ["app-user"]
             },
             {
-                "clientTemplate": "foo template",
+                "clientTemplate": "foo scope",
                 "roles": ["app-user", "app-admin" ]
             }
         ]

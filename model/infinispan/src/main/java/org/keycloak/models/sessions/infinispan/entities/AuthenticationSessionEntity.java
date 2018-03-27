@@ -61,7 +61,7 @@ public class AuthenticationSessionEntity implements Serializable {
     public AuthenticationSessionEntity(
       String clientUUID,
       String authUserId,
-      String redirectUri, String action, Set<String> roles, Set<String> protocolMappers,
+      String redirectUri, String action, Set<String> clientScopes,
       Map<String, AuthenticationSessionModel.ExecutionStatus> executionStatus, String protocol,
       Map<String, String> clientNotes, Map<String, String> authNotes, Set<String> requiredActions, Map<String, String> userSessionNotes) {
         this.clientUUID = clientUUID;
@@ -70,8 +70,7 @@ public class AuthenticationSessionEntity implements Serializable {
 
         this.redirectUri = redirectUri;
         this.action = action;
-        this.roles = roles;
-        this.protocolMappers = protocolMappers;
+        this.clientScopes = clientScopes;
 
         this.executionStatus = executionStatus;
         this.protocol = protocol;
@@ -206,8 +205,7 @@ public class AuthenticationSessionEntity implements Serializable {
 
             MarshallUtil.marshallString(value.redirectUri, output);
             MarshallUtil.marshallString(value.action, output);
-            KeycloakMarshallUtil.writeCollection(value.roles, KeycloakMarshallUtil.STRING_EXT, output);
-            KeycloakMarshallUtil.writeCollection(value.protocolMappers, KeycloakMarshallUtil.STRING_EXT, output);
+            KeycloakMarshallUtil.writeCollection(value.clientScopes, KeycloakMarshallUtil.STRING_EXT, output);
 
             KeycloakMarshallUtil.writeMap(value.executionStatus, KeycloakMarshallUtil.STRING_EXT, EXECUTION_STATUS_EXT, output);
             MarshallUtil.marshallString(value.protocol, output);
@@ -236,8 +234,7 @@ public class AuthenticationSessionEntity implements Serializable {
 
               MarshallUtil.unmarshallString(input),     // redirectUri
               MarshallUtil.unmarshallString(input),     // action
-              KeycloakMarshallUtil.readCollection(input, KeycloakMarshallUtil.STRING_EXT, size -> new ConcurrentHashSet<>()),  // roles
-              KeycloakMarshallUtil.readCollection(input, KeycloakMarshallUtil.STRING_EXT, size -> new ConcurrentHashSet<>()),  // protocolMappers
+              KeycloakMarshallUtil.readCollection(input, KeycloakMarshallUtil.STRING_EXT, size -> new ConcurrentHashSet<>()),  // clientScopes
 
               KeycloakMarshallUtil.readMap(input, KeycloakMarshallUtil.STRING_EXT, EXECUTION_STATUS_EXT, size -> new ConcurrentHashMap<>(size)), // executionStatus
               MarshallUtil.unmarshallString(input),     // protocol

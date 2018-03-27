@@ -479,6 +479,7 @@ public class ClientScopeTest extends AbstractClientTest {
         Assert.assertEquals(201, resp.getStatus());
         resp.close();
         String clientScopeId = ApiUtil.getCreatedId(resp);
+        getCleanup().addClientScopeId(clientScopeId);
 
         assertAdminEvents.assertEvent(getRealmId(), OperationType.CREATE, AdminEventPaths.clientScopeResourcePath(clientScopeId), clientScopeRep, ResourceType.CLIENT_SCOPE);
 
