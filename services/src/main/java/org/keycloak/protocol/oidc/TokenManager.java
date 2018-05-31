@@ -568,15 +568,19 @@ public class TokenManager {
         }
 
         UserConsentModel grantedConsent = session.users().getConsentByClient(client.getRealm(), user.getId(), client.getId());
-
+        Map<String, ClientScopeModel> defaultScopes = client.getClientScopes(true, false);
+        
         for (ClientScopeModel requestedScope : requestedClientScopes) {
             if (!requestedScope.isDisplayOnConsentScreen()) {
                 continue;
             }
 
-            if (!grantedConsent.getGrantedClientScopes().contains(requestedScope)) {
-                logger.debugf("Client '%s' no longer has requested consent from user '%s' for client scope '%s'",
-                        client.getClientId(), user.getUsername(), requestedScope.getName());
+            if (grantedConsent != null && !grantedConsent.getGrantedClientScopes().contains(requestedScope) && defaultScopes.containsKey(requestedScope.getId())) {
+                logger.debugf("Client '%s' no longer has requested consent from user '%s' for client scope '%s'", client.getClientId(), user.getUsername(), requestedScope.getName());
+                return false;
+            }
+            else if (grantedConsent == null && defaultScopes.containsKey(requestedScope.getName())) {
+                logger.debugf("Client '%s' no longer has requested consent from user '%s' for client scope '%s'", client.getClientId(), user.getUsername(), requestedScope.getName());
                 return false;
             }
         }
@@ -611,31 +615,94 @@ public class TokenManager {
         }
     }
 
-    public AccessToken transformAccessToken(KeycloakSession session, AccessToken token,
-                                            UserSessionModel userSession, ClientSessionContext clientSessionCtx) {
-        Set<ProtocolMapperModel> mappings = clientSessionCtx.getProtocolMappers();
-        KeycloakSessionFactory sessionFactory = session.getKeycloakSessionFactory();
-        for (ProtocolMapperModel mapping : mappings) {
-
-            ProtocolMapper mapper = (ProtocolMapper)sessionFactory.getProviderFactory(ProtocolMapper.class, mapping.getProtocolMapper());
-            if (mapper instanceof OIDCAccessTokenMapper) {
-                token = ((OIDCAccessTokenMapper) mapper).transformAccessToken(token, mapping, session, userSession, clientSessionCtx.getClientSession());
-            }
+	private Set<ProtocolMapperModel> getAllowedProtocolMappers(UserSessionModel userSession,
+			ClientSessionContext clientSessionCtx, UserConsentModel grantedConsent) {
+		Set<ProtocolMapperModel> mappings = new HashSet<>();
+        String scopesRequested = clientSessionCtx.getClientSession() != null ? clientSessionCtx.getClientSession().getNote("scope") : "";
+        if (Validation.isBlank(scopesRequested)) {
+        	scopesRequested = "";
         }
+        String[] scopesReq = scopesRequested.split(" ");
+        if (scopesReq.length > 1) {
+        	//Client has requested scopes
+        	for (String scope : scopesReq) {
+        		if (scope.equals("openid")) {
+        			continue;
+        		}
+        		
+        		ClientScopeModel clientScope = KeycloakModelUtils.getClientScopeByName(userSession.getRealm(), scope);
+        		if (clientScope != null && clientScope.isDisplayOnConsentScreen() && grantedConsent != null && grantedConsent.getGrantedClientScopes().contains(clientScope)) {
+        			mappings.addAll(clientScope.getProtocolMappers());
+        		}
+        		else if (clientScope != null && !clientScope.isDisplayOnConsentScreen()) {
+        			mappings.addAll(clientScope.getProtocolMappers());
+        		}
+        	}
+        }
+        else {
+        	//Client has not requested scope
+        	Map<String, ClientScopeModel> defaultScopes = clientSessionCtx.getClientSession().getClient().getClientScopes(true, false);
+        	Map<String, ClientScopeModel> optionalScopes = clientSessionCtx.getClientSession().getClient().getClientScopes(false, false);
+        	if (defaultScopes != null && !defaultScopes.isEmpty()) {
+        		for (ClientScopeModel clientScope : defaultScopes.values()) {
+            		if (clientScope.isDisplayOnConsentScreen() && grantedConsent != null && grantedConsent.getGrantedClientScopes().contains(clientScope)) {
+            			mappings.addAll(clientScope.getProtocolMappers());
+            		}
+            		else if (!clientScope.isDisplayOnConsentScreen()) {
+            			mappings.addAll(clientScope.getProtocolMappers());
+            		}
+        		}
+        	}
+        	if (optionalScopes != null && !optionalScopes.isEmpty()) {
+        		for (ClientScopeModel clientScope : optionalScopes.values()) {
+            		if (clientScope.isDisplayOnConsentScreen() && grantedConsent != null && grantedConsent.getGrantedClientScopes().contains(clientScope)) {
+            			mappings.addAll(clientScope.getProtocolMappers());
+            		}
+            		else if (!clientScope.isDisplayOnConsentScreen()) {
+            			mappings.addAll(clientScope.getProtocolMappers());
+            		}
+        		}
+        	}
+        }
+		return mappings;
+	}
 
-        return token;
+    public AccessToken transformAccessToken(KeycloakSession session, AccessToken token, UserSessionModel userSession, ClientSessionContext clientSessionCtx) {
+		//Set<ProtocolMapperModel> mappings = clientSessionCtx.getProtocolMappers();
+		KeycloakSessionFactory sessionFactory = session.getKeycloakSessionFactory();
+		UserConsentModel grantedConsent = session.users().getConsentByClient(clientSessionCtx.getClientSession().getRealm(), userSession.getUser().getId(), clientSessionCtx.getClientSession().getClient().getId());
+		
+		Set<ProtocolMapperModel> mappings = getAllowedProtocolMappers(userSession, clientSessionCtx, grantedConsent);
+		
+		for (ProtocolMapperModel mapping : mappings) {
+			if (mapping.getConfig().get(OIDCAttributeMapperHelper.INCLUDE_IN_ACCESS_TOKEN) != null && mapping.getConfig().get(OIDCAttributeMapperHelper.INCLUDE_IN_ACCESS_TOKEN).equals("true")) {
+				ProtocolMapper mapper = (ProtocolMapper)sessionFactory.getProviderFactory(ProtocolMapper.class, mapping.getProtocolMapper());
+				if (mapper instanceof OIDCAccessTokenMapper) {
+					token = ((OIDCAccessTokenMapper) mapper).transformAccessToken(token, mapping, session, userSession, clientSessionCtx.getClientSession());
+				}
+			}
+		}
+		
+		return token;
     }
 
+	
     public AccessToken transformUserInfoAccessToken(KeycloakSession session, AccessToken token,
                                             UserSessionModel userSession, ClientSessionContext clientSessionCtx) {
-        Set<ProtocolMapperModel> mappings = clientSessionCtx.getProtocolMappers();
         KeycloakSessionFactory sessionFactory = session.getKeycloakSessionFactory();
-        for (ProtocolMapperModel mapping : mappings) {
 
-            ProtocolMapper mapper = (ProtocolMapper)sessionFactory.getProviderFactory(ProtocolMapper.class, mapping.getProtocolMapper());
-            if (mapper instanceof UserInfoTokenMapper) {
-                token = ((UserInfoTokenMapper) mapper).transformUserInfoToken(token, mapping, session, userSession, clientSessionCtx.getClientSession());
-            }
+        UserConsentModel grantedConsent = session.users().getConsentByClient(clientSessionCtx.getClientSession().getRealm(), userSession.getUser().getId(), clientSessionCtx.getClientSession().getClient().getId());
+        Set<ProtocolMapperModel> mappings = getAllowedProtocolMappers(userSession, clientSessionCtx, grantedConsent);
+        
+        for (ProtocolMapperModel mapping : mappings) {
+        	//id.token.claim
+        	//userinfo.token.claim
+        	if (mapping.getConfig().get(OIDCAttributeMapperHelper.INCLUDE_IN_USERINFO) != null && mapping.getConfig().get(OIDCAttributeMapperHelper.INCLUDE_IN_USERINFO).equals("true")) {
+		        ProtocolMapper mapper = (ProtocolMapper)sessionFactory.getProviderFactory(ProtocolMapper.class, mapping.getProtocolMapper());
+		        if (mapper instanceof UserInfoTokenMapper) {
+		            token = ((UserInfoTokenMapper) mapper).transformUserInfoToken(token, mapping, session, userSession, clientSessionCtx.getClientSession());
+		        }
+        	}
         }
 
         return token;
@@ -643,14 +710,18 @@ public class TokenManager {
 
     public void transformIDToken(KeycloakSession session, IDToken token,
                                       UserSessionModel userSession, ClientSessionContext clientSessionCtx) {
-        Set<ProtocolMapperModel> mappings = clientSessionCtx.getProtocolMappers();
         KeycloakSessionFactory sessionFactory = session.getKeycloakSessionFactory();
-        for (ProtocolMapperModel mapping : mappings) {
 
-            ProtocolMapper mapper = (ProtocolMapper)sessionFactory.getProviderFactory(ProtocolMapper.class, mapping.getProtocolMapper());
-            if (mapper instanceof OIDCIDTokenMapper) {
-                token = ((OIDCIDTokenMapper) mapper).transformIDToken(token, mapping, session, userSession, clientSessionCtx.getClientSession());
-            }
+        UserConsentModel grantedConsent = session.users().getConsentByClient(clientSessionCtx.getClientSession().getRealm(), userSession.getUser().getId(), clientSessionCtx.getClientSession().getClient().getId());
+        Set<ProtocolMapperModel> mappings = getAllowedProtocolMappers(userSession, clientSessionCtx, grantedConsent);
+
+        for (ProtocolMapperModel mapping : mappings) {
+        	if (mapping.getConfig().get(OIDCAttributeMapperHelper.INCLUDE_IN_ID_TOKEN) != null && mapping.getConfig().get(OIDCAttributeMapperHelper.INCLUDE_IN_ID_TOKEN).equals("true")) {
+        		ProtocolMapper mapper = (ProtocolMapper)sessionFactory.getProviderFactory(ProtocolMapper.class, mapping.getProtocolMapper());
+        		if (mapper instanceof OIDCIDTokenMapper) {
+        			token = ((OIDCIDTokenMapper) mapper).transformIDToken(token, mapping, session, userSession, clientSessionCtx.getClientSession());
+        		}
+        	}
         }
     }
 

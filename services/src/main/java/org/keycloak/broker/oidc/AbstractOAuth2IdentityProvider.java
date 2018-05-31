@@ -296,8 +296,14 @@ public abstract class AbstractOAuth2IdentityProvider<C extends OAuth2IdentityPro
 
 
     protected UriBuilder createAuthorizationUrl(AuthenticationRequest request) {
+    	
+    	String scope = request.getAuthenticationSession().getClientNote("scope");
+    	if (scope == null || scope.equals("")) {
+    		scope = getConfig().getDefaultScope();
+    	}
+    	
         final UriBuilder uriBuilder = UriBuilder.fromUri(getConfig().getAuthorizationUrl())
-                .queryParam(OAUTH2_PARAMETER_SCOPE, getConfig().getDefaultScope())
+                .queryParam(OAUTH2_PARAMETER_SCOPE, scope)
                 .queryParam(OAUTH2_PARAMETER_STATE, request.getState().getEncoded())
                 .queryParam(OAUTH2_PARAMETER_RESPONSE_TYPE, "code")
                 .queryParam(OAUTH2_PARAMETER_CLIENT_ID, getConfig().getClientId())

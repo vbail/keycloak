@@ -22,6 +22,7 @@ import org.keycloak.OAuth2Constants;
 import org.keycloak.constants.AdapterConstants;
 import org.keycloak.protocol.oidc.OIDCLoginProtocol;
 
+import java.net.URLDecoder;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
@@ -84,7 +85,12 @@ abstract class AuthzEndpointRequestParser {
         request.responseMode = replaceIfNotNull(request.responseMode, getParameter(OIDCLoginProtocol.RESPONSE_MODE_PARAM));
         request.redirectUriParam = replaceIfNotNull(request.redirectUriParam, getParameter(OIDCLoginProtocol.REDIRECT_URI_PARAM));
         request.state = replaceIfNotNull(request.state, getParameter(OIDCLoginProtocol.STATE_PARAM));
-        request.scope = replaceIfNotNull(request.scope, getParameter(OIDCLoginProtocol.SCOPE_PARAM));
+        try {
+        	request.scope = replaceIfNotNull(request.scope, URLDecoder.decode(getParameter(OIDCLoginProtocol.SCOPE_PARAM), "UTF-8"));
+        }
+        catch (Exception ignore) {
+			// TODO: handle exception
+		}
         request.loginHint = replaceIfNotNull(request.loginHint, getParameter(OIDCLoginProtocol.LOGIN_HINT_PARAM));
         request.prompt = replaceIfNotNull(request.prompt, getParameter(OIDCLoginProtocol.PROMPT_PARAM));
         request.idpHint = replaceIfNotNull(request.idpHint, getParameter(AdapterConstants.KC_IDP_HINT));

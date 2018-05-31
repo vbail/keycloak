@@ -378,6 +378,13 @@ public class ClientAdapter implements ClientModel, JpaModel<ClientEntity> {
             mapping.setName(entity.getName());
             mapping.setProtocol(entity.getProtocol());
             mapping.setProtocolMapper(entity.getProtocolMapper());
+            if (entity.getClientScope() != null && entity.getClientScope().getAttributes() != null) {
+            	String consent = entity.getClientScope().getAttributes().get("display.on.consent.screen");
+            	if (consent != null && consent.equals("true")) {
+            		mapping.setConsentRequired(true);
+            	}
+            }
+
             Map<String, String> config = new HashMap<String, String>();
             if (entity.getConfig() != null) {
                 config.putAll(entity.getConfig());
@@ -473,6 +480,13 @@ public class ClientAdapter implements ClientModel, JpaModel<ClientEntity> {
         mapping.setName(entity.getName());
         mapping.setProtocol(entity.getProtocol());
         mapping.setProtocolMapper(entity.getProtocolMapper());
+        if (entity.getClientScope() != null && entity.getClientScope().getAttributes() != null) {
+        	String consent = entity.getClientScope().getAttributes().get("display.on.consent.screen");
+        	if (consent != null && consent.equals("true")) {
+        		mapping.setConsentRequired(true);
+        	}
+        }
+        
         Map<String, String> config = new HashMap<String, String>();
         if (entity.getConfig() != null) config.putAll(entity.getConfig());
         mapping.setConfig(config);
@@ -732,7 +746,7 @@ public class ClientAdapter implements ClientModel, JpaModel<ClientEntity> {
     public Map<String, Integer> getRegisteredNodes() {
         return entity.getRegisteredNodes();
     }
-
+    
     @Override
     public void registerNode(String nodeHost, int registrationTime) {
         Map<String, Integer> currentNodes = getRegisteredNodes();

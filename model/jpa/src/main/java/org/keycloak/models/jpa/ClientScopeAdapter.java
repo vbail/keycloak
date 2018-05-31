@@ -106,6 +106,13 @@ public class ClientScopeAdapter implements ClientScopeModel, JpaModel<ClientScop
             mapping.setId(entity.getId());
             mapping.setName(entity.getName());
             mapping.setProtocol(entity.getProtocol());
+            if (entity.getClientScope() != null && entity.getClientScope().getAttributes() != null) {
+            	String consent = entity.getClientScope().getAttributes().get("display.on.consent.screen");
+            	if (consent != null && consent.equals("true")) {
+            		mapping.setConsentRequired(true);
+            	}
+            }
+
             mapping.setProtocolMapper(entity.getProtocolMapper());
             Map<String, String> config = new HashMap<String, String>();
             if (entity.getConfig() != null) {
@@ -201,6 +208,12 @@ public class ClientScopeAdapter implements ClientScopeModel, JpaModel<ClientScop
         mapping.setId(entity.getId());
         mapping.setName(entity.getName());
         mapping.setProtocol(entity.getProtocol());
+        if (entity.getClientScope() != null && entity.getClientScope().getAttributes() != null) {
+        	String consent = entity.getClientScope().getAttributes().get("display.on.consent.screen");
+        	if (consent != null && consent.equals("true")) {
+        		mapping.setConsentRequired(true);
+        	}
+        }
         mapping.setProtocolMapper(entity.getProtocolMapper());
         Map<String, String> config = new HashMap<String, String>();
         if (entity.getConfig() != null) config.putAll(entity.getConfig());

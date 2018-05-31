@@ -16,11 +16,12 @@
  */
 package org.keycloak.forms.login.freemarker.model;
 
-import org.keycloak.models.ClientModel;
-import org.keycloak.models.ClientScopeModel;
-
 import java.util.LinkedList;
 import java.util.List;
+
+import org.keycloak.models.ClientModel;
+import org.keycloak.models.ClientScopeModel;
+import org.keycloak.services.managers.AuthenticationManager;
 
 /**
  * @author <a href="mailto:vrockai@redhat.com">Viliam Rockai</a>
@@ -36,14 +37,16 @@ public class OAuthGrantBean {
         this.client = client;
 
         for (ClientScopeModel clientScope : clientScopesRequested) {
-            this.clientScopesRequested.add(new ClientScopeEntry(clientScope.getConsentScreenText()));
+        	String consented = clientScope.getAttribute(AuthenticationManager.CLIENT_SCOPE_CONSENTED) != null ? clientScope.getAttribute(AuthenticationManager.CLIENT_SCOPE_CONSENTED) : "";
+        	String defaultScope = clientScope.getAttribute(AuthenticationManager.CLIENT_SCOPE_DEFAULT) != null ? clientScope.getAttribute(AuthenticationManager.CLIENT_SCOPE_DEFAULT) : "";;
+        	Boolean clientChecked = consented.equals("true") || defaultScope.equals("true");
+            this.clientScopesRequested.add(new ClientScopeEntry(clientScope.getConsentScreenText(), clientScope.getName(), clientChecked.toString()));
         }
     }
 
     public String getCode() {
         return code;
     }
-
 
     public String getClient() {
         return client.getClientId();
@@ -53,19 +56,39 @@ public class OAuthGrantBean {
     public List<ClientScopeEntry> getClientScopesRequested() {
         return clientScopesRequested;
     }
-
-
+    
     // Converting ClientScopeModel due the freemarker limitations. It's not able to read "getConsentScreenText" default method defined on interface
     public static class ClientScopeEntry {
 
         private final String consentScreenText;
+        private String name;
+        private boolean consented = false;
 
-        private ClientScopeEntry(String consentScreenText) {
+        private ClientScopeEntry(String consentScreenText, String name, String consented) {
             this.consentScreenText = consentScreenText;
+            if (name != null) {
+            	this.name = name;
+            }
+            else {
+            	this.name = "";
+            }
+            if (consented != null) {
+            	if (consented.equals("true")) {
+            		this.consented = true;
+            	}
+            }
         }
 
         public String getConsentScreenText() {
             return consentScreenText;
+        }
+        
+        public String getName() {
+        	return name;
+        }
+        
+        public boolean getConsented() {
+        	return consented;
         }
     }
 }

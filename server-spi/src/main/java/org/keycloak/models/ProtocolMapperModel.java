@@ -76,6 +76,14 @@ public class ProtocolMapperModel implements Serializable {
     public void setConfig(Map<String, String> config) {
         this.config = config;
     }
+    
+    public boolean isConsentRequired() {
+		return consentRequired;
+	}
+
+	public void setConsentRequired(boolean consentRequired) {
+		this.consentRequired = consentRequired;
+	}
 
     @Override
     public boolean equals(Object o) {

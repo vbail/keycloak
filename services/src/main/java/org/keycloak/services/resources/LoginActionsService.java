@@ -831,14 +831,34 @@ public class LoginActionsService {
             session.users().addConsent(realm, user.getId(), grantedConsent);
         }
 
+        Map<String, ClientScopeModel> defaultScopes = client.getClientScopes(true, false);
+        Map<String, ClientScopeModel> optionalScopes = client.getClientScopes(false, false);
         for (String clientScopeId : authSession.getClientScopes()) {
             ClientScopeModel clientScope = KeycloakModelUtils.findClientScopeById(realm, clientScopeId);
-            if (clientScope != null) {
+            String name = clientScope.getName() != null ? clientScope.getName() : "";
+            if (clientScope != null && (formData.containsKey(name) || authSession.getClient().getId().equals(clientScope.getId()))) {
                 grantedConsent.addGrantedClientScope(clientScope);
-            } else {
-                logger.warn("Client scope with ID '%s' not found");
+            }
+            else {
+	            if (defaultScopes != null && defaultScopes.containsKey(clientScope.getName())) {
+	                LoginProtocol protocol = session.getProvider(LoginProtocol.class, authSession.getProtocol());
+	                protocol.setRealm(realm)
+	                        .setHttpHeaders(headers)
+	                        .setUriInfo(uriInfo)
+	                        .setEventBuilder(event);
+	                Response response = protocol.sendError(authSession, Error.CONSENT_DENIED);
+	                event.error(Errors.REJECTED_BY_USER);
+	                return response;
+	            }
             }
         }
+        
+        for (ClientScopeModel optionalScope : optionalScopes.values()) {
+            String name = optionalScope.getName() != null ? optionalScope.getName() : "";
+            if (optionalScope != null && (formData.containsKey(name) || authSession.getClient().getId().equals(optionalScope.getId()))) {
+                grantedConsent.addGrantedClientScope(optionalScope);
+            }
+        }        
 
         session.users().updateConsent(realm, user.getId(), grantedConsent);
 
