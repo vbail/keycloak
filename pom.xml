@@ -707,6 +707,11 @@
                 <artifactId>aesh</artifactId>
                 <version>${aesh.version}</version>
             </dependency>
+            <dependency>
+				<groupId>org.postgresql</groupId>
+				<artifactId>postgresql</artifactId>
+				<version>${postgresql.version}</version>
+            </dependency>
 
             <!-- keycloak -->
             <dependency>

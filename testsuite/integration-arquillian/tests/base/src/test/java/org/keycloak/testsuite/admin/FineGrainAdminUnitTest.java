@@ -16,44 +16,51 @@
  */
 package org.keycloak.testsuite.admin;
 
+import static org.keycloak.testsuite.admin.ImpersonationDisabledTest.IMPERSONATION_DISABLED;
+import static org.keycloak.testsuite.auth.page.AuthRealm.TEST;
+
+import java.util.LinkedList;
+import java.util.List;
+
+import javax.ws.rs.ClientErrorException;
+import javax.ws.rs.core.Response;
+
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.junit.Assert;
 import org.junit.Test;
 import org.keycloak.admin.client.Keycloak;
+import org.keycloak.authorization.model.Policy;
 import org.keycloak.authorization.model.Resource;
-import org.keycloak.models.ClientScopeModel;
+import org.keycloak.authorization.model.ResourceServer;
+import org.keycloak.client.admin.cli.util.ConfigUtil;
+import org.keycloak.models.AdminRoles;
+import org.keycloak.models.ClientModel;
+import org.keycloak.models.Constants;
 import org.keycloak.models.GroupModel;
+import org.keycloak.models.KeycloakSession;
+import org.keycloak.models.RealmModel;
+import org.keycloak.models.RoleModel;
+import org.keycloak.models.UserCredentialModel;
+import org.keycloak.models.UserModel;
 import org.keycloak.models.utils.KeycloakModelUtils;
+import org.keycloak.representations.idm.ClientRepresentation;
 import org.keycloak.representations.idm.ClientScopeRepresentation;
+import org.keycloak.representations.idm.RealmRepresentation;
+import org.keycloak.representations.idm.RoleRepresentation;
+import org.keycloak.representations.idm.UserRepresentation;
 import org.keycloak.representations.idm.authorization.ClientPolicyRepresentation;
+import org.keycloak.representations.idm.authorization.DecisionStrategy;
 import org.keycloak.representations.idm.authorization.Logic;
 import org.keycloak.representations.idm.authorization.UserPolicyRepresentation;
 import org.keycloak.services.resources.admin.permissions.AdminPermissionEvaluator;
 import org.keycloak.services.resources.admin.permissions.AdminPermissionManagement;
 import org.keycloak.services.resources.admin.permissions.AdminPermissions;
-import org.keycloak.authorization.model.Policy;
-import org.keycloak.authorization.model.ResourceServer;
-import org.keycloak.representations.idm.ClientRepresentation;
-import org.keycloak.representations.idm.RealmRepresentation;
-import org.keycloak.representations.idm.RoleRepresentation;
-import org.keycloak.representations.idm.UserRepresentation;
-import org.keycloak.representations.idm.authorization.DecisionStrategy;
 import org.keycloak.testsuite.AbstractKeycloakTest;
 import org.keycloak.testsuite.arquillian.AuthServerTestEnricher;
 import org.keycloak.testsuite.auth.page.AuthRealm;
 import org.keycloak.testsuite.runonserver.RunOnServerDeployment;
 import org.keycloak.testsuite.util.AdminClientUtil;
-
-import javax.ws.rs.ClientErrorException;
-import javax.ws.rs.core.Response;
-
-import java.util.Collections;
-import java.util.LinkedList;
-import java.util.List;
-
-import static org.keycloak.testsuite.admin.ImpersonationDisabledTest.IMPERSONATION_DISABLED;
-import static org.keycloak.testsuite.auth.page.AuthRealm.TEST;
 
 /**
  * @author <a href="mailto:bill@burkecentral.com">Bill Burke</a>

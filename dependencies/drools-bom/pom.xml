@@ -35,6 +35,8 @@
         <sisu-guice.version>3.2.3</sisu-guice.version>
         <ecj.version>4.4.2</ecj.version>
         <itext.version>2.1.2</itext.version>
+        <postgresql.version>9.3-1100-jdbc41</postgresql.version>
+        <!--postgresql.version>9.4.1212</postgresql.version-->
     </properties>
 
     <dependencyManagement>
@@ -237,6 +239,11 @@
                 <groupId>org.eclipse.jdt.core.compiler</groupId>
                 <artifactId>ecj</artifactId>
                 <version>${ecj.version}</version>
+            </dependency>
+            <dependency>
+				<groupId>org.postgresql</groupId>
+				<artifactId>postgresql</artifactId>
+				<version>${postgresql.version}</version>
             </dependency>
             <dependency>
                 <groupId>com.lowagie</groupId>
