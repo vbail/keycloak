@@ -846,6 +846,11 @@ public class LoginActionsService {
         event.success();
 
         ClientSessionContext clientSessionCtx = AuthenticationProcessor.attachSession(authSession, null, session, realm, clientConnection, event);
+
+        if (authSession != null && authSession.getClientNote(AuthenticationManager.OTP_AUTH) != null) {
+        	clientSessionCtx.getClientSession().setNote(AuthenticationManager.OTP_AUTH, authSession.getClientNote(AuthenticationManager.OTP_AUTH));
+        }
+
         return AuthenticationManager.redirectAfterSuccessfulFlow(session, realm, clientSessionCtx.getClientSession().getUserSession(), clientSessionCtx, request, uriInfo, clientConnection, event, authSession.getProtocol());
     }
 
