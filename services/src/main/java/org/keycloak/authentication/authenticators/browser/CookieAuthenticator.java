@@ -24,6 +24,8 @@ import org.keycloak.models.RealmModel;
 import org.keycloak.models.UserModel;
 import org.keycloak.protocol.LoginProtocol;
 import org.keycloak.services.managers.AuthenticationManager;
+import org.keycloak.services.util.AcrValidationUtils;
+import org.keycloak.services.validation.Validation;
 import org.keycloak.sessions.AuthenticationSessionModel;
 
 /**
@@ -47,8 +49,17 @@ public class CookieAuthenticator implements Authenticator {
             AuthenticationSessionModel clientSession = context.getAuthenticationSession();
             LoginProtocol protocol = context.getSession().getProvider(LoginProtocol.class, clientSession.getProtocol());
 
+            boolean requirePassword = false;
+            String acr_values = clientSession.getClientNote("acr_values");
+            if (!Validation.isBlank(acr_values)) {
+            	int clLevel = AcrValidationUtils.getClLevelFromACR(acr_values);
+            	if (clLevel > 0) {
+            		requirePassword = true;
+            	}
+            }
+            
             // Cookie re-authentication is skipped if re-authentication is required
-            if (protocol.requireReauthentication(authResult.getSession(), clientSession)) {
+            if (protocol.requireReauthentication(authResult.getSession(), clientSession) || requirePassword) {
                 context.attempted();
             } else {
                 context.getSession().setAttribute(AuthenticationManager.SSO_AUTH, "true");

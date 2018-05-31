@@ -27,6 +27,7 @@ import org.keycloak.models.RealmModel;
 import org.keycloak.models.UserCredentialModel;
 import org.keycloak.models.UserModel;
 import org.keycloak.representations.idm.CredentialRepresentation;
+import org.keycloak.services.managers.AuthenticationManager;
 import org.keycloak.services.messages.Messages;
 
 import javax.ws.rs.core.MultivaluedMap;
@@ -68,6 +69,10 @@ public class OTPFormAuthenticator extends AbstractUsernameFormAuthenticator impl
             Response challengeResponse = challenge(context, Messages.INVALID_TOTP);
             context.failureChallenge(AuthenticationFlowError.INVALID_CREDENTIALS, challengeResponse);
             return;
+        }
+        else {
+//        	context.getSession().setAttribute(AuthenticationManager.OTP_AUTH, "true");
+        	context.getAuthenticationSession().setClientNote(AuthenticationManager.OTP_AUTH, "true");
         }
         context.success();
     }

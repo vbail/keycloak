@@ -86,6 +86,8 @@ public class AuthenticationManager {
     public static final String AUTH_TIME = "AUTH_TIME";
     // clientSession note with flag that clientSession was authenticated through SSO cookie
     public static final String SSO_AUTH = "SSO_AUTH";
+    // clientSession note with flag that clientSession was authenticated through OTP
+    public static final String OTP_AUTH = "OTP_AUTH";
 
     protected static final Logger logger = Logger.getLogger(AuthenticationManager.class);
 
@@ -719,6 +721,14 @@ public class AuthenticationManager {
             userSession.setNote(AUTH_TIME, String.valueOf(authTime));
             clientSession.removeNote(SSO_AUTH);
         }
+//        boolean isOTPAuthentication = "true".equals(session.getAttribute(OTP_AUTH));
+        boolean isOTPAuthentication = "true".equals(clientSession.getNote(OTP_AUTH));
+        if (isOTPAuthentication) {
+        	clientSession.setNote(OTP_AUTH, "true");
+        }
+        else {
+        	clientSession.removeNote(OTP_AUTH);
+        }
 
         return protocol.authenticated(userSession, clientSessionCtx);
 
@@ -727,6 +737,11 @@ public class AuthenticationManager {
     public static boolean isSSOAuthentication(AuthenticatedClientSessionModel clientSession) {
         String ssoAuth = clientSession.getNote(SSO_AUTH);
         return Boolean.parseBoolean(ssoAuth);
+    }
+
+    public static boolean isOTPAuthentication(AuthenticatedClientSessionModel clientSession) {
+        String otpAuth = clientSession.getNote(OTP_AUTH);
+        return Boolean.parseBoolean(otpAuth);
     }
 
 

@@ -22,6 +22,9 @@ import org.keycloak.cluster.ClusterProvider;
 import org.keycloak.common.ClientConnection;
 import org.keycloak.OAuth2Constants;
 import org.keycloak.OAuthErrorException;
+import org.keycloak.acr.AcrProvider;
+import org.keycloak.acr.DefaultAcrProvider;
+import org.keycloak.acr.DefaultAcrProviderFactory;
 import org.keycloak.events.Details;
 import org.keycloak.events.Errors;
 import org.keycloak.events.EventBuilder;
@@ -50,6 +53,7 @@ import org.keycloak.models.UserSessionProvider;
 import org.keycloak.models.utils.KeycloakModelUtils;
 import org.keycloak.protocol.ProtocolMapper;
 import org.keycloak.protocol.oidc.mappers.OIDCAccessTokenMapper;
+import org.keycloak.protocol.oidc.mappers.OIDCAttributeMapperHelper;
 import org.keycloak.protocol.oidc.mappers.OIDCIDTokenMapper;
 import org.keycloak.protocol.oidc.mappers.UserInfoTokenMapper;
 import org.keycloak.protocol.oidc.utils.OIDCResponseType;
@@ -64,6 +68,7 @@ import org.keycloak.services.managers.AuthenticationSessionManager;
 import org.keycloak.services.managers.UserSessionCrossDCManager;
 import org.keycloak.services.managers.UserSessionManager;
 import org.keycloak.services.util.DefaultClientSessionContext;
+import org.keycloak.services.validation.Validation;
 import org.keycloak.sessions.AuthenticationSessionModel;
 import org.keycloak.util.TokenUtil;
 import org.keycloak.common.util.Time;
@@ -412,10 +417,28 @@ public class TokenManager {
         for (RoleModel role : requestedRoles) {
             addComposites(token, role);
         }
+        
+        String acr = buildAcrValue(session, user, clientSessionCtx);
+        token.setAcr(acr);
+        
         token = transformAccessToken(session, token, userSession, clientSessionCtx);
         return token;
     }
 
+	private String buildAcrValue(KeycloakSession session, UserModel user, ClientSessionContext clientSessionCtx) {
+		// Best effort for "acr" value. Use 0 if clientSession was authenticated through cookie ( SSO )
+        // TODO: Add better acr support. See KEYCLOAK-3314
+
+		String acrCompliance = session.getContext().getClient().getAttribute(AcrProvider.ACR_ATTRIBUTE_ID);
+		if (Validation.isEmpty(acrCompliance)) {
+			acrCompliance = DefaultAcrProviderFactory.DEFAULT_ACR_PROVIDER_ID;
+		}
+
+		AcrProvider acrProvider = session.getProvider(AcrProvider.class, acrCompliance);
+        String acr_value = acrProvider.buildAcrValue(user, clientSessionCtx.getClientSession());
+        
+        return acr_value;
+	}
 
     public static ClientSessionContext attachAuthenticationSession(KeycloakSession session, UserSessionModel userSession, AuthenticationSessionModel authSession) {
         ClientModel client = authSession.getClient();

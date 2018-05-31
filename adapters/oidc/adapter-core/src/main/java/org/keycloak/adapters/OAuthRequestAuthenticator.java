@@ -173,6 +173,10 @@ public class OAuthRequestAuthenticator {
         String uiLocales = getQueryParamValue(OAuth2Constants.UI_LOCALES_PARAM);
         url = UriUtils.stripQueryParam(url, OAuth2Constants.UI_LOCALES_PARAM);
 
+        String acr_values = getQueryParamValue(OAuth2Constants.ACR_VALUES);
+        url = UriUtils.stripQueryParam(url, OAuth2Constants.ACR_VALUES);
+
+        
         KeycloakUriBuilder redirectUriBuilder = deployment.getAuthUrl().clone()
                 .queryParam(OAuth2Constants.RESPONSE_TYPE, OAuth2Constants.CODE)
                 .queryParam(OAuth2Constants.CLIENT_ID, deployment.getResourceName())
@@ -193,6 +197,9 @@ public class OAuthRequestAuthenticator {
         }
         if (uiLocales != null && uiLocales.length() > 0) {
             redirectUriBuilder.queryParam(OAuth2Constants.UI_LOCALES_PARAM, uiLocales);
+        }
+        if (acr_values != null && acr_values.length() > 0) {
+            redirectUriBuilder.queryParam(OAuth2Constants.ACR_VALUES, acr_values);
         }
 
         scope = TokenUtil.attachOIDCScope(scope);

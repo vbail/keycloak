@@ -17,9 +17,26 @@
 
 package org.keycloak.authentication;
 
+import java.net.URI;
+import java.text.MessageFormat;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+import javax.ws.rs.core.Response;
+import javax.ws.rs.core.UriBuilder;
+import javax.ws.rs.core.UriInfo;
+
 import org.jboss.logging.Logger;
 import org.jboss.resteasy.spi.HttpRequest;
+import org.keycloak.OAuth2Constants;
+import org.keycloak.acr.AcrProvider;
+import org.keycloak.acr.DefaultAcrProvider;
+import org.keycloak.acr.DefaultAcrProviderFactory;
 import org.keycloak.authentication.authenticators.browser.AbstractUsernameFormAuthenticator;
+import org.keycloak.authentication.authenticators.browser.CookieAuthenticatorFactory;
+import org.keycloak.authentication.authenticators.browser.OTPFormAuthenticatorFactory;
+import org.keycloak.authentication.authenticators.browser.UsernamePasswordFormFactory;
 import org.keycloak.authentication.authenticators.client.ClientAuthUtil;
 import org.keycloak.common.ClientConnection;
 import org.keycloak.common.util.Time;
@@ -30,7 +47,6 @@ import org.keycloak.forms.login.LoginFormsProvider;
 import org.keycloak.models.AuthenticationExecutionModel;
 import org.keycloak.models.AuthenticationFlowModel;
 import org.keycloak.models.AuthenticatorConfigModel;
-import org.keycloak.models.AuthenticatedClientSessionModel;
 import org.keycloak.models.ClientModel;
 import org.keycloak.models.ClientSessionContext;
 import org.keycloak.models.Constants;
@@ -52,18 +68,12 @@ import org.keycloak.services.managers.BruteForceProtector;
 import org.keycloak.services.managers.ClientSessionCode;
 import org.keycloak.services.messages.Messages;
 import org.keycloak.services.resources.LoginActionsService;
-import org.keycloak.services.util.CacheControlUtil;
 import org.keycloak.services.util.AuthenticationFlowURLHelper;
+import org.keycloak.services.util.CacheControlUtil;
+import org.keycloak.services.validation.Validation;
 import org.keycloak.sessions.AuthenticationSessionModel;
 import org.keycloak.sessions.CommonClientSessionModel;
-
-import javax.ws.rs.core.Response;
-import javax.ws.rs.core.UriBuilder;
-import javax.ws.rs.core.UriInfo;
-import java.net.URI;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import org.keycloak.sessions.CommonClientSessionModel.ExecutionStatus;
 
 /**
  * @author <a href="mailto:bill@burkecentral.com">Bill Burke</a>
@@ -998,16 +1008,36 @@ public class AuthenticationProcessor {
         // attachSession(); // Session will be attached after requiredActions + consents are finished.
         AuthenticationManager.setClientScopesInSession(authenticationSession);
 
+        //TODO FIND RIGHT PLACE TO PUT THE ACR VALIDATION
+        Response resp = handleAcrValidation();
+    	if (resp != null) {
+    		return resp;
+    	}
+
+        
         String nextRequiredAction = nextRequiredAction();
         if (nextRequiredAction != null) {
             return AuthenticationManager.redirectToRequiredActions(session, realm, authenticationSession, uriInfo, nextRequiredAction);
         } else {
+        	
             event.detail(Details.CODE_ID, authenticationSession.getParentSession().getId());  // todo This should be set elsewhere.  find out why tests fail.  Don't know where this is supposed to be set
             // the user has successfully logged in and we can clear his/her previous login failure attempts.
             logSuccess();
             return AuthenticationManager.finishedRequiredActions(session, authenticationSession, userSession, connection, request, uriInfo, event);
         }
     }
+
+	private Response handleAcrValidation() {
+		String acrCompliance = session.getContext().getClient().getAttribute(AcrProvider.ACR_ATTRIBUTE_ID);
+		if (Validation.isEmpty(acrCompliance)) {
+			acrCompliance = DefaultAcrProviderFactory.DEFAULT_ACR_PROVIDER_ID;
+		}
+		AcrProvider acrProvider = session.getProvider(AcrProvider.class, acrCompliance);
+		
+		//Pasar los datos que faltan para poder hacer el processor.authenticate
+		//Mirar si seria interesante tener un flow programatico segun el valor del acr solicitado
+		return acrProvider.validateAcrCompliance(authenticationSession, this.flowPath, event, realm);
+	}
 
     public String nextRequiredAction() {
         return AuthenticationManager.nextRequiredAction(session, authenticationSession, connection, request, uriInfo, event);

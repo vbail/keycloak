@@ -352,6 +352,17 @@
 
                 <kc-tooltip>{{:: 'web-origins.tooltip' | translate}}</kc-tooltip>
             </div>
+            <div class="form-group">
+                <label class="col-md-2 control-label" for="acrCompliance">{{:: 'acrCompliance' | translate}}</label>
+                <div class="col-sm-6">
+                    <select class="form-control" id="acrCompliance"
+                            ng-model="clientEdit.attributes['acrCompliance']"
+                            ng-options="option as option for option in ['TDIF']">
+                        <option value="" selected></option>
+                    </select>
+                </div>
+                <kc-tooltip>{{:: 'acrCompliance.tooltip' | translate}}</kc-tooltip>
+            </div>
         </fieldset>
         <fieldset data-ng-show="protocol == 'saml'">
             <legend collapsed><span class="text">{{:: 'fine-saml-endpoint-conf' | translate}}</span>  <kc-tooltip>{{:: 'fine-saml-endpoint-conf.tooltip' | translate}}</kc-tooltip></legend>

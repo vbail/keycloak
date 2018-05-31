@@ -229,5 +229,7 @@ public class Messages {
     public static final String DELEGATION_COMPLETE_HEADER = "delegationCompleteHeader";
     public static final String DELEGATION_FAILED = "delegationFailedMessage";
     public static final String DELEGATION_FAILED_HEADER = "delegationFailedHeader";
+    
+    public static final String ACR_NOT_SATISFIED = "acrNotSatisfied";
 
 }
