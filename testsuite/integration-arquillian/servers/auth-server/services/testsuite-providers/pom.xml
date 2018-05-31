@@ -24,7 +24,7 @@
     <parent>
         <groupId>org.keycloak.testsuite</groupId>
         <artifactId>integration-arquillian-servers-auth-server-services</artifactId>
-        <version>4.0.0.Beta2-SNAPSHOT</version>
+        <version>4.0.0.Final-SNAPSHOT</version>
     </parent>
 
     <artifactId>integration-arquillian-testsuite-providers</artifactId>
@@ -32,6 +32,7 @@
 
     <properties>
         <js-adapter.version>${project.version}</js-adapter.version>
+        <js-adapter.file.path>${project.basedir}/target/classes/javascript</js-adapter.file.path>
     </properties>
 
     <dependencies>
@@ -103,10 +104,10 @@
                                     <artifactId>keycloak-js-adapter</artifactId>
                                     <version>${js-adapter.version}</version>
                                     <type>jar</type>
-                                    <outputDirectory>${pom.basedir}/src/main/resources/javascript</outputDirectory>
+                                    <outputDirectory>${js-adapter.file.path}</outputDirectory>
                                 </artifactItem>
                             </artifactItems>
-                            <includes>**/keycloak.js</includes>
+                            <includes>keycloak.js</includes>
                         </configuration>
                     </execution>
                 </executions>

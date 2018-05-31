@@ -21,7 +21,7 @@
     <parent>
         <groupId>org.keycloak.testsuite</groupId>
         <artifactId>performance</artifactId>
-        <version>4.0.0.Beta2-SNAPSHOT</version>
+        <version>4.0.0.Final-SNAPSHOT</version>
         <relativePath>../pom.xml</relativePath>
     </parent>
     <modelVersion>4.0.0</modelVersion>
@@ -59,24 +59,31 @@
 
         <gatling.simulationClass>keycloak.OIDCLoginAndLogoutSimulation</gatling.simulationClass>
         <gatling.skip.run>true</gatling.skip.run>
+
+        <trustStoreArg/>
+        <trustStorePasswordArg/>
     </properties>
 
     <dependencies>
         <dependency>
             <groupId>org.keycloak</groupId>
             <artifactId>keycloak-adapter-core</artifactId>
+            <version>${server.version}</version>
         </dependency>
         <dependency>
             <groupId>org.keycloak</groupId>
             <artifactId>keycloak-adapter-spi</artifactId>
+            <version>${server.version}</version>
         </dependency>
         <dependency>
             <groupId>org.keycloak</groupId>
             <artifactId>keycloak-core</artifactId>
+            <version>${server.version}</version>
         </dependency>
         <dependency>
             <groupId>org.keycloak</groupId>
             <artifactId>keycloak-common</artifactId>
+            <version>${server.version}</version>
         </dependency>
         <dependency>
             <groupId>com.fasterxml.jackson.core</groupId>
@@ -89,6 +96,7 @@
         <dependency>
             <groupId>org.keycloak</groupId>
             <artifactId>keycloak-admin-client</artifactId>
+            <version>${server.version}</version>
         </dependency>
         <dependency>
             <groupId>org.jboss.spec.javax.ws.rs</groupId>
@@ -177,6 +185,7 @@
                             <goal>read-project-properties</goal>
                         </goals>
                         <configuration>
+                            <quiet>true</quiet>
                             <files>
                                 <file>${provisioning.properties.file}</file>
                                 <file>${dataset.properties.file}</file>
@@ -256,6 +265,8 @@
                         <!--common params-->
                         <param>-Dproject.build.directory=${project.build.directory}</param>
                         <param>-Dkeycloak.server.uris=${keycloak.frontend.servers}</param>
+                        <param>-DauthUser=${keycloak.admin.user}</param>
+                        <param>-DauthPassword=${keycloak.admin.password}</param>
                         <!--dataset params-->
                         <param>-DnumOfRealms=${numOfRealms}</param>
                         <param>-DusersPerRealm=${usersPerRealm}</param>
@@ -275,6 +286,9 @@
                         <param>-DrefreshTokenPeriod=${refreshTokenPeriod}</param>
                         <param>-DrefreshTokenCount=${refreshTokenCount}</param>
                         <param>-DbadLoginAttempts=${badLoginAttempts}</param>
+                        
+                        <param>${trustStoreArg}</param>
+                        <param>${trustStorePasswordArg}</param>
                     </jvmArgs>
                 </configuration>
 
@@ -310,6 +324,19 @@
             <id>crossdc</id>
             <properties>
                 <deployment>crossdc</deployment>
+            </properties>
+        </profile>
+        
+        <profile>
+            <id>ssl</id>
+            <activation>
+                <property>
+                    <name>trustStore</name>
+                </property>
+            </activation>
+            <properties>
+                <trustStoreArg>-Djavax.net.ssl.trustStore=${trustStore}</trustStoreArg>
+                <trustStorePasswordArg>-Djavax.net.ssl.trustStorePassword=${trustStorePassword}</trustStorePasswordArg>
             </properties>
         </profile>
         
@@ -378,6 +405,9 @@
                                         <KEYCLOAK_DS_POOL_PREFILL>${keycloak.ds.pool-prefill}</KEYCLOAK_DS_POOL_PREFILL>
                                         <KEYCLOAK_DS_PS_CACHE_SIZE>${keycloak.ds.ps-cache-size}</KEYCLOAK_DS_PS_CACHE_SIZE>
 
+                                        <KEYCLOAK_ADMIN_USER>${keycloak.admin.user}</KEYCLOAK_ADMIN_USER>
+                                        <KEYCLOAK_ADMIN_PASSWORD>${keycloak.admin.password}</KEYCLOAK_ADMIN_PASSWORD>
+
                                         <DB_CPUSETS>${db.docker.cpusets}</DB_CPUSETS>
                                         <DB_DC1_CPUSETS>${db.dc1.docker.cpusets}</DB_DC1_CPUSETS>
                                         <DB_DC2_CPUSETS>${db.dc2.docker.cpusets}</DB_DC2_CPUSETS>
@@ -427,6 +457,12 @@
         
         <profile>
             <id>generate-data</id>
+            <properties>
+                <startAtRealmIdx>0</startAtRealmIdx>
+                <ignoreConflicts>false</ignoreConflicts>
+                <skipRealmRoles>false</skipRealmRoles>
+                <skipClientRoles>false</skipClientRoles>
+            </properties>
             <build>
                 <plugins>
                     <plugin>
@@ -469,8 +505,16 @@
                                     <arguments>
                                         <argument>-classpath</argument>
                                         <classpath/>
+                                        <argument>${trustStoreArg}</argument>
+                                        <argument>${trustStorePasswordArg}</argument>
                                         <argument>-Dkeycloak.server.uris=${keycloak.frontend.servers}</argument>
+                                        <argument>-DauthUser=${keycloak.admin.user}</argument>
+                                        <argument>-DauthPassword=${keycloak.admin.password}</argument>
                                         <argument>-DnumOfWorkers=${numOfWorkers}</argument>
+                                        <argument>-DstartAtRealmIdx=${startAtRealmIdx}</argument>
+                                        <argument>-DignoreConflicts=${ignoreConflicts}</argument>
+                                        <argument>-DskipRealmRoles=${skipRealmRoles}</argument>
+                                        <argument>-DskipClientRoles=${skipClientRoles}</argument>
                                         <argument>org.keycloak.performance.RealmsConfigurationLoader</argument>
                                         <argument>benchmark-realms.json</argument>
                                     </arguments>

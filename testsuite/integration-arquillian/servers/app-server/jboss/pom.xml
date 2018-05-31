@@ -16,12 +16,13 @@
 ~ limitations under the License.
 -->
 
-<project xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd" xmlns="http://maven.apache.org/POM/4.0.0"
+<project xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd"
+         xmlns="http://maven.apache.org/POM/4.0.0"
          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
     <parent>
         <groupId>org.keycloak.testsuite</groupId>
         <artifactId>integration-arquillian-servers-app-server</artifactId>
-        <version>4.0.0.Beta2-SNAPSHOT</version>
+        <version>4.0.0.Final-SNAPSHOT</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
@@ -40,7 +41,7 @@
     </properties>
 
     <profiles>
-        
+
         <profile>
             <id>app-server-jboss-submodules</id>
             <activation>
@@ -50,7 +51,7 @@
             </activation>
             <build>
                 <plugins>
-                    
+
                     <plugin>
                         <artifactId>maven-enforcer-plugin</artifactId>
                         <executions>
@@ -73,7 +74,7 @@
                             </execution>
                         </executions>
                     </plugin>
-                    
+
                     <plugin>
                         <artifactId>maven-dependency-plugin</artifactId>
                         <executions>
@@ -104,30 +105,11 @@
                             </execution>
                         </executions>
                     </plugin>
-            
+
                     <plugin>
                         <groupId>org.codehaus.mojo</groupId>
                         <artifactId>xml-maven-plugin</artifactId>
                         <executions>
-                            <execution>
-                                <id>configure-adapter-debug-log</id>
-                                <phase>process-test-resources</phase>
-                                <goals>
-                                    <goal>transform</goal>
-                                </goals>
-                                <configuration>
-                                    <transformationSets>
-                                        <transformationSet>
-                                            <dir>${app.server.jboss.home}/standalone/configuration</dir>
-                                            <includes>
-                                                <include>standalone.xml</include>
-                                            </includes>
-                                            <stylesheet>${common.resources}/add-adapter-log-level.xsl</stylesheet>
-                                            <outputDir>${app.server.jboss.home}/standalone/configuration</outputDir>
-                                        </transformationSet>
-                                    </transformationSets>
-                                </configuration>
-                            </execution>
                             <execution>
                                 <id>io-worker-threads</id>
                                 <phase>process-resources</phase>
@@ -160,7 +142,7 @@
                             </execution>
                         </executions>
                     </plugin>
-                    
+
                     <plugin>
                         <artifactId>maven-resources-plugin</artifactId>
                         <executions>
@@ -349,19 +331,25 @@
             </build>
         </profile>
         <profile>
-            <id>app-server-as7</id>
-            <modules>
-                <module>as7</module>
-            </modules>
-        </profile>
-        <profile>
             <id>app-server-eap</id>
+            <activation>
+                <property>
+                    <name>app.server</name>
+                    <value>eap</value>
+                </property>
+            </activation>
             <modules>
                 <module>eap</module>
             </modules>
         </profile>
         <profile>
             <id>app-server-eap6</id>
+            <activation>
+                <property>
+                    <name>app.server</name>
+                    <value>eap6</value>
+                </property>
+            </activation>
             <properties>
                 <security.xslt>security-eap6.xsl</security.xslt>
             </properties>
@@ -371,36 +359,60 @@
         </profile>
         <profile>
             <id>app-server-wildfly</id>
+            <activation>
+                <property>
+                    <name>app.server</name>
+                    <value>wildfly</value>
+                </property>
+            </activation>
             <modules>
                 <module>wildfly</module>
             </modules>
         </profile>
         <profile>
-            <id>app-server-wildfly8</id>
-            <modules>
-                <module>wildfly8</module>
-            </modules>
-        </profile>
-        <profile>
             <id>app-server-wildfly9</id>
+            <activation>
+                <property>
+                    <name>app.server</name>
+                    <value>wildfly9</value>
+                </property>
+            </activation>
             <modules>
                 <module>wildfly9</module>
             </modules>
         </profile>
         <profile>
             <id>app-server-wildfly10</id>
+            <activation>
+                <property>
+                    <name>app.server</name>
+                    <value>wildfly10</value>
+                </property>
+            </activation>
             <modules>
                 <module>wildfly10</module>
             </modules>
         </profile>
         <profile>
             <id>app-server-relative</id>
+            <activation>
+                <property>
+                    <name>app.server</name>
+                    <value>relative</value>
+                </property>
+            </activation>
             <modules>
                 <module>relative</module>
             </modules>
         </profile>
         <profile>
             <id>app-server-eap6-fuse</id>
+            <activation>
+                <property>
+                    <name>app.server</name>
+                    <value>eap6-fuse</value>
+                </property>
+            </activation>
             <modules>
                 <module>eap6-fuse</module>
             </modules>

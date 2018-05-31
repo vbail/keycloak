@@ -34,6 +34,11 @@ public class TestConfig {
     // Settings used by RealmsConfigurationLoader only - when loading data into Keycloak
     //
     public static final int numOfWorkers = Integer.getInteger("numOfWorkers", 1);
+    public static final int startAtRealmIdx = Integer.getInteger("startAtRealmIdx", 0);
+    public static final int startAtUserIdx = 0; // doesn't work properly, will be removed later //Integer.getInteger("startAtUserIdx", 0);
+    public static final boolean ignoreConflicts = "true".equals(System.getProperty("ignoreConflicts", "false"));
+    public static final boolean skipRealmRoles = "true".equals(System.getProperty("skipRealmRoles", "false"));
+    public static final boolean skipClientRoles = "true".equals(System.getProperty("skipClientRoles", "false"));
 
     //
     // Settings used by RealmConfigurationLoader to connect to Admin REST API
@@ -70,6 +75,7 @@ public class TestConfig {
     public static final boolean filterResults = Boolean.getBoolean("filterResults"); // filter out results outside of measurementPeriod
     public static final int userThinkTime = Integer.getInteger("userThinkTime", 0);
     public static final int refreshTokenPeriod = Integer.getInteger("refreshTokenPeriod", 0);
+    public static final double logoutPct = Double.valueOf(System.getProperty("logoutPct", "100"));
 
     // Computed timestamps
     public static final long simulationStartTime = System.currentTimeMillis();
@@ -103,6 +109,10 @@ public class TestConfig {
         serverUrisList = Arrays.asList(serverUris.split(" "));
         serverUrisIterator = new LoopingIterator<>(serverUrisList);
     }
+    
+    // assertion properties
+    public static final int maxFailedRequests = Integer.getInteger("maxFailedRequests", 0);
+    public static final int maxMeanReponseTime = Integer.getInteger("maxMeanReponseTime", 300);
 
     // Users iterators by realm
     private static final ConcurrentMap<String, Iterator<UserInfo>> usersIteratorMap = new ConcurrentHashMap<>();
@@ -135,8 +145,9 @@ public class TestConfig {
         "  measurementPeriod: %s\n"+
         "  filterResults: %s\n"+
         "  userThinkTime: %s\n"+ 
-        "  refreshTokenPeriod: %s",
-        usersPerSec, rampUpPeriod, warmUpPeriod, measurementPeriod, filterResults, userThinkTime, refreshTokenPeriod);
+        "  refreshTokenPeriod: %s\n"+ 
+        "  logoutPct: %s",
+        usersPerSec, rampUpPeriod, warmUpPeriod, measurementPeriod, filterResults, userThinkTime, refreshTokenPeriod, logoutPct);
     }
     
     public static SimpleDateFormat SIMPLE_TIME = new SimpleDateFormat("HH:mm:ss");
@@ -170,6 +181,13 @@ public class TestConfig {
                 clientRolesPerUser, 
                 clientRolesPerClient, 
                 hashIterations);
+    }
+    
+    public static String toStringAssertionProperties() {
+        return String.format("  maxFailedRequests: %s\n"
+                + "  maxMeanReponseTime: %s",
+                maxFailedRequests,
+                maxMeanReponseTime);
     }
     
     public static Iterator<UserInfo> sequentialUsersIterator(final String realm) {
@@ -295,6 +313,9 @@ public class TestConfig {
         }
         if (sequentialUsersFrom < -1 || sequentialUsersFrom >= usersPerRealm) {
             throw new RuntimeException("The folowing condition must be met: (-1 <= sequentialUsersFrom < usersPerRealm).");
+        }
+        if (logoutPct < 0 || logoutPct > 100) {
+            throw new RuntimeException("The `logoutPct` needs to be between 0 and 100.");
         }
     }
     

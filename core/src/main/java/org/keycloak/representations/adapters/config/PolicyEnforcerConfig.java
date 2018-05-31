@@ -19,19 +19,18 @@ package org.keycloak.representations.adapters.config;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import org.keycloak.representations.idm.authorization.ResourceRepresentation;
+import org.keycloak.representations.idm.authorization.ScopeRepresentation;
 
 /**
  * @author <a href="mailto:psilva@redhat.com">Pedro Igor</a>
  */
 public class PolicyEnforcerConfig {
-
-    @JsonProperty("create-resources")
-    @JsonInclude(JsonInclude.Include.NON_NULL)
-    private Boolean createResources = Boolean.FALSE;
 
     @JsonProperty("enforcement-mode")
     private EnforcementMode enforcementMode = EnforcementMode.ENFORCING;
@@ -39,6 +38,13 @@ public class PolicyEnforcerConfig {
     @JsonProperty("paths")
     @JsonInclude(JsonInclude.Include.NON_EMPTY)
     private List<PathConfig> paths = new ArrayList<>();
+
+    @JsonProperty("path-cache")
+    @JsonInclude(JsonInclude.Include.NON_EMPTY)
+    private PathCacheConfig pathCacheConfig;
+
+    @JsonProperty("lazy-load-paths")
+    private Boolean lazyLoadPaths = Boolean.FALSE;
 
     @JsonProperty("on-deny-redirect-to")
     @JsonInclude(JsonInclude.Include.NON_NULL)
@@ -48,12 +54,20 @@ public class PolicyEnforcerConfig {
     @JsonInclude(JsonInclude.Include.NON_NULL)
     private UserManagedAccessConfig userManagedAccess;
 
-    public Boolean isCreateResources() {
-        return this.createResources;
-    }
-
     public List<PathConfig> getPaths() {
         return this.paths;
+    }
+
+    public PathCacheConfig getPathCacheConfig() {
+        return pathCacheConfig;
+    }
+
+    public Boolean getLazyLoadPaths() {
+        return lazyLoadPaths;
+    }
+
+    public void setLazyLoadPaths(Boolean lazyLoadPaths) {
+        this.lazyLoadPaths = lazyLoadPaths;
     }
 
     public EnforcementMode getEnforcementMode() {
@@ -68,12 +82,12 @@ public class PolicyEnforcerConfig {
         return this.userManagedAccess;
     }
 
-    public void setCreateResources(Boolean createResources) {
-        this.createResources = createResources;
-    }
-
     public void setPaths(List<PathConfig> paths) {
         this.paths = paths;
+    }
+
+    public void setPathCacheConfig(PathCacheConfig pathCacheConfig) {
+        this.pathCacheConfig = pathCacheConfig;
     }
 
     public String getOnDenyRedirectTo() {
@@ -90,6 +104,32 @@ public class PolicyEnforcerConfig {
 
     public static class PathConfig {
 
+        public static PathConfig createPathConfig(ResourceRepresentation resourceDescription) {
+            PathConfig pathConfig = new PathConfig();
+
+            pathConfig.setId(resourceDescription.getId());
+            pathConfig.setName(resourceDescription.getName());
+
+            String uri = resourceDescription.getUri();
+
+            if (uri == null || "".equals(uri.trim())) {
+                throw new RuntimeException("Failed to configure paths. Resource [" + resourceDescription.getName() + "] has an invalid or empty URI [" + uri + "].");
+            }
+
+            pathConfig.setPath(uri);
+
+            List<String> scopeNames = new ArrayList<>();
+
+            for (ScopeRepresentation scope : resourceDescription.getScopes()) {
+                scopeNames.add(scope.getName());
+            }
+
+            pathConfig.setScopes(scopeNames);
+            pathConfig.setType(resourceDescription.getType());
+
+            return pathConfig;
+        }
+
         private String name;
         private String type;
         private String path;
@@ -99,6 +139,9 @@ public class PolicyEnforcerConfig {
 
         @JsonProperty("enforcement-mode")
         private EnforcementMode enforcementMode = EnforcementMode.ENFORCING;
+
+        @JsonProperty("claim-information-point")
+        private Map<String, Map<String, Object>> claimInformationPointConfig;
 
         @JsonIgnore
         private PathConfig parentConfig;
@@ -157,6 +200,14 @@ public class PolicyEnforcerConfig {
 
         public void setEnforcementMode(EnforcementMode enforcementMode) {
             this.enforcementMode = enforcementMode;
+        }
+
+        public Map<String, Map<String, Object>> getClaimInformationPointConfig() {
+            return claimInformationPointConfig;
+        }
+
+        public void setClaimInformationPointConfig(Map<String, Map<String, Object>> claimInformationPointConfig) {
+            this.claimInformationPointConfig = claimInformationPointConfig;
         }
 
         @Override
@@ -223,6 +274,29 @@ public class PolicyEnforcerConfig {
         }
     }
 
+    public static class PathCacheConfig {
+
+        @JsonProperty("max-entries")
+        int maxEntries = 1000;
+        long lifespan = 30000;
+
+        public int getMaxEntries() {
+            return maxEntries;
+        }
+
+        public void setMaxEntries(int maxEntries) {
+            this.maxEntries = maxEntries;
+        }
+
+        public long getLifespan() {
+            return lifespan;
+        }
+
+        public void setLifespan(long lifespan) {
+            this.lifespan = lifespan;
+        }
+    }
+
     public enum EnforcementMode {
         PERMISSIVE,
         ENFORCING,
@@ -231,7 +305,8 @@ public class PolicyEnforcerConfig {
 
     public enum ScopeEnforcementMode {
         ALL,
-        ANY
+        ANY,
+        DISABLED
     }
 
     public static class UserManagedAccessConfig {

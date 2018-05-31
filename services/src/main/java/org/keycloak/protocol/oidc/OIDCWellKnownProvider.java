@@ -67,6 +67,9 @@ public class OIDCWellKnownProvider implements WellKnownProvider {
 
     public static final List<String> DEFAULT_CLAIM_TYPES_SUPPORTED= list("normal");
 
+    // KEYCLOAK-7451 OAuth Authorization Server Metadata for Proof Key for Code Exchange
+    public static final List<String> DEFAULT_CODE_CHALLENGE_METHODS_SUPPORTED = list(OAuth2Constants.PKCE_METHOD_PLAIN, OAuth2Constants.PKCE_METHOD_S256);
+
     private KeycloakSession session;
 
     public OIDCWellKnownProvider(KeycloakSession session) {
@@ -118,6 +121,9 @@ public class OIDCWellKnownProvider implements WellKnownProvider {
 
         config.setRequestParameterSupported(true);
         config.setRequestUriParameterSupported(true);
+
+        // KEYCLOAK-7451 OAuth Authorization Server Metadata for Proof Key for Code Exchange
+        config.setCodeChallengeMethodsSupported(DEFAULT_CODE_CHALLENGE_METHODS_SUPPORTED);
 
         return config;
     }
