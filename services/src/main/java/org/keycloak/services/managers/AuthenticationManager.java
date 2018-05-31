@@ -96,6 +96,9 @@ public class AuthenticationManager {
     public static final String KEYCLOAK_SESSION_COOKIE = "KEYCLOAK_SESSION";
     public static final String KEYCLOAK_REMEMBER_ME = "KEYCLOAK_REMEMBER_ME";
     public static final String KEYCLOAK_LOGOUT_PROTOCOL = "KEYCLOAK_LOGOUT_PROTOCOL";
+    
+    public static final String CLIENT_SCOPE_CONSENTED = "clientScopeConsented";
+    public static final String CLIENT_SCOPE_DEFAULT = "defaultClientScope";
 
     public static boolean isSessionValid(RealmModel realm, UserSessionModel userSession) {
         if (userSession == null) {
@@ -876,7 +879,9 @@ public class AuthenticationManager {
             List<ClientScopeModel> clientScopesToApprove = getClientScopesToApproveOnConsentScreen(realm, grantedConsent, authSession);
 
             // Skip grant screen if everything was already approved by this user
-            if (clientScopesToApprove.size() > 0) {
+            boolean isSkipGrantedScreen = checkAllScopedApproved(clientScopesToApprove);
+            
+            if (!isSkipGrantedScreen) {
                 String execution = AuthenticatedClientSessionModel.Action.OAUTH_GRANT.name();
 
                 ClientSessionCode<AuthenticationSessionModel> accessCode = new ClientSessionCode<>(session, realm, authSession);
@@ -900,22 +905,90 @@ public class AuthenticationManager {
 
     }
 
+    private static boolean checkAllScopedApproved(List<ClientScopeModel> clientScopesToApprove) {
+    	boolean skipConsentScreen = true;
+    	
+    	if (clientScopesToApprove.size() > 0) {
+    		for (ClientScopeModel clientModel : clientScopesToApprove) {
+    			String consented = clientModel.getAttribute(AuthenticationManager.CLIENT_SCOPE_CONSENTED);
+    			if (consented != null && !consented.equals("true") || consented == null) {
+    				skipConsentScreen = false;
+    			}
+    		}
+    	}
+    	
+    	return skipConsentScreen;
+    }
+    
     private static List<ClientScopeModel> getClientScopesToApproveOnConsentScreen(RealmModel realm, UserConsentModel grantedConsent,
                                                                                   AuthenticationSessionModel authSession) {
         // Client Scopes to be displayed on consent screen
         List<ClientScopeModel> clientScopesToDisplay = new LinkedList<>();
-
-        for (String clientScopeId : authSession.getClientScopes()) {
-            ClientScopeModel clientScope = KeycloakModelUtils.findClientScopeById(realm, clientScopeId);
-
-            if (clientScope == null || !clientScope.isDisplayOnConsentScreen()) {
-                continue;
-            }
-
-            // Check if consent already granted by user
-            if (grantedConsent == null || !grantedConsent.isClientScopeGranted(clientScope)) {
-                clientScopesToDisplay.add(clientScope);
-            }
+        Map<String, ClientScopeModel> defaultScopes = authSession.getClient().getClientScopes(true, false);
+        Map<String, ClientScopeModel> optionalScopes = authSession.getClient().getClientScopes(false, false);
+        String scopesRequested = authSession.getClientNotes().get("scope");
+        String[] scopesReq = scopesRequested.split(" ");
+        if (scopesReq.length > 1) {
+        	//Client has requested scopes
+        	for (String scope : scopesReq) {
+        		if (scope.equals("openid")) {
+        			continue;
+        		}
+        		
+        		ClientScopeModel clientScope = KeycloakModelUtils.getClientScopeByName(realm, scope);
+        		if (clientScope != null && clientScope.isDisplayOnConsentScreen() && (defaultScopes.containsKey(scope) || optionalScopes.containsKey(scope)) ) {
+        			if (grantedConsent != null && grantedConsent.getGrantedClientScopes().contains(clientScope)) {
+        				clientScope.setAttribute(AuthenticationManager.CLIENT_SCOPE_CONSENTED, "true");
+        			}
+        			else {
+        				clientScope.setAttribute(AuthenticationManager.CLIENT_SCOPE_CONSENTED, "false");
+        			}
+        			clientScopesToDisplay.add(clientScope);
+        		}
+        	}
+        	for (ClientScopeModel defaultScope : defaultScopes.values()) {
+        		if (defaultScope != null && defaultScope.isDisplayOnConsentScreen() && !clientScopesToDisplay.contains(defaultScope)) {
+        			if (grantedConsent != null && grantedConsent.getGrantedClientScopes().contains(defaultScope)) {
+        				defaultScope.setAttribute(AuthenticationManager.CLIENT_SCOPE_CONSENTED, "true");
+        			}
+        			else {
+        				defaultScope.setAttribute(AuthenticationManager.CLIENT_SCOPE_CONSENTED, "false");
+        			}
+        			clientScopesToDisplay.add(defaultScope);
+        		}
+        	}
+        }
+        else {
+        	//Client has not requested scope
+        	if (defaultScopes != null && !defaultScopes.isEmpty()) {
+        		for (ClientScopeModel clientScope : defaultScopes.values()) {
+            		if (clientScope.isDisplayOnConsentScreen()) {
+            			//DEFAULT SCOPES MUST BE ACCEPTED
+            			if (grantedConsent != null && grantedConsent.getGrantedClientScopes().contains(clientScope)) {
+            				clientScope.setAttribute(AuthenticationManager.CLIENT_SCOPE_CONSENTED, "true");
+            			}
+            			else {
+            				clientScope.setAttribute(AuthenticationManager.CLIENT_SCOPE_CONSENTED, "false");
+            			}
+           				clientScope.setAttribute(AuthenticationManager.CLIENT_SCOPE_DEFAULT, "true");
+            			clientScopesToDisplay.add(clientScope);
+            		}
+        		}
+        	}
+        	if (optionalScopes != null && !optionalScopes.isEmpty()) {
+        		for (ClientScopeModel clientScope : optionalScopes.values()) {
+            		if (clientScope.isDisplayOnConsentScreen()) {
+            			if (grantedConsent != null && grantedConsent.getGrantedClientScopes().contains(clientScope)) {
+            				clientScope.setAttribute(AuthenticationManager.CLIENT_SCOPE_CONSENTED, "true");
+            			}
+            			else {
+            				clientScope.setAttribute(AuthenticationManager.CLIENT_SCOPE_CONSENTED, "false");
+            			}
+            			clientScope.removeAttribute(AuthenticationManager.CLIENT_SCOPE_DEFAULT);
+            			clientScopesToDisplay.add(clientScope);
+            		}
+        		}
+        	}
         }
 
         return clientScopesToDisplay;
