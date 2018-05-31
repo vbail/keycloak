@@ -393,7 +393,6 @@ public class RealmManager {
         if (adminRole == null) {
             adminRole = realmAdminClient.addRole(AdminRoles.REALM_ADMIN);
             adminRole.setDescription("${role_" + AdminRoles.REALM_ADMIN + "}");
-            adminRole.setScopeParamRequired(false);
         }
 
         for (String r : AdminRoles.ALL_REALM_ROLES) {
