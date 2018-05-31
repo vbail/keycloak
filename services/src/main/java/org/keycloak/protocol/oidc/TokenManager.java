@@ -668,10 +668,10 @@ public class TokenManager {
         token.issuer(clientSession.getNote(OIDCLoginProtocol.ISSUER));
         token.setNonce(clientSession.getNote(OIDCLoginProtocol.NONCE_PARAM));
 
-        // Best effort for "acr" value. Use 0 if clientSession was authenticated through cookie ( SSO )
-        // TODO: Add better acr support. See KEYCLOAK-3314
-        String acr = (AuthenticationManager.isSSOAuthentication(clientSession)) ? "0" : "1";
-        token.setAcr(acr);
+//        // Best effort for "acr" value. Use 0 if clientSession was authenticated through cookie ( SSO )
+//        // TODO: Add better acr support. See KEYCLOAK-3314
+//        String acr = (AuthenticationManager.isSSOAuthentication(clientSession)) ? "0" : "1";
+//        token.setAcr(acr);
 
         String authTime = session.getNote(AuthenticationManager.AUTH_TIME);
         if (authTime != null) {
