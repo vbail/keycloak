@@ -431,6 +431,17 @@
       </licenses>
     </dependency>
     <dependency>
+      <groupId>org.postgresql</groupId>
+      <artifactId>postgresql</artifactId>
+      <version>9.3-1100-jdbc41</version>
+      <licenses>
+        <license>
+          <name>PostgreSQL License</name>
+          <url>https://www.postgresql.org/about/licence/</url>
+        </license>
+      </licenses>
+    </dependency>
+    <dependency>
       <groupId>org.sonatype.plexus</groupId>
       <artifactId>plexus-cipher</artifactId>
       <version>1.7</version>

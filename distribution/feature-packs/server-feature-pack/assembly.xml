@@ -49,6 +49,14 @@
             <outputDirectory>content/bin</outputDirectory>
             <filtered>true</filtered>
         </fileSet>
+		<fileSet>
+            <directory>src/main/resources/modules</directory>
+            <includes>
+                <include>layers.conf</include>
+            </includes>
+            <outputDirectory>modules/</outputDirectory>
+            <filtered>true</filtered>
+        </fileSet>
         <fileSet>
             <directory>../../../</directory>
             <includes>

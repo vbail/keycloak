@@ -684,8 +684,8 @@
             </exclusions>
         </dependency>
         <dependency>
-            <groupId>org.twitter4j</groupId>
-            <artifactId>twitter4j-core</artifactId>
+            <groupId>org.postgresql</groupId>
+            <artifactId>postgresql</artifactId>
             <exclusions>
                 <exclusion>
                     <groupId>*</groupId>
@@ -694,8 +694,8 @@
             </exclusions>
         </dependency>
         <dependency>
-            <groupId>org.postgresql</groupId>
-            <artifactId>postgresql</artifactId>
+            <groupId>org.twitter4j</groupId>
+            <artifactId>twitter4j-core</artifactId>
             <exclusions>
                 <exclusion>
                     <groupId>*</groupId>
