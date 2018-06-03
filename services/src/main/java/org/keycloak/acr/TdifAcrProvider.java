@@ -107,7 +107,7 @@ public class TdifAcrProvider implements AcrProvider {
                 String acrUser = "";
                 ExecutionStatus cookiesExec = execLeg.get(CookieAuthenticatorFactory.PROVIDER_ID);
                 if (cookiesExec != null && cookiesExec == ExecutionStatus.SUCCESS) {
-                    clSatisfied = "cl0";
+                    clSatisfied = "0";
                 }
 
                 // If we come from registration page, we assume that the ACR level is the same as if the user was logged with
@@ -144,7 +144,7 @@ public class TdifAcrProvider implements AcrProvider {
                         // return ErrorPage.error(session, authenticationSession, Response.Status.FORBIDDEN,
                         // Messages.ACR_NOT_SATISFIED, acr, acrUser);
                     } else if (status == ExecutionStatus.SUCCESS) {
-                        clSatisfied = "cl1";
+                        clSatisfied = "1";
                     }
 
                     if (clInt > 1) {
@@ -158,7 +158,7 @@ public class TdifAcrProvider implements AcrProvider {
                             return ErrorPage.error(session, authenticationSession, Response.Status.FORBIDDEN,
                                 Messages.ACR_NOT_SATISFIED, acr, acrUser);
                         } else if (status == ExecutionStatus.SUCCESS) {
-                            clSatisfied = "cl2";
+                            clSatisfied = "2";
                         }
                     }
                 }

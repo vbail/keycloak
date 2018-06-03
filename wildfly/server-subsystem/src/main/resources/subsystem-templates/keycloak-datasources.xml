@@ -29,7 +29,7 @@
                     <password>sa</password>
                 </security>
             </datasource>
-            <datasource jndi-name="java:jboss/datasources/KeycloakDS" pool-name="KeycloakDS" enabled="true" use-java-context="true">
+<!--            <datasource jndi-name="java:jboss/datasources/KeycloakDS" pool-name="KeycloakDS" enabled="true" use-java-context="true">
                 <connection-url><?KEYCLOAK_DS_CONNECTION_URL?></connection-url>
                 <driver>h2</driver>
                 <security>
@@ -42,11 +42,35 @@
                     <xa-datasource-class>org.h2.jdbcx.JdbcDataSource</xa-datasource-class>
                 </driver>
             </drivers>
+-->
+            <datasource jndi-name="java:jboss/datasources/KeycloakDS" pool-name="KeycloakDS" enabled="true" use-java-context="true">
+				<connection-url><?KEYCLOAK_DS_CONNECTION_URL?></connection-url>
+				<driver>postgresql</driver>
+				<pool>
+					<max-pool-size>20</max-pool-size>
+				</pool>
+				<security>
+					<user-name>postgres</user-name>
+					<password>admin</password>
+				</security>
+            </datasource>
+            <drivers>
+                <driver name="h2" module="com.h2database.h2">
+                    <xa-datasource-class>org.h2.jdbcx.JdbcDataSource</xa-datasource-class>
+                </driver>
+				<driver name="postgresql" module="org.postgresql">
+					<xa-datasource-class>org.postgresql.xa.PGXADataSource</xa-datasource-class>
+				</driver>
+            </drivers>
+
         </datasources>
     </subsystem>
     <supplement name="default">
-        <replacement placeholder="KEYCLOAK_DS_CONNECTION_URL">
+        <!--replacement placeholder="KEYCLOAK_DS_CONNECTION_URL">
             jdbc:h2:${jboss.server.data.dir}/keycloak;AUTO_SERVER=TRUE
+        </replacement-->
+        <replacement placeholder="KEYCLOAK_DS_CONNECTION_URL">
+            jdbc:postgresql://localhost/keycloak
         </replacement>
     </supplement>
     <supplement name="domain">
