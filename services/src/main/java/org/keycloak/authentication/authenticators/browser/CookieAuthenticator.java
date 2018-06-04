@@ -60,6 +60,9 @@ public class CookieAuthenticator implements Authenticator {
             
             // Cookie re-authentication is skipped if re-authentication is required
             if (protocol.requireReauthentication(authResult.getSession(), clientSession) || requirePassword) {
+            	if (requirePassword) {
+            		context.form().setError("User needs to reauthenticate", new Object[] {});
+            	}
                 context.attempted();
             } else {
                 context.getSession().setAttribute(AuthenticationManager.SSO_AUTH, "true");
