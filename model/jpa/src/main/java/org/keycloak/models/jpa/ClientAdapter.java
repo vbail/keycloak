@@ -378,12 +378,6 @@ public class ClientAdapter implements ClientModel, JpaModel<ClientEntity> {
             mapping.setName(entity.getName());
             mapping.setProtocol(entity.getProtocol());
             mapping.setProtocolMapper(entity.getProtocolMapper());
-            if (entity.getClientScope() != null && entity.getClientScope().getAttributes() != null) {
-            	String consent = entity.getClientScope().getAttributes().get("display.on.consent.screen");
-            	if (consent != null && consent.equals("true")) {
-            		mapping.setConsentRequired(true);
-            	}
-            }
 
             Map<String, String> config = new HashMap<String, String>();
             if (entity.getConfig() != null) {
@@ -480,12 +474,6 @@ public class ClientAdapter implements ClientModel, JpaModel<ClientEntity> {
         mapping.setName(entity.getName());
         mapping.setProtocol(entity.getProtocol());
         mapping.setProtocolMapper(entity.getProtocolMapper());
-        if (entity.getClientScope() != null && entity.getClientScope().getAttributes() != null) {
-        	String consent = entity.getClientScope().getAttributes().get("display.on.consent.screen");
-        	if (consent != null && consent.equals("true")) {
-        		mapping.setConsentRequired(true);
-        	}
-        }
         
         Map<String, String> config = new HashMap<String, String>();
         if (entity.getConfig() != null) config.putAll(entity.getConfig());
