@@ -18,10 +18,11 @@ package org.keycloak.forms.login.freemarker.model;
 
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 
 import org.keycloak.models.ClientModel;
 import org.keycloak.models.ClientScopeModel;
-import org.keycloak.services.managers.AuthenticationManager;
+import org.keycloak.models.UserConsentModel;
 
 /**
  * @author <a href="mailto:vrockai@redhat.com">Viliam Rockai</a>
@@ -32,14 +33,26 @@ public class OAuthGrantBean {
     private String code;
     private ClientModel client;
 
-    public OAuthGrantBean(String code, ClientModel client, List<ClientScopeModel> clientScopesRequested) {
+    public OAuthGrantBean(String code, ClientModel client, List<ClientScopeModel> clientScopesRequested, UserConsentModel grantedConsents) {
         this.code = code;
         this.client = client;
 
+        Map<String, ClientScopeModel> defaultScopes = client.getClientScopes(true, false);
         for (ClientScopeModel clientScope : clientScopesRequested) {
-        	String consented = clientScope.getAttribute(AuthenticationManager.CLIENT_SCOPE_CONSENTED) != null ? clientScope.getAttribute(AuthenticationManager.CLIENT_SCOPE_CONSENTED) : "";
-        	String defaultScope = clientScope.getAttribute(AuthenticationManager.CLIENT_SCOPE_DEFAULT) != null ? clientScope.getAttribute(AuthenticationManager.CLIENT_SCOPE_DEFAULT) : "";;
-        	Boolean clientChecked = consented.equals("true") || defaultScope.equals("true");
+//        	String consented = clientScope.getAttribute(AuthenticationManager.CLIENT_SCOPE_CONSENTED) != null ? clientScope.getAttribute(AuthenticationManager.CLIENT_SCOPE_CONSENTED) : "";
+//        	String defaultScope = clientScope.getAttribute(AuthenticationManager.CLIENT_SCOPE_DEFAULT) != null ? clientScope.getAttribute(AuthenticationManager.CLIENT_SCOPE_DEFAULT) : "";;
+//        	Boolean clientChecked = consented.equals("true") || defaultScope.equals("true");
+        	
+        	Boolean defaultScope = false;
+        	if (defaultScopes != null && defaultScopes.containsValue(clientScope)) {
+        		defaultScope = true;
+        	}
+        	Boolean consentGranted = false;
+        	if (grantedConsents != null && grantedConsents.isClientScopeGranted(clientScope)) {
+        		consentGranted = true;
+        	}
+        	
+        	Boolean clientChecked = defaultScope || consentGranted;
             this.clientScopesRequested.add(new ClientScopeEntry(clientScope.getConsentScreenText(), clientScope.getName(), clientChecked.toString()));
         }
     }

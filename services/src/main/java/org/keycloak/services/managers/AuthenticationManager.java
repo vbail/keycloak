@@ -99,8 +99,8 @@ public class AuthenticationManager {
     public static final String KEYCLOAK_REMEMBER_ME = "KEYCLOAK_REMEMBER_ME";
     public static final String KEYCLOAK_LOGOUT_PROTOCOL = "KEYCLOAK_LOGOUT_PROTOCOL";
     
-    public static final String CLIENT_SCOPE_CONSENTED = "clientScopeConsented";
-    public static final String CLIENT_SCOPE_DEFAULT = "defaultClientScope";
+//    public static final String CLIENT_SCOPE_CONSENTED = "clientScopeConsented";
+//    public static final String CLIENT_SCOPE_DEFAULT = "defaultClientScope";
 
     public static boolean isSessionValid(RealmModel realm, UserSessionModel userSession) {
         if (userSession == null) {
@@ -894,7 +894,7 @@ public class AuthenticationManager {
             List<ClientScopeModel> clientScopesToApprove = getClientScopesToApproveOnConsentScreen(realm, grantedConsent, authSession);
 
             // Skip grant screen if everything was already approved by this user
-            boolean isSkipGrantedScreen = checkAllScopedApproved(clientScopesToApprove);
+            boolean isSkipGrantedScreen = checkAllScopedApproved(clientScopesToApprove, grantedConsent);
             
             if (!isSkipGrantedScreen) {
                 String execution = AuthenticatedClientSessionModel.Action.OAUTH_GRANT.name();
@@ -920,14 +920,18 @@ public class AuthenticationManager {
 
     }
 
-    private static boolean checkAllScopedApproved(List<ClientScopeModel> clientScopesToApprove) {
+    private static boolean checkAllScopedApproved(List<ClientScopeModel> clientScopesToApprove, UserConsentModel grantedConsents) {
     	boolean skipConsentScreen = true;
     	
     	if (clientScopesToApprove.size() > 0) {
     		for (ClientScopeModel clientModel : clientScopesToApprove) {
-    			String consented = clientModel.getAttribute(AuthenticationManager.CLIENT_SCOPE_CONSENTED);
-    			if (consented != null && !consented.equals("true") || consented == null) {
+//    			String consented = clientModel.getAttribute(AuthenticationManager.CLIENT_SCOPE_CONSENTED);
+//    			if (consented != null && !consented.equals("true") || consented == null) {
+//    				skipConsentScreen = false;
+//    			}
+    			if (grantedConsents == null || !grantedConsents.isClientScopeGranted(clientModel)) {
     				skipConsentScreen = false;
+    				break;
     			}
     		}
     	}
@@ -952,23 +956,23 @@ public class AuthenticationManager {
         		
         		ClientScopeModel clientScope = KeycloakModelUtils.getClientScopeByName(realm, scope);
         		if (clientScope != null && clientScope.isDisplayOnConsentScreen() && (defaultScopes.containsKey(scope) || optionalScopes.containsKey(scope)) ) {
-        			if (grantedConsent != null && grantedConsent.getGrantedClientScopes().contains(clientScope)) {
-        				clientScope.setAttribute(AuthenticationManager.CLIENT_SCOPE_CONSENTED, "true");
-        			}
-        			else {
-        				clientScope.setAttribute(AuthenticationManager.CLIENT_SCOPE_CONSENTED, "false");
-        			}
+//        			if (grantedConsent != null && grantedConsent.getGrantedClientScopes().contains(clientScope)) {
+//        				clientScope.setAttribute(AuthenticationManager.CLIENT_SCOPE_CONSENTED, "true");
+//        			}
+//        			else {
+//        				clientScope.setAttribute(AuthenticationManager.CLIENT_SCOPE_CONSENTED, "false");
+//        			}
         			clientScopesToDisplay.add(clientScope);
         		}
         	}
         	for (ClientScopeModel defaultScope : defaultScopes.values()) {
         		if (defaultScope != null && defaultScope.isDisplayOnConsentScreen() && !clientScopesToDisplay.contains(defaultScope)) {
-        			if (grantedConsent != null && grantedConsent.getGrantedClientScopes().contains(defaultScope)) {
-        				defaultScope.setAttribute(AuthenticationManager.CLIENT_SCOPE_CONSENTED, "true");
-        			}
-        			else {
-        				defaultScope.setAttribute(AuthenticationManager.CLIENT_SCOPE_CONSENTED, "false");
-        			}
+//        			if (grantedConsent != null && grantedConsent.getGrantedClientScopes().contains(defaultScope)) {
+//        				defaultScope.setAttribute(AuthenticationManager.CLIENT_SCOPE_CONSENTED, "true");
+//        			}
+//        			else {
+//        				defaultScope.setAttribute(AuthenticationManager.CLIENT_SCOPE_CONSENTED, "false");
+//        			}
         			clientScopesToDisplay.add(defaultScope);
         		}
         	}
@@ -978,14 +982,14 @@ public class AuthenticationManager {
         	if (defaultScopes != null && !defaultScopes.isEmpty()) {
         		for (ClientScopeModel clientScope : defaultScopes.values()) {
             		if (clientScope.isDisplayOnConsentScreen()) {
-            			//DEFAULT SCOPES MUST BE ACCEPTED
-            			if (grantedConsent != null && grantedConsent.getGrantedClientScopes().contains(clientScope)) {
-            				clientScope.setAttribute(AuthenticationManager.CLIENT_SCOPE_CONSENTED, "true");
-            			}
-            			else {
-            				clientScope.setAttribute(AuthenticationManager.CLIENT_SCOPE_CONSENTED, "false");
-            			}
-           				clientScope.setAttribute(AuthenticationManager.CLIENT_SCOPE_DEFAULT, "true");
+//            			//DEFAULT SCOPES MUST BE ACCEPTED
+//            			if (grantedConsent != null && grantedConsent.getGrantedClientScopes().contains(clientScope)) {
+//            				clientScope.setAttribute(AuthenticationManager.CLIENT_SCOPE_CONSENTED, "true");
+//            			}
+//            			else {
+//            				clientScope.setAttribute(AuthenticationManager.CLIENT_SCOPE_CONSENTED, "false");
+//            			}
+//           				clientScope.setAttribute(AuthenticationManager.CLIENT_SCOPE_DEFAULT, "true");
             			clientScopesToDisplay.add(clientScope);
             		}
         		}
@@ -993,13 +997,13 @@ public class AuthenticationManager {
         	if (optionalScopes != null && !optionalScopes.isEmpty()) {
         		for (ClientScopeModel clientScope : optionalScopes.values()) {
             		if (clientScope.isDisplayOnConsentScreen()) {
-            			if (grantedConsent != null && grantedConsent.getGrantedClientScopes().contains(clientScope)) {
-            				clientScope.setAttribute(AuthenticationManager.CLIENT_SCOPE_CONSENTED, "true");
-            			}
-            			else {
-            				clientScope.setAttribute(AuthenticationManager.CLIENT_SCOPE_CONSENTED, "false");
-            			}
-            			clientScope.removeAttribute(AuthenticationManager.CLIENT_SCOPE_DEFAULT);
+//            			if (grantedConsent != null && grantedConsent.getGrantedClientScopes().contains(clientScope)) {
+//            				clientScope.setAttribute(AuthenticationManager.CLIENT_SCOPE_CONSENTED, "true");
+//            			}
+//            			else {
+//            				clientScope.setAttribute(AuthenticationManager.CLIENT_SCOPE_CONSENTED, "false");
+//            			}
+//            			clientScope.removeAttribute(AuthenticationManager.CLIENT_SCOPE_DEFAULT);
             			clientScopesToDisplay.add(clientScope);
             		}
         		}

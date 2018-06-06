@@ -169,7 +169,12 @@ public class FreeMarkerLoginFormsProvider implements LoginFormsProvider {
         // for some reason Resteasy 2.3.7 doesn't like query params and form params with the same name and will null out the code form param
         UriBuilder uriBuilder = prepareBaseUriBuilder(page == LoginFormsPages.OAUTH_GRANT);
         createCommonAttributes(theme, locale, messagesBundle, uriBuilder, page);
-
+        
+        UserConsentModel grantedConsent = null;
+        if (user != null && session.users() != null && client != null) {
+        	grantedConsent = session.users().getConsentByClient(realm, user.getId(), client.getId());
+        }
+        
         attributes.put("login", new LoginBean(formData));
 
         if (status != null) {
@@ -198,7 +203,7 @@ public class FreeMarkerLoginFormsProvider implements LoginFormsProvider {
                 break;
             case OAUTH_GRANT:
                 attributes.put("oauth",
-                        new OAuthGrantBean(accessCode, client, clientScopesRequested));
+                        new OAuthGrantBean(accessCode, client, clientScopesRequested, grantedConsent));
                 attributes.put("advancedMsg", new AdvancedMessageFormatterMethod(locale, messagesBundle));
                 break;
             case CODE:
